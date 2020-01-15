@@ -16,6 +16,7 @@ from django.utils import timezone
 
 import os
 import json
+import uuid
 import logging
 import requests
 
@@ -50,7 +51,7 @@ class VerifySession(APIView):
             status_code = 401
             code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
             message = "The given pass-key is incorrect."
-            logger.info("Error given pass key from QT wallet!")
+            logger.error("Error given pass key from QT wallet!")
         else:
             try:
                 user = CustomUser.objects.get(username=username)
@@ -61,21 +62,21 @@ class VerifySession(APIView):
                     logger.info("Blocked user {} trying to access QT Game".format(username))
                 else:
                     qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
-
-                    if qt_session.valid:
-                        status_code = 200
-                        response = {
-                            'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
-                            # TODO: needs to handle if user.currency is bitcoin
-                            'currency': CURRENCY_CHOICES[user.currency][1],
-                        }
-                        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
-                                            content_type='application/json', status=status_code)
-                    else:
-                        status_code = 400
-                        code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
-                        message = "Missing, invalid or expired player (wallet) session token."
-
+                    
+                    status_code = 200
+                    response = {
+                        'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
+                        # TODO: needs to handle if user.currency is bitcoin
+                        'currency': CURRENCY_CHOICES[user.currency][1],
+                    }
+                    
+                    if not qt_session.valid:
+                        logger.info("Expired session-key is used for the pending transaction!")
+                    
+                    return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
+                                        content_type='application/json', status=status_code)
+                    
+                        
             except Exception as e:
                 logger.error("Error getting user or user session " + str(e))
 
@@ -161,22 +162,27 @@ class GameLaunch(APIView):
                 
                 if mode == 'real':
                     username = request.GET.get('playerId')
-                    
                     try: 
                         user = CustomUser.objects.get(username=username)
-                        session = QTSession.objects.get(user=user)
+                        
+                        sessionKey = uuid.uuid4()
+                        QTSession.objects.filter(Q(user=user)&Q(valid=False)).delete()
+                        QTSession.objects.filter(Q(user=user)&Q(valid=True)).update(valid=False)
+                        QTSession.objects.create(user=user,session_key=sessionKey,valid=True)
+                        
+                        body = {
+                            "playerId": username,
+                            "currency": CURRENCY_CHOICES[user.currency][1],
+                            "walletSessionId": str(sessionKey),
+                            "country": "CN", # user.country
+                            "lang": "zh_CN", # user.language,
+                            "mode": 'real',
+                            "device": "desktop", 
+                        }
+                        
                     except Exception as e: 
                         logger.error("Failed in getting user/session " + str(e))
                         
-                    body = {
-                        "playerId": username,
-                        "currency": CURRENCY_CHOICES[user.currency][1],
-                        "walletSessionId": str(session.session_key),
-                        "country": "CN", # user.country
-                        "lang": "zh_CN", # user.language,
-                        "mode": 'real',
-                        "device": "desktop", 
-                    }
                 else: 
                     body = {
                         "country": "CN", 
@@ -189,11 +195,11 @@ class GameLaunch(APIView):
                 url = apiUrl + "v1/games/" + gameId + "/launch-url"
                 #url = apiUrl + "v1/games/TK-froggrog/launch-url"
                 r = requests.post( url, headers=headers, data=json.dumps(body) )
-                launchData = r.json()
+                launchData = r.json()  
                 
                 if r.status_code != 200:
                     logger.error(launchData)
-                  
+                
                 return HttpResponse(r, content_type='application/json', status=r.status_code)
                     
             else:
