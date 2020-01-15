@@ -54,12 +54,14 @@ def getPlayers(affiliates):
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
-            player_list |= CustomUser.objects.filter(
-                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
+            if affiliate_referral_path:
+                player_list |= CustomUser.objects.filter(
+                    Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
-        player_list = CustomUser.objects.filter(
-            Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
+        if affiliate_referral_path:
+            player_list = CustomUser.objects.filter(
+                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
 
     return player_list
 
@@ -79,14 +81,16 @@ def getDownlines(affiliates):
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
-            downline_list |= CustomUser.objects.filter(
-                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
-                    pk=affiliate.pk))
+            if affiliate_referral_path:
+                downline_list |= CustomUser.objects.filter(
+                    Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
+                        pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
-        downline_list = CustomUser.objects.filter(
-            Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
-                pk=affiliates.pk))
+        if affiliate_referral_path:
+            downline_list = CustomUser.objects.filter(
+                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
+                    pk=affiliates.pk))
 
     return downline_list
 

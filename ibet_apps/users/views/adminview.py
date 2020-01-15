@@ -358,7 +358,7 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[deposit['fields']['status']],
                     # 'bank': str(deposit['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[deposit['fields']['channel']],
+                    'channel': channelMap[deposit['fields']['channel']] if deposit['fields']['channel'] else "",
                     'method': deposit['fields']['method'],
                 }
                 lastDeposit.append(depositDict)
@@ -390,7 +390,7 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[withdraw['fields']['status']],
                     # 'bank': str(withdraw['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[withdraw['fields']['channel']],
+                    'channel': channelMap[withdraw['fields']['channel']] if withdraw['fields']['channel'] else "",
                     'method': withdraw['fields']['method'],
                 }
                 lastWithdraw.append(withdrawDict)

@@ -533,9 +533,12 @@ class AgentDetailView(CommAdminView):
 
             downline = getDownlines(affiliate)
 
-            downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
-                                                          Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
-                aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+            if downline:
+                downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
+                                                              Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
+                    aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+            else:
+                downline_deposit = 0
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
                 transaction_type=TRANSACTION_COMMISSION)
@@ -566,8 +569,9 @@ class AgentDetailView(CommAdminView):
                     request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
                 comm=Coalesce(Sum('amount'), 0))
             # downline status
-            context["downline_number"] = getPlayers(affiliate).count()
-            context["active_users"] = filterActiveUser(getDownlines(affiliate), None, None, True, None).count()
+            context["downline_number"] = getPlayers(affiliate).count() if getPlayers(affiliate) else 0
+            active_users = filterActiveUser(getDownlines(affiliate), None, None, True, None)
+            context["active_users"] = active_users.count() if active_users else 0
             context["downline_deposit"] = downline_deposit
             context['domain'] = LETOU_DOMAIN
             context['referral_code'] = affiliate.referral_code
