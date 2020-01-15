@@ -508,7 +508,7 @@ def getBetDetail(request):
         delay = 2
         success = False
         version_key = PROVIDER.notes
-        print(version_key)
+        
         onebook_run = "run"
         try:
             r = RedisClient().connect()
@@ -528,7 +528,7 @@ def getBetDetail(request):
                 rdata = r.json()
                 if r.status_code == 200:
                     logger.info(rdata)
-                    print(rdata)
+                    
                     version_key = rdata["Data"]["last_version_key"]        
                     
                     updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
