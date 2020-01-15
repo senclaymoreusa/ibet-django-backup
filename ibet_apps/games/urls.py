@@ -95,6 +95,7 @@ urlpatterns = [
     path('api/gpi/debit/', gameplayintviews.DebitAPI.as_view(), name="gpi_debit"),
     path('api/gpi/credit/', gameplayintviews.CreditAPI.as_view(), name="gpi_credit"),
     path('api/gpi/check/', gameplayintviews.CheckTransactionAPI.as_view(), name="gpi_check"),
+    path('api/gpi/online_user/', gameplayintviews.GetOnlineUserAPI.as_view(), name="online_user"),
     # playtech
 
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),

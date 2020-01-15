@@ -36,9 +36,10 @@ from datetime import date
 
 logger = logging.getLogger('django')
 
-# MERCH_ID = "IBETP"
-# MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
+MERCH_ID = "IBETP"
+MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
 GPI_URL = "http://club8api.bet8uat.com/op/"
+GPI_LIVE_CASINO_URL = "http://casino.bet8uat.com/csnbo/api/"
 
 
 def transCurrency(user):
@@ -109,20 +110,25 @@ class ValidateUserAPI(View):
 
         try:
             user = Token.objects.get(key=token).user
+            resp = {}
+            res["resp"] = resp
 
-            res["error_code"] = 0
-            res["cust_id"] = user.pk
-            res["cust_name"] = user.username
-            res["currency_code"] = "currency_code"
-            res["language"] = "language"
-            res["country"] = user.country
-            res["ip"] = "ip"
-            res["date_of_birth"] = "date_of_birth"
-            res["test_cust"] = True
+            resp["error_code"] = 0
+            resp["cust_id"] = user.pk
+            resp["cust_name"] = user.username
+            resp["currency_code"] = "currency_code"
+            resp["language"] = "language"
+            resp["country"] = user.country
+            resp["ip"] = "ip"
+            resp["date_of_birth"] = "date_of_birth"
+            resp["test_cust"] = True
 
         except ObjectDoesNotExist:
-            res["error_code"] = -2
-            res["err_message"] = "user does not exist"
+            resp = {}
+            res["resp"] = resp
+
+            resp["error_code"] = -2
+            resp["err_message"] = "user does not exist"
             # res["cust_name"] = user.username
             # res["currency_code"] = "currency_code"
             # res["language"] = "language"
@@ -132,10 +138,14 @@ class ValidateUserAPI(View):
             # res["test_cust"] = True
         except Exception as e:
             print(repr(e))
-            res["error_code"] = -1
-            res["err_message"] = "Unknown Error"
+            resp = {}
+            res["resp"] = resp
 
-        return HttpResponse(json.dumps(res), content_type="application/json", status=200)
+            resp["error_code"] = -1
+            resp["err_message"] = "Unknown Error"
+
+        res = xmltodict.unparse(res, pretty=True)
+        return HttpResponse(res, content_type="application/xml", status=200)
 
 
 class CreateUserAPI(View):
@@ -291,3 +301,27 @@ class CheckTransactionAPI(View):
         except Exception as e:
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
             return HttpResponse(status=400)
+
+
+class GetOnlineUserAPI(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+
+            req = urllib.parse.urlencode(req_param)
+
+            url = GPI_LIVE_CASINO_URL + "onlineUser.html?" + req
+
+            res = requests.get(url)
+
+            return HttpResponse(res)
+        except Exception as e:
+            print(repr(e))
+            return HttpResponse(status=400)
+
+
+class GetOpenBetsAPI(View):
+    def get(self, request, *args, **kwargs):
+        return HttpResponse(200)
