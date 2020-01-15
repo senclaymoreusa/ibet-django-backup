@@ -350,8 +350,8 @@ class AgentView(CommAdminView):
             affiliate_list = []
             for affiliate in queryset:
                 # downline list
-                downlines = getPlayers(affiliate)
-                downlines_all = getDownlines(affiliate)
+                downlines = getPlayers(affiliate) or []
+                downlines_all = getDownlines(affiliate) or []
                 downlines_total_deposit = 0
                 downlines_total_withdrawal = 0
                 downlines_regis = calculateRegistrations(downlines, min_date, max_date)
@@ -368,6 +368,14 @@ class AgentView(CommAdminView):
 
                 deposit_count, deposit_amount = calculateDeposit(affiliate, min_date, max_date)
                 withdrawal_count, withdrawal_amount = calculateWithdrawal(affiliate, min_date, max_date)
+                active_players = filterActiveUser(downlines_all, min_date, max_date, True, None)
+                active_players_without_freebets = filterActiveUser(downlines, min_date, max_date, False, None)
+                sports_actives = filterActiveUser(downlines, min_date, max_date, True, "Sports")
+                casino_actives = filterActiveUser(downlines, min_date, max_date, True, "Casino")
+                live_casino_actives = filterActiveUser(downlines, min_date, max_date, True, "Live Casino")
+                lottery_actives = filterActiveUser(downlines, min_date, max_date, True, "Lottery")
+                active_downlines = filterActiveUser(downlines, min_date, max_date, True, None)
+                downline_active_players = filterActiveUser(downlines_all, min_date, max_date, True, None)
 
                 # Todo: needs update the data
                 affiliates_dict = {'affiliate_id': affiliate.pk,
@@ -378,11 +386,9 @@ class AgentView(CommAdminView):
                                                                                                        0),
                                    'registrations': downlines_all_regis,
                                    'ftds': downlines_all_ftds,
-                                   'active_players': filterActiveUser(downlines_all, min_date, max_date, True,
-                                                                      None).count(),
-                                   'active_players_without_freebets':
-                                       filterActiveUser(downlines, min_date, max_date, False, None).count(),
-
+                                   'active_players': active_players.count() if active_players else 0,
+                                   'active_players_without_freebets':active_players_without_freebets.count()
+                                   if active_players_without_freebets else 0,
                                    'turnover': calculateTurnover(affiliate, min_date, max_date, None),
                                    'ggr': calculateGGR(affiliate, min_date, max_date, None),
                                    'bonus_cost': calculateBonus(affiliate, min_date, max_date, None),
@@ -391,40 +397,33 @@ class AgentView(CommAdminView):
                                    'deposit': deposit_amount,
                                    'withdrawal': withdrawal_amount,
 
-                                   'sports_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                      "Sports").count(),
+                                   'sports_actives': sports_actives.count() if sports_actives else 0,
                                    'sports_ggr': calculateGGR(affiliate, min_date, max_date, "Sports"),
                                    'sports_bonus': calculateBonus(affiliate, min_date, max_date, "Sports"),
                                    'sports_ngr': calculateNGR(affiliate, min_date, max_date, "Sports"),
 
-                                   'casino_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                      "Casino").count(),
+                                   'casino_actives': casino_actives.count() if casino_actives else 0,
                                    'casino_ggr': calculateGGR(affiliate, min_date, max_date, "Casino"),
                                    'casino_bonus': calculateBonus(affiliate, min_date, max_date, "Casino"),
                                    'casino_ngr': calculateNGR(affiliate, min_date, max_date, "Casino"),
 
-                                   'live_casino_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                           "Live Casino").count(),
+                                   'live_casino_actives': live_casino_actives.count() if live_casino_actives else 0,
                                    'live_casino_ggr': calculateGGR(affiliate, min_date, max_date, "Live Casino"),
                                    'live_casino_bonus': calculateBonus(affiliate, min_date, max_date,
                                                                        "Live Casino"),
                                    'live_casino_ngr': calculateNGR(affiliate, min_date, max_date, "Live Casino"),
 
-                                   'lottery_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                       "Lottery").count(),
+                                   'lottery_actives': lottery_actives.count() if lottery_actives else 0,
                                    'lottery_ggr': calculateGGR(affiliate, min_date, max_date, "Lottery"),
                                    'lottery_bonus': calculateBonus(affiliate, min_date, max_date, "Lottery"),
                                    'lottery_ngr': calculateNGR(affiliate, min_date, max_date, "Lottery"),
 
-                                   'active_downlines': filterActiveUser(downlines, min_date, max_date, True,
-                                                                        None).count(),
+                                   'active_downlines': active_downlines.count() if active_downlines else 0,
                                    'downline_registration': downlines_all_regis - downlines_regis,
                                    'downline_ftds': downlines_all_ftds - downlines_ftds,
                                    'downline_new_players': calculateNewPlayer(downlines_all, min_date, max_date,
                                                                               True),
-                                   'downline_active_players': filterActiveUser(downlines_all, min_date, max_date,
-                                                                               True,
-                                                                               None).count(),
+                                   'downline_active_players': downline_active_players.count() if downline_active_players else 0,
 
                                    'downline_turnover': -1,
                                    'downline_ggr': -1,

@@ -103,6 +103,8 @@ def getDownlines(affiliates):
 
 def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
     # get bet transaction in this period
+    if not queryset:
+        return queryset
     active_filter = Q()
     if not free_bets:
         active_filter &= ~Q(other_data__is_free=True)
@@ -132,6 +134,8 @@ def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
 def calculateFTD(queryset, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
+    if not queryset:
+        return 0
     ftd_filter = Q()
     if start_time and end_time:
         ftd_filter &= Q(ftd_time__gte=start_time)
@@ -149,6 +153,8 @@ def calculateFTD(queryset, start_time, end_time):
 def calculateRegistrations(user_group, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
+    if not user_group:
+        return 0
     regis_filter = Q()
     if start_time and end_time:
         regis_filter &= Q(time_of_registration__gte=start_time)
@@ -164,6 +170,8 @@ def calculateRegistrations(user_group, start_time, end_time):
 
 # calculate new players referred by the affiliate place first bet during certain time range
 def calculateNewPlayer(user_group, start_time, end_time, free_bets):
+    if not user_group:
+        return 0
     new_player_count = 0
     new_player_filter = Q()
 
