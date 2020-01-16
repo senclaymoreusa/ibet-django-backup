@@ -50,7 +50,7 @@ class MGgame(APIView):
             seq = dd['pkt']['methodcall']['call']['@seq']
             
         except Exception as e:
-            logger.error("FATAL__ERROR: MG parse data Error - " + str(e))
+            logger.critical("FATAL__ERROR: MG parse data Error - " + str(e))
             response = {
                         "pkt" : {
                             "methodresponse" : {
@@ -71,7 +71,7 @@ class MGgame(APIView):
 
         # api security check
         if apiusername != USERNAME or apipassword != PASSWORD:
-            logger.error("FATAL__ERROR: The authentication credentials for the API are incorrect.")
+            logger.critical("FATAL__ERROR: The authentication credentials for the API are incorrect.")
             response = {
                 "pkt" : {
                     "methodresponse" : {
@@ -125,7 +125,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except ObjectDoesNotExist as e:
-                logger.error("FATAL__ERROR: MG invalid user in Login: ", e)
+                logger.critical("FATAL__ERROR: MG invalid user in Login: ", e)
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -144,7 +144,7 @@ class MGgame(APIView):
                 res = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(res, content_type='text/xml')
             except Exception as e:
-                logger.error("FATAL__ERROR: MG parse data Error in Login: " + str(e))
+                logger.critical("FATAL__ERROR: MG parse data Error in Login: " + str(e))
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -193,7 +193,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except ObjectDoesNotExist as e:
-                logger.error("FATAL__ERROR: MG invalid user in getbalance: ", e)
+                logger.critical("FATAL__ERROR: MG invalid user in getbalance: ", e)
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -213,7 +213,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except Exception as e:
-                logger.error("FATAL__ERROR: MG parse data Error in getbalance: " + str(e))
+                logger.critical("FATAL__ERROR: MG parse data Error in getbalance: " + str(e))
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -350,7 +350,7 @@ class MGgame(APIView):
                     return HttpResponse(res, content_type='text/xml')
 
             except ObjectDoesNotExist as e:
-                logger.error("FATAL__ERROR: MG invalid user in play: ", e)
+                logger.critical("FATAL__ERROR: MG invalid user in play: ", e)
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -370,7 +370,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except Exception as e:
-                logger.error("FATAL__ERROR: MG parse data Error in play: " + str(e))
+                logger.critical("FATAL__ERROR: MG parse data Error in play: " + str(e))
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -486,7 +486,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except ObjectDoesNotExist as e:
-                logger.error("FATAL__ERROR: MG invalid user: ", e)
+                logger.critical("FATAL__ERROR: MG invalid user: ", e)
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -506,7 +506,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except Exception as e:
-                logger.error("FATAL__ERROR: MG parse data Error: " + str(e))
+                logger.critical("FATAL__ERROR: MG parse data Error: " + str(e))
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -551,7 +551,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except ObjectDoesNotExist as e:
-                logger.error("FATAL__ERROR: MG invalid user in token: ", e)
+                logger.critical("FATAL__ERROR: MG invalid user in token: ", e)
                 response = {
                     "pkt" : {
                             "methodresponse" : {
@@ -571,7 +571,7 @@ class MGgame(APIView):
                 return HttpResponse(res, content_type='text/xml')
 
             except Exception as e:
-                logger.error("FATAL__ERROR: MG parse data Error: " + str(e))
+                logger.critical("FATAL__ERROR: MG parse data Error: " + str(e))
                 response = {
                     "pkt" : {
                             "methodresponse" : {
