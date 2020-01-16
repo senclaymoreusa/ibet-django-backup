@@ -1,9 +1,9 @@
 from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from datetime import timedelta
-from django.db.models import Q
+from django.db import transaction
 import boto3
 from botocore.exceptions import ClientError
 from botocore.exceptions import NoCredentialsError
@@ -707,19 +707,21 @@ class UserDetailView(CommAdminView):
                     # print(json.dumps(error))
                     return HttpResponse(json.dumps(error), content_type="application/json")
 
-                user.block = True
-                user.temporary_block_time = datetime.datetime.now()
-                # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
-                user.save()
-                limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
-                logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
+                with transaction.atomic():
+                    user.block = True
+                    user.temporary_block_time = datetime.datetime.now()
+                    # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
+                    user.save()
+                    limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
+                    logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
             else:
-                # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
-                user.block = False
-                user.temporary_block_time = None
-                user.save()
-                limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
-                logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
+                with transaction.atomic():
+                    # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
+                    user.block = False
+                    user.temporary_block_time = None
+                    user.save()
+                    limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
+                    logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
 
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
     

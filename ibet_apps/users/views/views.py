@@ -298,6 +298,7 @@ class RegisterView(CreateAPIView):
 
         return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
@@ -906,6 +907,7 @@ class FacebookRegister(CreateAPIView):
                         status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
@@ -2081,7 +2083,7 @@ class SetWithdrawPassword(View):
             userId = data['userId'] 
             withdrawPassword = data['withdrawPassword']
             customUser = CustomUser.objects.get(pk=userId)
-            print(customUser)
+            # print(customUser)
             if checkUserBlock(customUser):
                 errorMessage = _('The current user is blocked!')
                 data = {
