@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from accounting.models import Transaction
 from bonus.models import UserBonusEvent, Bonus, Requirement
+from users.models import CustomUser
 from utils.constants import TRANSACTION_DEPOSIT, TRAN_SUCCESS_TYPE, BONUS_TYPE_DEPOSIT, \
     BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED, BONUS_STATUS_ACTIVE, BONUS_ACTIVE
 
@@ -116,7 +117,7 @@ def getValidFTD(user, deposit_amount, current_time):
                 status=BONUS_COMPLETED,
                 delivery_time=completed_time,
                 completion_time=completed_time,
-                delivered_by=user
+                delivered_by=CustomUser.objects.get(username='System')
             )
             logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
         else:
@@ -127,7 +128,7 @@ def getValidFTD(user, deposit_amount, current_time):
                 status=BONUS_ACTIVE,
                 delivery_time=completed_time,
                 completion_time=completed_time,
-                delivered_by=user
+                delivered_by=CustomUser.objects.get(username='System')
             )
             logger.info("{} first deposit bonus {} status changed to active".format(user.username, new_ube.bonus.name))
         return valid_ube.bonus

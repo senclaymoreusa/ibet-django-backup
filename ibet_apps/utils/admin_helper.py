@@ -30,9 +30,19 @@ this_month = today.replace(day=1)
 last_month = this_month + relativedelta(months=-1)
 before_last_month = this_month + relativedelta(months=-2)
 
+# Create System User
+try:
+    system_user = CustomUser.objects.get(username='System')
+except ObjectDoesNotExist as e:
+    system_user = CustomUser.objects.create_superuser(
+        username='System',
+        email='system@claymoreusa.com',
+        phone=0
+    )
+    logger.info("Create A System User")
+
 
 # transaction filter
-
 def getCommissionTrans():
     commission_tran = Transaction.objects.filter(
         Q(transaction_type=TRANSACTION_COMMISSION) & Q(channel=None))
