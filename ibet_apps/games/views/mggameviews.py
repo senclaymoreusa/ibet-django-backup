@@ -133,8 +133,8 @@ class MGgame(APIView):
                                 "@timestamp" : timestamp,
                                 "result" : {
                                     "@seq" : seq,
-                                    "@errorcode" : "6103",
-                                    "@errordescription": MG_RESPONSE_ERROR["6103"],
+                                    "@errorcode" : "6001",
+                                    "@errordescription": MG_RESPONSE_ERROR["6001"],
                                     "extinfo" : {}
                                 },
                                 
@@ -201,8 +201,8 @@ class MGgame(APIView):
                                 "@timestamp" : timestamp,
                                 "result" : {
                                     "@seq" : seq,
-                                    "@errorcode" : "6103",
-                                    "@errordescription": MG_RESPONSE_ERROR["6103"],
+                                    "@errorcode" : "6001",
+                                    "@errordescription": MG_RESPONSE_ERROR["6001"],
                                     "extinfo" : {}
                                 },
                                 
@@ -358,8 +358,8 @@ class MGgame(APIView):
                                 "@timestamp" : timestamp,
                                 "result" : {
                                     "@seq" : seq,
-                                    "@errorcode" : "6103",
-                                    "@errordescription": MG_RESPONSE_ERROR["6103"],
+                                    "@errorcode" : "6001",
+                                    "@errordescription": MG_RESPONSE_ERROR["6001"],
                                     "extinfo" : {}
                                 },
                                 
@@ -425,8 +425,8 @@ class MGgame(APIView):
                                 "@timestamp" : timestamp,
                                 "result" : {
                                     "@seq" : seq,
-                                    "@errorcode" : "6103",
-                                    "@errordescription": MG_RESPONSE_ERROR["6103"],
+                                    "@errorcode" : "6001",
+                                    "@errordescription": MG_RESPONSE_ERROR["6001"],
                                     "extinfo" : {}
                                 },
                                 
@@ -494,8 +494,8 @@ class MGgame(APIView):
                                 "@timestamp" : timestamp,
                                 "result" : {
                                     "@seq" : seq,
-                                    "@errorcode" : "6103",
-                                    "@errordescription": MG_RESPONSE_ERROR["6103"],
+                                    "@errorcode" : "6001",
+                                    "@errordescription": MG_RESPONSE_ERROR["6001"],
                                     "extinfo" : {}
                                 },
                                 
@@ -559,8 +559,8 @@ class MGgame(APIView):
                                 "@timestamp" : timestamp,
                                 "result" : {
                                     "@seq" : seq,
-                                    "@errorcode" : "6103",
-                                    "@errordescription": MG_RESPONSE_ERROR["6103"],
+                                    "@errorcode" : "6001",
+                                    "@errordescription": MG_RESPONSE_ERROR["6001"],
                                     "extinfo" : {}
                                 },
                                 
