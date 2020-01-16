@@ -743,6 +743,10 @@ class CreditCustomer(View):
         except (DatabaseError, IntegrityError, Exception) as e:
             logger.error("CreditCustomer::Error Occured::" + repr(e))
 
+
+######
+# helper functions
+#####
 def findUser(username): # should only throw error in the Reserve call, if it is called in any other reserve function, it should return the user
     try: # try to find user
         user = CustomUser.objects.get(username=username)

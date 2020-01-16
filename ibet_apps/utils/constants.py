@@ -1605,3 +1605,8 @@ AG_DES = "MJp7ScbZ"
 AG_DM = "http://ibet.com"
 #IMES
 IMES_PROVIDER = "IMES"
+
+#BTI
+BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
+BTI_AGENT_USERNAME = keys["BTI"]["USERNAME"]
+BTI_AGENT_PW = keys["BTI"]["PASSWORD"]
