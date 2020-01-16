@@ -130,6 +130,7 @@ class GameBet(models.Model):
 
     resolved_time = models.DateTimeField(null=True, blank=True)
     other_data = JSONField(null=True, default=dict)
+    result = models.SmallIntegerField(choices=GAME_STATUS_CHOICES, default=GAME_STATUS_OPEN)
 
     # def __str__(self):
     #     return self.game_name + ' bet placed on ' + str(bet_time)
