@@ -728,7 +728,7 @@ class Login(APIView):
                     lang = 'cs'
                 elif user.language == ('Thai' or 'th'):
                     lang = 'th'
-                elif user.language == ('Vietnamese' or 'vt'):
+                elif user.language == ('Vietnamese' or 'vi'):
                     lang = 'vi'
                 else:
                     lang = 'en'
