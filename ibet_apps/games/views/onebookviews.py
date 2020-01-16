@@ -722,14 +722,16 @@ class Login(APIView):
                 return Response(rdata)
             try:
                 Data = rdata['Data']
-                if user.language == 'English':
+                if user.language == ('English' or 'en'):
                     lang = 'en'
-                elif user.language == 'Chinese':
+                elif user.language == ('Chinese' or 'zh'):
                     lang = 'cs'
-                elif user.language == 'Thai':
+                elif user.language == ('Thai' or 'th'):
                     lang = 'th'
-                elif user.language == 'Vietnamese':
-                    lang = 'vn'
+                elif user.language == ('Vietnamese' or 'vi'):
+                    lang = 'vi'
+                else:
+                    lang = 'en'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
                 return Response({"login_url":loginUrl})
