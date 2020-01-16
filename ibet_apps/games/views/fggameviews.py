@@ -443,7 +443,8 @@ class ProcessTransaction(APIView):
                                                 market=ibetCN,
                                                 ref_no=gameTranId,
                                                 transaction_id=trans_id,
-                                                outcome=7,
+                                                outcome=3,
+                                                resolved_time=timezone.now(),
                                                 other_data={
                                                             'provider_trans_id':transactionId
                                                         }

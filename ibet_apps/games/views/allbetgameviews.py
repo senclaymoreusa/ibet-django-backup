@@ -541,7 +541,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                     user_name = user_obj.username,
                     amount_wagered = 0.00,
                     amount_won = single_cancel_amount,
-                    outcome = 8, # Cancel
+                    outcome = 3, # Cancel/ Void
                     #odds = None,
                     #bet_type = None,
                     #line = None,
@@ -621,7 +621,7 @@ def resettleBet(client, transaction_id, amount, resettle_details):
         resettle_id = resettle_details[0]["betNum"]
 
         try:
-            most_recent_settle = GameBet.objects.filter(ref_no=resettle_id, outcome__in=[0, 1, 2, 7]).latest('resolved_time')
+            most_recent_settle = GameBet.objects.filter(ref_no=resettle_id, outcome__in=[0, 1, 2, 3]).latest('resolved_time')
         except ObjectDoesNotExist:
             # In this case, a bet is directly being re-settled without a prior settle.
             return settleBet(client, transaction_id, amount, resettle_details)
@@ -645,7 +645,7 @@ def resettleBet(client, transaction_id, amount, resettle_details):
                 user_name = user_obj.username,
                 amount_wagered = 0.00,
                 amount_won = resettle_details[0]["amount"],
-                outcome = 7,
+                outcome = 3, # rollback
                 #odds = None,
                 #bet_type = None,
                 #line = None,

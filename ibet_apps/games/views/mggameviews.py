@@ -295,7 +295,7 @@ class MGgame(APIView):
                                                             transaction_id=trans_id,
                                                             resolved_time=timezone.now(),
                                                             # game_name=gameref,
-                                                            outcome=14,
+                                                            outcome=3,
                                                             other_data=other_data
                                                             )
 
