@@ -162,18 +162,34 @@ class GameLaunch(APIView):
                 
                 if mode == 'real':
                     username = request.GET.get('playerId')
+                    
                     try: 
                         user = CustomUser.objects.get(username=username)
                         
-                        sessionKey = uuid.uuid4()
-                        QTSession.objects.filter(Q(user=user)&Q(valid=False)).delete()
-                        QTSession.objects.filter(Q(user=user)&Q(valid=True)).update(valid=False)
-                        QTSession.objects.create(user=user,session_key=sessionKey,valid=True)
+                        newKey = uuid.uuid4()
+                        try:
+                            valSess = QTSession.objects.get(Q(user=user) & Q(valid=True)) 
+                            previousKey = valSess.session_key
+                            valSess.session_key = newKey
+                            valSess.save()
+                            logger.info("Assign a new valid session key for " + username)
+                            
+                            try:
+                                falseSess = QTSession.objects.get(Q(user=user) & Q(valid=False)) 
+                                falseSess.session_key = previousKey
+                                falseSess.save()
+                            except:
+                                QTSession.objects.create(user=user,session_key=previousKey,valid=False)
+                                
+                            logger.info("Update previous session to invalid!")
+                        except:
+                            logger.info("Create a new session for " + username)
+                            QTSession.objects.create(user=user,session_key=newKey,valid=True)
                         
                         body = {
                             "playerId": username,
                             "currency": CURRENCY_CHOICES[user.currency][1],
-                            "walletSessionId": str(sessionKey),
+                            "walletSessionId": str(newKey),
                             "country": "CN", # user.country
                             "lang": "zh_CN", # user.language,
                             "mode": 'real',
@@ -181,7 +197,7 @@ class GameLaunch(APIView):
                         }
                         
                     except Exception as e: 
-                        logger.error("Failed in getting user/session " + str(e))
+                        logger.error("Failed in getting user " + str(e))
                         
                 else: 
                     body = {
