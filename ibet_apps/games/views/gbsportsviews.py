@@ -522,6 +522,10 @@ langConversion = {
     'Chinese': 'zh-cn',
     'Thai': 'th-th',
     'Vietnamese':'vi-vn',
+    'en': 'en-us',
+    'zh': 'zh-cn',
+    'th': 'th-th',
+    'vi': 'vi-vn',
 }
 class GenerateGameURL(APIView):
 

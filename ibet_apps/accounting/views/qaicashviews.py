@@ -332,8 +332,11 @@ class submitDeposit(generics.GenericAPIView):
         depositorBank = self.request.POST.get('bank')
         depositorEmail = user.email
         depositorName = user.first_name + " " + user.last_name
-        depositorPhone = user.phone
-            
+        if "-" in user.phone:
+            depositorPhone = user.phone.split("-")[1]
+        else:
+            depositorPhone = user.phone
+        
         list = [merchantId, trans_id, amount, currency, dateTime, userId, mymethod]
         message = '|'.join(str(x) for x in list)
         
