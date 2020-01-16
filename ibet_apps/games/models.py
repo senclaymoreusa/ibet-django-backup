@@ -198,3 +198,13 @@ class QTSession(models.Model):
 
 
 
+class GameThirdPartyAccount(models.Model):
+
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    provider = models.ForeignKey('games.GameProvider', on_delete=models.CASCADE)
+    third_party_account = models.CharField(max_length=30, null=True)
+
+    created_time = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
