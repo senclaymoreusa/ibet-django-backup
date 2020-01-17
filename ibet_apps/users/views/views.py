@@ -667,9 +667,7 @@ class LanguageView(APIView):
         try:
             languageCode = 'en'
             if LANGUAGE_SESSION_KEY in request.session:
-                print(LANGUAGE_SESSION_KEY)
                 languageCode = request.session[LANGUAGE_SESSION_KEY]
-                print(languageCode)
     
             # print('get: ' + languageCode)
             logger.info("Getting the language code: {}".format(languageCode))
