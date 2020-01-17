@@ -105,7 +105,6 @@ def getBalance(request):
         else:
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        logger.info("The user is not existed in AG getBalance api.")
         logger.critical("The user is not existed in AG getBalance api.")
         return Response({"error":"The user is not existed in AG getBalance api."}) 
 
