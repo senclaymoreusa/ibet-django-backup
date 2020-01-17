@@ -278,7 +278,9 @@ LANGUAGE_CODE = 'en-us'
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
-    ('fr', _('Franch')),
+    # ('fr', _('Franch')),
+    ('vi', ('Vietnam')),
+    ('th', ('Thailand')),
 )
 
 # TIME_ZONE = 'UTC'
