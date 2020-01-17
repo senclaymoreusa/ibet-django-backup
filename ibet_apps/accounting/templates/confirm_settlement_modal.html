@@ -1,0 +1,110 @@
+<div class="modal-content">
+    <div class="modal-header">
+        Deposit request details
+    </div>
+    <div class="modal-body">
+        <form action="/" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="type" value="audit_deposit">
+            <input type="hidden" id="dep_trans_no" name="dep_trans_no">
+            <input type="hidden" id="dep_row_index" name="dep_row_index">
+
+            <div class="row deposit-request-word">
+                <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
+                <div class="col-md-4" style="margin-left:20px">BANK DETAILS</div>
+                <div class="col-md-4" style="margin-left:12px">MEMBER DETAILS</div>
+            </div>
+
+            <div class="row" style="margin-left:10px;margin-top: 10px">
+                <div class="col-md-3 deposit-request-details">
+                    <div class="col-md-6 deposit-request-title">
+                        <p>Deposit Slip</p>
+                        <p>Transaction No.</p>
+                        <p>Created Time</p>
+                        <p>Provider Ref No.</p>
+                        <p>Amount</p>
+                    </div>
+                    <div class="col-md-6 deposit-request-data" id="trans-deposit-detail">
+                    </div>
+                </div>
+
+                <div class="col-md-4 deposit-request-details">
+                    <div class="col-md-6 deposit-request-title">
+                        <p>Bank</p>
+                        <p>Branch</p>
+                        <p>City</p>
+                        <p>Account Name</p>
+                        <p>Account No.</p>
+                    </div>
+                    <div class="col-md-6 deposit-request-data" id="bank_detail">
+                    </div>
+                </div>
+
+                <div class="col-md-4 deposit-request-details" style="padding-bottom: 50px">
+                    <div class="col-md-3 deposit-request-title">
+                        <p>Member ID</p>
+                        <p>Username</p>
+                        <p>First Name</p>
+                        <p>Last Name</p>
+                    </div>
+                    <div class="col-md-4 deposit-request-data" id="member-details">
+                    </div>
+                    <div class="col-md-3 deposit-request-title">
+                        <p>VIP Level</p>
+                        <p>Risk Level</p>
+                        <p>Balance</p>
+                    </div>
+                    <div class="col-md-2 deposit-request-data" id="risk-details">
+                    </div>
+                </div>
+            </div>
+
+            <!-- latest deposits -->
+            <div class="row deposit-request-notes" style="margin-top: 30px;margin-left: 10px">
+                <p><strong>LATEST DEPOSITS</strong></p>
+            </div>
+            <div id="latest_deposit">
+                <table class="table-striped table-bordered"
+                    style="width: 100%; margin-top: 10px; margin-bottom: 40px">
+                    <thead>
+                        <tr>
+{#                                        <th scope="col">#</th>#}
+                            <th scope="col">PAYMENT</th>
+                            <th scope="col">TRANSACTION NO.</th>
+                            <th scope="col">CREATED TIME</th>
+                            <th scope="col">BANK</th>
+                            <th scope="col">BRANCH</th>
+                            <th scope="col">CITY</th>
+                            <th scope="col">NAME</th>
+                            <th scope="col">ACCOUNT</th>
+                            <th scope="col">PROVIDER REF NO.</th>
+                            <th scope="col">AMOUNT</th>
+                            <th scope="col">STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id=latest_deposits>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- notes -->
+            <div class="form-group">
+                <label for="deposit_notes" class="deposit-request-word"
+                    style="margin-left: 10px">NOTES</label>
+                <textarea id='notes' class="form-control" name="deposit_notes"
+                    style="width: 40%;height: 100px;" placeholder="Add anything of importance"></textarea>
+
+                <div id="deposit-request-button">
+                    <button type="button" class="btn btn-success" id="deposit-review-a">Approve</button>
+                    <!-- <button type="button" class="btn btn-success" id="deposit-review-appnext">Approve and
+                        Next</button> -->
+                    <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button>
+                    <!-- <button type="button" class="btn btn-danger" id="deposit-review-rejnext">Reject and
+                        Next</button> -->
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
