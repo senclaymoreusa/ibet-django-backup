@@ -1372,9 +1372,11 @@ USER_BONUS_EVENT_TYPE_CHOICES = (
     (BONUS_RELEASED, 'RELEASED'),
 )
 
+BONUS_PRE_WAGER = 0
+BONUS_POST_WAGER = 1
 BONUS_RELEASE_TYPE_CHOICES = (
-    (0, 'Pre-wager'),
-    (1, 'Post-wager'),
+    (BONUS_PRE_WAGER, 'Pre-wager'),
+    (BONUS_POST_WAGER, 'Post-wager'),
 )
 
 BONUS_AGGREGATE_SUM = 0

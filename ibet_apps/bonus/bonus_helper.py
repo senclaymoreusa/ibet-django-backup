@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
@@ -8,7 +9,8 @@ from accounting.models import Transaction
 from bonus.models import UserBonusEvent, Bonus, Requirement
 from users.models import CustomUser
 from utils.constants import TRANSACTION_DEPOSIT, TRAN_SUCCESS_TYPE, BONUS_TYPE_DEPOSIT, \
-    BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED, BONUS_STATUS_ACTIVE, BONUS_ACTIVE
+    BONUS_VALID_DEPOSIT, BONUS_START, BONUS_TYPE_TURNOVER, BONUS_COMPLETED, BONUS_STATUS_ACTIVE, BONUS_ACTIVE, \
+    BONUS_DELIVERY_PUSH, BONUS_RELEASED, BONUS_DELIVERY_SITE, BONUS_PRE_WAGER
 
 logger = logging.getLogger('django')
 
@@ -105,32 +107,73 @@ def getValidFTD(user, deposit_amount, current_time):
                     valid_ube_wager = wager_reqs
 
     # find a valid first deposit bonus for user
-    ## TODO: delivered_by needs to update to System
     if valid_ube:
         completed_time = timezone.now()
         if not valid_ube_wager:
             # can be released
-            new_ube = UserBonusEvent.objects.create(
-                owner=user,
-                bonus=valid_ube.bonus,
-                amount=ube_amount,
-                status=BONUS_COMPLETED,
-                delivery_time=completed_time,
-                completion_time=completed_time,
-                delivered_by=CustomUser.objects.get(username='System')
-            )
-            logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
+            # check delivery method
+            delivery_method = valid_ube.bonus.delivery
+            if delivery_method == BONUS_DELIVERY_PUSH:
+                try:
+                    with transaction.atomic():
+                        if valid_ube.bonus.issued:
+                            user.main_wallet += valid_ube.amount
+                            user.save()
+                            logger.info("{} first deposit bonus {} has been released to cash".format(user.username, valid_ube.bonus.name))
+                        else:
+                            user.bonus_wallet += valid_ube.amount
+                            user.save()
+                            logger.info("{} first deposit bonus {} has been released to bonus wallet".format(user.username, valid_ube.bonus.name))
+
+                        new_ube = UserBonusEvent.objects.create(
+                            owner=user,
+                            bonus=valid_ube.bonus,
+                            amount=ube_amount,
+                            status=BONUS_RELEASED,
+                            delivery_time=completed_time,
+                            completion_time=completed_time,
+                            delivered_by=CustomUser.objects.get(username='System')
+                        )
+                        logger.info("{} first deposit bonus {} status changed to completed".format(user.username,
+                                                                                                   new_ube.bonus.name))
+                except Exception as e:
+                    logger.critical("Error push bonus {} to user {} account ".format(new_ube.bonus.name, user.username))
+
+            elif delivery_method == BONUS_DELIVERY_SITE:
+                new_ube = UserBonusEvent.objects.create(
+                    owner=user,
+                    bonus=valid_ube.bonus,
+                    amount=ube_amount,
+                    status=BONUS_COMPLETED,
+                    delivery_time=completed_time,
+                    completion_time=completed_time,
+                    delivered_by=CustomUser.objects.get(username='System')
+                )
+                logger.info("{} first deposit bonus {} status changed to completed".format(user.username, new_ube.bonus.name))
+
         else:
-            new_ube = UserBonusEvent.objects.create(
-                owner=user,
-                bonus=valid_ube.bonus,
-                amount=ube_amount,
-                status=BONUS_ACTIVE,
-                delivery_time=completed_time,
-                completion_time=completed_time,
-                delivered_by=CustomUser.objects.get(username='System')
-            )
-            logger.info("{} first deposit bonus {} status changed to active".format(user.username, new_ube.bonus.name))
+            try:
+                with transaction.atomic():
+                    release_type = valid_ube.bonus.release_type
+                    if release_type == BONUS_PRE_WAGER:
+                        user.bonus_wallet += valid_ube.amount
+                        user.save()
+                        logger.info("{} first deposit bonus {} has been released to bonus wallet".format(user.username, valid_ube.bonus.name))
+
+                    new_ube = UserBonusEvent.objects.create(
+                        owner=user,
+                        bonus=valid_ube.bonus,
+                        amount=ube_amount,
+                        status=BONUS_ACTIVE,
+                        delivery_time=completed_time,
+                        completion_time=completed_time,
+                        delivered_by=CustomUser.objects.get(username='System')
+                    )
+                    logger.info("{} first deposit bonus {} status changed to active".format(user.username, new_ube.bonus.name))
+
+            except Exception as e:
+                logger.critical("Error update {} first deposit bonus {} status changed to active ".format(user.username, new_ube.bonus.name))
+
         return valid_ube.bonus
 
     return None
