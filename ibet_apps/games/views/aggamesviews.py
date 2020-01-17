@@ -260,7 +260,7 @@ def forwardGame(request):
 
 def agFundTransfer(user, fund_wallet, credit, agtype): 
         username =  user.username
-        trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         password = AG_CAGENT + username
            
         oddtype = 'A'
