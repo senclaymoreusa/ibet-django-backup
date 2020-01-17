@@ -210,14 +210,6 @@ if os.getenv("ENV") == "local":
             'HOST': '',
             'PORT': 5432,
         },
-        'redshift': {
-            'ENGINE': 'django_redshift_backend',
-            'NAME': redshift_data['REDSHIFT_DB_NAME'],
-            'USER': redshift_data['REDSHIFT_USERNAME'],
-            'PASSWORD': redshift_data['REDSHIFT_PASSWORD'],
-            'HOST': redshift_data['REDSHIFT_HOSTNAME'],
-            'PORT': redshift_data['REDSHIFT_PORT'],
-        }
     }
 
     print("[" + str(datetime.datetime.now()) + "] Using local Redis...")
@@ -242,14 +234,6 @@ elif "ENV" in os.environ:
             'HOST': db_data['RDS_HOSTNAME'],
             'PORT': db_data['RDS_PORT'],
         },
-        'redshift': {
-            'ENGINE': 'django_redshift_backend',
-            'NAME': redshift_data['REDSHIFT_DB_NAME'],
-            'USER': redshift_data['REDSHIFT_USERNAME'],
-            'PASSWORD': redshift_data['REDSHIFT_PASSWORD'],
-            'HOST': redshift_data['REDSHIFT_HOSTNAME'],
-            'PORT': redshift_data['REDSHIFT_PORT'],
-        }
     }
 
     print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
