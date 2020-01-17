@@ -53,7 +53,7 @@ def createUser(user):
             rrdata = rr.json()
             logger.info(rrdata)
         else:
-            logger.error("FATAL__ERROR: in PT create user status code.")
+            logger.critical("FATAL__ERROR: in PT create user status code.")
             rrdata = {
                 "errorInfo": "status_error:" + rr,
                 "errorcode": PT_GENERAL_ERROR
@@ -83,7 +83,7 @@ class GetPlayer(APIView):
         try:
             user = CustomUser.objects.get(username=username)
         except Exception as e:
-            logger.error("FATAL__ERROR: PT user not exist" + str(e))   
+            logger.critical("FATAL__ERROR: PT user not exist" + str(e))   
             data = {
                 "errorInfo": "PT user not exist",
                 "status": PT_GENERAL_ERROR
@@ -122,7 +122,7 @@ class GetPlayer(APIView):
                                 "errorInfo": "cannot create player",
                                 "status": PT_GENERAL_ERROR
                             }
-                            logger.error("FATAL__ERROR: cannot create player in get errorcode." )   
+                            logger.critical("FATAL__ERROR: cannot create player in get errorcode." )   
                         else:
                         # create user successfully.
                             # print(r_create_data)
@@ -165,7 +165,7 @@ class GetPlayer(APIView):
                         logger.error("Error: PT GAME - cannot get balance." )  
 
             else:
-                logger.error("FATAL__ERROR: in PT game get user info status code.")
+                logger.critical("FATAL__ERROR: in PT game get user info status code.")
                 data = {
                     "errorInfo": "status_error:" + rr,
                     "status": PT_GENERAL_ERROR
@@ -189,7 +189,7 @@ class PTTransferTest(APIView):
         try:
             user = CustomUser.objects.get(username=username)
         except Exception as e:
-            logger.error("FATAL__ERROR: PT user not exist" + str(e))  
+            logger.critical("FATAL__ERROR: PT user not exist" + str(e))  
             status = False
             return HttpResponse(status,status=200)
         amount = data["amt"]
@@ -242,7 +242,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                         currency=user.currency,
                         transfer_from=wallet,
                         transfer_to='pt',
-                        product=1,
+                        product=GAME_TYPE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE
@@ -259,7 +259,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                         currency=user.currency,
                         transfer_from='pt',
                         transfer_to=wallet,
-                        product=1,
+                        product=GAME_TYPE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE
@@ -270,7 +270,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
                 
                     return False
         else :
-            logger.error("FATAL__ERROR: PT game transfer status code.")
+            logger.critical("FATAL__ERROR: PT game transfer status code.")
             return False
     finally:
         # delete the file.

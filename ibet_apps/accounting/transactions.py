@@ -85,7 +85,7 @@ def get_transactions(request):
         for tran in all_transactions:
             data = dict()
             data["transaction_id"] = tran.transaction_id
-            data["request_time"] = tran.request_time.strftime("%m/%d/%Y")
+            data["request_time"] = tran.request_time
             data["transaction_type"] = tran.get_transaction_type_display()
             data["channel"] = tran.get_channel_display()
             data["amount"] = tran.amount

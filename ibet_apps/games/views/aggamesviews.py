@@ -218,7 +218,17 @@ def forwardGame(request):
             lang = '6'
         elif user.language == 'Vietnamese':
             lang = '8'
-
+        elif user.language == 'en':
+            lang = '3'
+        elif user.language == 'zh':
+            lang = '1'
+        elif user.language == 'Th':
+            lang = '6'
+        elif user.language == 'Vi':
+            lang = '8'   
+        else:
+            lang = '1'
+            
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
             
@@ -291,7 +301,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         currency=user.currency,
                                         transfer_from=fund_wallet,
                                         transfer_to='AG',
-                                        product=0,
+                                        product=GAME_TYPE_LIVE_CASINO,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         channel=None,
                                         status=TRAN_SUCCESS_TYPE)
@@ -303,7 +313,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         currency=user.currency,
                                         transfer_from='AG',
                                         transfer_to=fund_wallet,
-                                        product=0,
+                                        product=GAME_TYPE_LIVE_CASINO,
                                         channel=None,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
@@ -328,7 +338,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                                 currency=user.currency,
                                                 transfer_from=fund_wallet,
                                                 transfer_to='AG',
-                                                product=0,
+                                                product=GAME_TYPE_LIVE_CASINO,
                                                 channel=None,
                                                 transaction_type=TRANSACTION_TRANSFER,
                                                 status=TRAN_SUCCESS_TYPE)
@@ -340,7 +350,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                                 currency=user.currency,
                                                 transfer_from='AG',
                                                 transfer_to=fund_wallet,
-                                                product=0,
+                                                product=GAME_TYPE_LIVE_CASINO,
                                                 channel=None,
                                                 transaction_type=TRANSACTION_TRANSFER,
                                                 status=TRAN_SUCCESS_TYPE)

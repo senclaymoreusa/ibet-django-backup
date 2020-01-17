@@ -522,13 +522,17 @@ langConversion = {
     'Chinese': 'zh-cn',
     'Thai': 'th-th',
     'Vietnamese':'vi-vn',
+    'en': 'en-us',
+    'zh': 'zh-cn',
+    'th': 'th-th',
+    'vi': 'vi-vn',
 }
 class GenerateGameURL(APIView):
 
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
-
+        
         game = self.request.GET['game']
         language = langConversion[self.request.user.language]
         
@@ -540,7 +544,7 @@ class GenerateGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": "kvZES8",
+            "AuthKey": GB_GENERALKEY,
             "Params": {
                 "MemberID": self.request.user.username,
                 "TPUniqueID": str(TPUniqueID) 
@@ -554,21 +558,24 @@ class GenerateGameURL(APIView):
         if 'Error' in dic['GB']['Result']['ReturnSet']:
 
             #temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
-            
-            dob_fields = self.request.user.date_of_birth.split('/') 
+            if self.request.user.date_of_birth:
 
-            temp = '-'.join([
-                dob_fields[2],
-                dob_fields[0],
-                dob_fields[1]
-            ])
+                dob_fields = self.request.user.date_of_birth.split('/') 
+
+                temp = '-'.join([
+                    dob_fields[2],
+                    dob_fields[0],
+                    dob_fields[1]
+                ])
+            else:
+                temp = '1990-01-01'
             
             create_user_data = requests.post(GB_URL, json = {
             
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": "kvZES8",
+                "AuthKey": GB_GENERALKEY,
                 "Params": {
                     "MemberID": self.request.user.username,
                     "FirstName": self.request.user.first_name,
@@ -586,15 +593,16 @@ class GenerateGameURL(APIView):
 
             create_user_data = create_user_data.json()
 
-            GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
+            GBSN = create_user_data['GB']['Result']['ReturnSet']['GBSN']
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
 
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
+        
         res = res[2:-2]
-
+        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto' }
         
         if game == 'GB Sports':
@@ -603,7 +611,7 @@ class GenerateGameURL(APIView):
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
-
+        
         return Response({'game_url': url})
 
 class GenerateFakeUserGameURL(APIView):
@@ -613,7 +621,7 @@ class GenerateFakeUserGameURL(APIView):
     def get(self, request, *args, **kwargs):
 
         game = self.request.GET['game']
-
+        language = self.request.GET['language']
         TPUniqueID = uuid.uuid4()
 
         data = requests.post(GB_URL, json = {
@@ -621,7 +629,7 @@ class GenerateFakeUserGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": "kvZES8",
+            "AuthKey": GB_GENERALKEY,
             "Params": {
                 "MemberID": 'Fakeuser',
                 "TPUniqueID": str(TPUniqueID) 
@@ -638,7 +646,7 @@ class GenerateFakeUserGameURL(APIView):
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": "kvZES8",
+                "AuthKey": GB_GENERALKEY,
                 "Params": {
                     "MemberID": 'Fakeuser',
                     "FirstName": 'Fake',
@@ -656,24 +664,29 @@ class GenerateFakeUserGameURL(APIView):
 
             create_user_data = create_user_data.json()
 
-            GBSN = create_user_data['GB']['Result']['ReturnSet']['"GBSN"']
+            GBSN = create_user_data['GB']['Result']['ReturnSet']['GBSN']
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
-
+       
+    
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
+      
         res = res[2:-2]
-       
+        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 
         if game == 'GB Sports':
-            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001'.format(res)
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res, language)
         elif game == 'GB ESports':
-            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode=en-us&oddstype=00001&sc=00111'.format(res)
+            url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res, language)
         else:
-            url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode=en-us'.format(dic[game], res)
+            url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
         return Response({'game_url': url})
+
+
+
 
 

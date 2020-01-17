@@ -48,7 +48,7 @@ class VIPView(CommAdminView):
 
                     if min_date and max_date:
                         queryset = filterActiveUser(queryset, dateToDatetime(min_date),
-                                                    dateToDatetime(max_date)).order_by('-created_time')
+                                                    dateToDatetime(max_date), True, None).order_by('-created_time')
 
                     query_filter = None
                     #  SEARCH BOX
