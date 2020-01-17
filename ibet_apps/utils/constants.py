@@ -131,8 +131,8 @@ TRAN_CREATE_TYPE = 2  # deposit / withdraw
 TRAN_PENDING_TYPE = 3  # deposit / withdraw
 TRAN_APPROVED_TYPE = 4  # commission
 TRAN_CANCEL_TYPE = 5  # deposit / withdraw
-TRAN_COMPLETED_TYPE = 6  
-TRAN_RESEND_TYPE = 7    
+TRAN_COMPLETED_TYPE = 6
+TRAN_RESEND_TYPE = 7
 TRAN_REJECTED_TYPE = 8  # withdraw
 TRAN_RISK_REVIEW = 9  # withdraw
 
@@ -283,7 +283,7 @@ ACTIVE_STATE = 0
 DISABLED_STATE = 1
 
 THIRDPARTY_STATUS_CHOICES = (
-    (ACTIVE_STATE, "Active"), 
+    (ACTIVE_STATE, "Active"),
     (DISABLED_STATE, "Disabled")
 )
 
@@ -379,7 +379,7 @@ GROUP_TYPE = (
     (OTHER_GROUP, 'other')
 )
 
-   
+
 BANK_LIST_CHOICES = (
     ("OOO6CN", "China UnionPay"),
     ("ABOCCN", "Agricultural Bank of China"),
@@ -696,8 +696,8 @@ ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
 #iovation
-IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"] 
-IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"] 
+IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"]
+IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"]
 IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
 IOVATION_URL = keys["IOVATION"]["URL"]
 
@@ -822,7 +822,7 @@ GAME_FILTER_OPTION = [
     {
         'name': 'Provider',
         'data': ['Netent', 'Play\'n Go', 'Big Time Gaming', 'Microgaming', 'Quickspin', 'Pragmatic Play', 'Blueprint', 'Novomatic', 'IGT', 'Elk Studios',
-        'Genesis', 'High5', 'Iron Dog', 'Just For The Win', 'Kalamba', 'Leander', 'Lightning Box', 'Nextgen', 'Red7', 'Red Tiger Gaming', 'Scientific Games', 
+        'Genesis', 'High5', 'Iron Dog', 'Just For The Win', 'Kalamba', 'Leander', 'Lightning Box', 'Nextgen', 'Red7', 'Red Tiger Gaming', 'Scientific Games',
         'Thunderkick', 'Yggdrasil', 'Other']
     },
     {
@@ -945,7 +945,7 @@ DEPARTMENT_LIST = [
 
 
 PERMISSION_CODE = [
-    {   
+    {
         "name": "Members",
         "permission": [],
         "menu": [
@@ -985,7 +985,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Report",
         "permission": [
             {
@@ -1002,13 +1002,13 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Bonuses",
         "permission": [
             {
                 "CODE": "4001",
                 "PERMISSION": "No access"
-                
+
             },{
                 "CODE": "4002",
                 "PERMISSION": "READ"
@@ -1019,7 +1019,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Risk control",
         "permission": [
             {
@@ -1036,7 +1036,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Marketing",
         "permission": [],
         "menu": [
@@ -1093,7 +1093,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Affiliates",
         "permission": [],
         "menu": [
@@ -1133,7 +1133,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Messaging",
         "permission": [],
         "menu": [
@@ -1190,7 +1190,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Finance",
         "permission": [],
         "menu": [
@@ -1247,7 +1247,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Content management",
         "permission": [
             {
@@ -1265,7 +1265,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "System admin",
         "permission": [],
         "menu": [
@@ -1358,32 +1358,44 @@ BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_MANUAL, 'MANUAL')
 )
 
+BONUS_STATUS_INACTIVE = 0
+BONUS_STATUS_ACTIVE = 1
+BONUS_STATUS_DISABLED = 2
+
 BONUS_STATUS_CHOICES = (
-    (0, 'INACTIVE'),
-    (1, 'ACTIVE'),
-    (2, 'DISABLED'),
+    (BONUS_STATUS_INACTIVE, 'INACTIVE'),
+    (BONUS_STATUS_ACTIVE, 'ACTIVE'),
+    (BONUS_STATUS_DISABLED, 'DISABLED'),
 )
 
 
-BONUS_START = 0
-BONUS_ACTIVE = 1
-BONUS_COMPLETED = 2
-BONUS_EXPIRED = 3
-BONUS_ISSUED = 4
-BONUS_REDEEMED = 5
+BONUS_ISSUED = 0        # bonus credited to player account
+BONUS_CLAIMED = 1       # bonus pushed directly pr player clicked "claim"
+BONUS_START = 2         # player starts to meet deposit and turnover requirement
+BONUS_ACTIVE = 3        # player starts to play toward wager requirements
+BONUS_COMPLETED = 4     # player meets turnover requirements
+BONUS_EXPIRED = 5       # player fails to meet turnover requirements in allocated period or player fails to activate the bonus in allocated time
+BONUS_CANCELLED = 6     # bonus is cancelled at any stage either on player or admin side
+BONUS_PENDING = 7       # bonus pushed directly pr player clicked "claim" due to another bonus of the same type being active
+BONUS_RELEASED = 8      # bonus is released and wagering is cancelled by an admin user clicking 'release'
 
 USER_BONUS_EVENT_TYPE_CHOICES = (
-    (0, 'STARTED'),
-    (1, 'ACTIVE'),
-    (2, 'COMPLETED'),
-    (3, 'EXPIRED'),
-    (4, 'ISSUED'),
-    (5, 'REDEEMED'),
+    (BONUS_ISSUED, 'ISSUED'),
+    (BONUS_CLAIMED, 'CLAIMED'),
+    (BONUS_START, 'START'),
+    (BONUS_ACTIVE, 'ACTIVE'),
+    (BONUS_COMPLETED, 'COMPLETED'),
+    (BONUS_EXPIRED, 'EXPIRED'),
+    (BONUS_CANCELLED, 'CANCELLED'),
+    (BONUS_PENDING, 'PENDING'),
+    (BONUS_RELEASED, 'RELEASED'),
 )
 
+BONUS_PRE_WAGER = 0
+BONUS_POST_WAGER = 1
 BONUS_RELEASE_TYPE_CHOICES = (
-    (0, 'Pre-wager'),
-    (1, 'Post-wager'),
+    (BONUS_PRE_WAGER, 'Pre-wager'),
+    (BONUS_POST_WAGER, 'Post-wager'),
 )
 
 BONUS_AGGREGATE_SUM = 0
@@ -1393,11 +1405,11 @@ BONUS_AGGREGATE_MAX = 3
 BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
-    (0, 'SUM'),
-    (1, 'COUNT'),
-    (2, 'AVERAGE'),
-    (3, 'MAX'),
-    (4, 'LATEST'),
+    (BONUS_AGGREGATE_SUM, 'SUM'),
+    (BONUS_AGGREGATE_COUNT, 'COUNT'),
+    (BONUS_AGGREGATE_AVERAGE, 'AVERAGE'),
+    (BONUS_AGGREGATE_MAX, 'MAX'),
+    (BONUS_AGGREGATE_LATEST, 'LATEST'),
 )
 
 #GD CASINO
@@ -1426,7 +1438,7 @@ GDCASINO_STATUS_CODE =(
 GDCASINO_STATUS = (
     (0, 'PENDING'),
     (1, 'DEBIT'),
-    (2, 'CREDIT'), 
+    (2, 'CREDIT'),
     (3, 'TIP'),
     (4, 'CANCEL'),
 )
@@ -1463,7 +1475,7 @@ SECURITY_QUESTION = (
     (4, _('What is your primary school class teacher’s name?')),
     (5, _('What is your best childhood friend’s name?')),
     (6, _('What is the name of the person that influenced you the most?'))
-    
+
 )
 
 # Bonus
@@ -1474,13 +1486,20 @@ BONUS_CATEGORY = (
     (1, 'Triggered'),
 )
 
+BONUS_ID_VERIFIED = 0
+BONUS_PHONE_VERIFIED = 1
+BONUS_EMAIL_VERIFIED = 2
+BONUS_VALID_DEPOSIT = 3
+BONUS_VALID_WITHDRAWAL = 4
+BONUS_VALID_MANUAL_WITHDRAWAL = 5
+
 BONUS_MUST_HAVE = (
-    (0, 'ID verified'),
-    (1, 'Phone verified'),
-    (2, 'Email verified'),
-    (3, 'A successful deposit'),
-    (4, 'A successful withdrawal'),
-    (5, 'Manual audit for first withdrawal'),
+    (BONUS_ID_VERIFIED, 'ID verified'),
+    (BONUS_PHONE_VERIFIED, 'Phone verified'),
+    (BONUS_EMAIL_VERIFIED, 'Email verified'),
+    (BONUS_VALID_DEPOSIT, 'A successful deposit'),
+    (BONUS_VALID_WITHDRAWAL, 'A successful withdrawal'),
+    (BONUS_VALID_MANUAL_WITHDRAWAL, 'Manual audit for first withdrawal'),
 )
 
 BONUS_DELIVERY_PUSH = 0
