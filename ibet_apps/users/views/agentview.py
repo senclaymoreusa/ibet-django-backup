@@ -84,130 +84,6 @@ class AgentView(CommAdminView):
 
             return HttpResponse(json.dumps(user_detail), content_type='application/json')
 
-        # affiliate datatable
-        elif get_type == "getAffiliateInfo":
-            result = {}
-            # the filter for affiliate
-            length = int(request.GET.get('length', 20))
-            start = int(request.GET.get('start', 0))
-            search_value = request.GET.get('search', None)
-            min_date = request.GET.get('minDate')
-            max_date = request.GET.get('maxDate')
-            min_date = dateToDatetime(min_date)
-            max_date = dateToDatetime(max_date)
-
-            # get affiliates
-            queryset = CustomUser.objects.exclude(user_to_affiliate_time=None).order_by('pk')
-
-            # TOTAL ENTRIES
-            total = queryset.count()
-
-            if min_date and max_date:
-                queryset = filterActiveUser(queryset, min_date, max_date, False, None).order_by('pk')
-
-            if search_value:
-                queryset = queryset.filter(Q(pk__contains=search_value) | Q(username__icontains=search_value))
-
-            # Commission Transaction filter by month
-            commission_transaction_last_month = getCommissionTrans().filter(
-                Q(arrive_time__gte=before_last_month) & Q(arrive_time__lte=last_month))
-
-            commission_transaction_last_month_dict = dict(commission_transaction_last_month.values_list('user_id')
-                                                          .annotate(total_commission=Coalesce(Sum('amount'), 0)))
-
-            count = queryset.count()
-
-            queryset = queryset[start:start + length]
-
-            affiliate_list = []
-            for affiliate in queryset:
-                # downline list
-                downlines = getPlayers(affiliate)
-                downlines_all = getDownlines(affiliate)
-                downlines_total_deposit = 0
-                downlines_total_withdrawal = 0
-                downlines_regis = calculateRegistrations(downlines, min_date, max_date)
-                downlines_all_regis = calculateRegistrations(downlines_all, min_date, max_date)
-                downlines_ftds = calculateFTD(downlines, min_date, max_date)
-                downlines_all_ftds = calculateFTD(downlines_all, min_date, max_date)
-
-                for downline in downlines:
-                    downline_deposit_count, downline_deposit = getTransactionAmount(downline, min_date, max_date, TRANSACTION_DEPOSIT, None)
-                    downline_withdrawal_count, downline_withdrawal = getTransactionAmount(downline, min_date, max_date, TRANSACTION_WITHDRAWAL, None)
-                    downlines_total_deposit += downline_deposit
-                    downlines_total_withdrawal += downline_withdrawal
-
-                deposit_count, deposit_amount = getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_DEPOSIT, None)
-                withdrawal_count, withdrawal_amount = getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_WITHDRAWAL, None)
-
-                # Todo: needs update the data
-                affiliates_dict = {'affiliate_id': affiliate.pk,
-                                   'affiliate_username': affiliate.username,
-                                   'balance': affiliate.main_wallet + affiliate.other_game_wallet,
-                                   'status': affiliate.affiliate_status,
-                                   'commission_last_month': commission_transaction_last_month_dict.get(affiliate.pk, 0),
-                                   'registrations': downlines_all_regis,
-                                   'ftds': downlines_all_ftds,
-                                   'active_players': filterActiveUser(downlines_all, min_date, max_date, True,
-                                                                      None).count(),
-                                   'active_players_without_freebets':
-                                       filterActiveUser(downlines, min_date, max_date, False, None).count(),
-
-                                   'turnover': calculateTurnover(affiliate, min_date, max_date, None),
-                                   'ggr': calculateGGR(affiliate, min_date, max_date, None),
-                                   'bonus_cost': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, None)[1],
-                                   'ngr': calculateNGR(affiliate, min_date, max_date, None),
-
-                                   'deposit': deposit_amount,
-                                   'withdrawal': withdrawal_amount,
-
-                                   'sports_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                      "Sports").count(),
-                                   'sports_ggr': calculateGGR(affiliate, min_date, max_date, "Sports"),
-                                   'sports_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Sports")[1],
-                                   'sports_ngr': calculateNGR(affiliate, min_date, max_date, "Sports"),
-
-                                   'casino_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                      "Casino").count(),
-                                   'casino_ggr': calculateGGR(affiliate, min_date, max_date, "Casino"),
-                                   'casino_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Casino")[1],
-                                   'casino_ngr': calculateNGR(affiliate, min_date, max_date, "Casino"),
-
-                                   'live_casino_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                           "Live Casino").count(),
-                                   'live_casino_ggr': calculateGGR(affiliate, min_date, max_date, "Live Casino"),
-                                   'live_casino_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Live Casino")[1],
-                                   'live_casino_ngr': calculateNGR(affiliate, min_date, max_date, "Live Casino"),
-
-                                   'lottery_actives': filterActiveUser(downlines, min_date, max_date, True,
-                                                                       "Lottery").count(),
-                                   'lottery_ggr': calculateGGR(affiliate, min_date, max_date, "Lottery"),
-                                   'lottery_bonus': getTransactionAmount(affiliate, min_date, max_date, TRANSACTION_BONUS, "Lottery")[1],
-                                   'lottery_ngr': calculateNGR(affiliate, min_date, max_date, "Lottery"),
-
-                                   'active_downlines': filterActiveUser(downlines, min_date, max_date, True,
-                                                                        None).count(),
-                                   'downline_registration': downlines_all_regis - downlines_regis,
-                                   'downline_ftds': downlines_all_ftds - downlines_ftds,
-                                   'downline_new_players': calculateNewPlayer(downlines_all, min_date, max_date, True),
-                                   'downline_active_players': filterActiveUser(downlines_all, min_date, max_date, True,
-                                                                               None).count(),
-
-                                   'downline_turnover': -1,
-                                   'downline_ggr': -1,
-                                   'downline_bonus_cost': -1,
-                                   'downline_ngr': -1,
-
-                                   'downline_deposit': -1,
-                                   'downline_withdrawal': -1,
-                                   }
-                affiliate_list.append(affiliates_dict)
-
-            result['data'] = affiliate_list
-            result['recordsTotal'] = total
-            result['recordsFiltered'] = count
-            return HttpResponse(json.dumps(result), content_type="application/json")
-
         else:
             context = super().get_context()
             context['time'] = timezone.now()
@@ -434,8 +310,135 @@ class AgentView(CommAdminView):
 
             except IntegrityError as e:
                 logger.info('Error updating system commission setting: ' + str(e))
+            return HttpResponse(status=200)
 
-        return HttpResponse(status=200)
+        # affiliate datatable
+        elif post_type == "getAffiliateInfo":
+            result = {}
+            # the filter for affiliate
+            length = int(request.GET.get('length', 20))
+            start = int(request.GET.get('start', 0))
+            search_value = request.GET.get('search', None)
+            min_date = request.GET.get('minDate')
+            max_date = request.GET.get('maxDate')
+            min_date = dateToDatetime(min_date)
+            max_date = dateToDatetime(max_date)
+
+            # get affiliates
+            queryset = CustomUser.objects.exclude(user_to_affiliate_time=None).order_by('pk')
+
+            # TOTAL ENTRIES
+            total = queryset.count()
+
+            if min_date and max_date:
+                queryset = filterActiveUser(queryset, min_date, max_date, False, None).order_by('pk')
+
+            if search_value:
+                queryset = queryset.filter(Q(pk__contains=search_value) | Q(username__icontains=search_value))
+
+            # Commission Transaction filter by month
+            commission_transaction_last_month = getCommissionTrans().filter(
+                Q(arrive_time__gte=before_last_month) & Q(arrive_time__lte=last_month))
+
+            commission_transaction_last_month_dict = dict(commission_transaction_last_month.values_list('user_id')
+                                                          .annotate(total_commission=Coalesce(Sum('amount'), 0)))
+
+            count = queryset.count()
+
+            queryset = queryset[start:start + length]
+
+            affiliate_list = []
+            for affiliate in queryset:
+                # downline list
+                downlines = getPlayers(affiliate) or []
+                downlines_all = getDownlines(affiliate) or []
+                downlines_total_deposit = 0
+                downlines_total_withdrawal = 0
+                downlines_regis = calculateRegistrations(downlines, min_date, max_date)
+                downlines_all_regis = calculateRegistrations(downlines_all, min_date, max_date)
+                downlines_ftds = calculateFTD(downlines, min_date, max_date)
+                downlines_all_ftds = calculateFTD(downlines_all, min_date, max_date)
+
+                for downline in downlines:
+                    downline_deposit_count, downline_deposit = calculateDeposit(downline, min_date, max_date)
+                    downline_withdrawal_count, downline_withdrawal = calculateWithdrawal(downline, min_date,
+                                                                                         max_date)
+                    downlines_total_deposit += downline_deposit
+                    downlines_total_withdrawal += downline_withdrawal
+
+                deposit_count, deposit_amount = calculateDeposit(affiliate, min_date, max_date)
+                withdrawal_count, withdrawal_amount = calculateWithdrawal(affiliate, min_date, max_date)
+                active_players = filterActiveUser(downlines_all, min_date, max_date, True, None)
+                active_players_without_freebets = filterActiveUser(downlines, min_date, max_date, False, None)
+                sports_actives = filterActiveUser(downlines, min_date, max_date, True, "Sports")
+                casino_actives = filterActiveUser(downlines, min_date, max_date, True, "Casino")
+                live_casino_actives = filterActiveUser(downlines, min_date, max_date, True, "Live Casino")
+                lottery_actives = filterActiveUser(downlines, min_date, max_date, True, "Lottery")
+                active_downlines = filterActiveUser(downlines, min_date, max_date, True, None)
+                downline_active_players = filterActiveUser(downlines_all, min_date, max_date, True, None)
+
+                # Todo: needs update the data
+                affiliates_dict = {'affiliate_id': affiliate.pk,
+                                   'affiliate_username': affiliate.username,
+                                   'balance': affiliate.main_wallet + affiliate.other_game_wallet,
+                                   'status': affiliate.affiliate_status,
+                                   'commission_last_month': commission_transaction_last_month_dict.get(affiliate.pk,
+                                                                                                       0),
+                                   'registrations': downlines_all_regis,
+                                   'ftds': downlines_all_ftds,
+                                   'active_players': active_players.count() if active_players else 0,
+                                   'active_players_without_freebets':active_players_without_freebets.count()
+                                   if active_players_without_freebets else 0,
+                                   'turnover': calculateTurnover(affiliate, min_date, max_date, None),
+                                   'ggr': calculateGGR(affiliate, min_date, max_date, None),
+                                   'bonus_cost': calculateBonus(affiliate, min_date, max_date, None),
+                                   'ngr': calculateNGR(affiliate, min_date, max_date, None),
+
+                                   'deposit': deposit_amount,
+                                   'withdrawal': withdrawal_amount,
+
+                                   'sports_actives': sports_actives.count() if sports_actives else 0,
+                                   'sports_ggr': calculateGGR(affiliate, min_date, max_date, "Sports"),
+                                   'sports_bonus': calculateBonus(affiliate, min_date, max_date, "Sports"),
+                                   'sports_ngr': calculateNGR(affiliate, min_date, max_date, "Sports"),
+
+                                   'casino_actives': casino_actives.count() if casino_actives else 0,
+                                   'casino_ggr': calculateGGR(affiliate, min_date, max_date, "Casino"),
+                                   'casino_bonus': calculateBonus(affiliate, min_date, max_date, "Casino"),
+                                   'casino_ngr': calculateNGR(affiliate, min_date, max_date, "Casino"),
+
+                                   'live_casino_actives': live_casino_actives.count() if live_casino_actives else 0,
+                                   'live_casino_ggr': calculateGGR(affiliate, min_date, max_date, "Live Casino"),
+                                   'live_casino_bonus': calculateBonus(affiliate, min_date, max_date,
+                                                                       "Live Casino"),
+                                   'live_casino_ngr': calculateNGR(affiliate, min_date, max_date, "Live Casino"),
+
+                                   'lottery_actives': lottery_actives.count() if lottery_actives else 0,
+                                   'lottery_ggr': calculateGGR(affiliate, min_date, max_date, "Lottery"),
+                                   'lottery_bonus': calculateBonus(affiliate, min_date, max_date, "Lottery"),
+                                   'lottery_ngr': calculateNGR(affiliate, min_date, max_date, "Lottery"),
+
+                                   'active_downlines': active_downlines.count() if active_downlines else 0,
+                                   'downline_registration': downlines_all_regis - downlines_regis,
+                                   'downline_ftds': downlines_all_ftds - downlines_ftds,
+                                   'downline_new_players': calculateNewPlayer(downlines_all, min_date, max_date,
+                                                                              True),
+                                   'downline_active_players': downline_active_players.count() if downline_active_players else 0,
+
+                                   'downline_turnover': -1,
+                                   'downline_ggr': -1,
+                                   'downline_bonus_cost': -1,
+                                   'downline_ngr': -1,
+
+                                   'downline_deposit': -1,
+                                   'downline_withdrawal': -1,
+                                   }
+                affiliate_list.append(affiliates_dict)
+
+            result['data'] = affiliate_list
+            result['recordsTotal'] = total
+            result['recordsFiltered'] = count
+            return HttpResponse(json.dumps(result), content_type="application/json")
 
 
 def getDownlineList(queryset, start_time, end_time):
@@ -533,9 +536,12 @@ class AgentDetailView(CommAdminView):
 
             downline = getDownlines(affiliate)
 
-            downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
-                                                          Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
-                aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+            if downline:
+                downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
+                                                              Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
+                    aggregate(total_deposit=Coalesce(Sum('amount'), 0))
+            else:
+                downline_deposit = 0
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
                 transaction_type=TRANSACTION_COMMISSION)
@@ -566,8 +572,9 @@ class AgentDetailView(CommAdminView):
                     request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
                 comm=Coalesce(Sum('amount'), 0))
             # downline status
-            context["downline_number"] = getPlayers(affiliate).count()
-            context["active_users"] = filterActiveUser(getDownlines(affiliate), None, None, True, None).count()
+            context["downline_number"] = getPlayers(affiliate).count() if getPlayers(affiliate) else 0
+            active_users = filterActiveUser(getDownlines(affiliate), None, None, True, None)
+            context["active_users"] = active_users.count() if active_users else 0
             context["downline_deposit"] = downline_deposit
             context['domain'] = LETOU_DOMAIN
             context['referral_code'] = affiliate.referral_code

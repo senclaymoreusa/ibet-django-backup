@@ -257,17 +257,26 @@ OUTCOME_CHOICES = [
     (1, 'Lose'),
     (2, 'Tie/Push'),
     (3, 'Void'),
-    (4, 'Running'),
-    (5, 'Draw'),
-    (6, 'Half lose'),
-    (7, 'Rollback'),
-    (8, 'Cancel'),
-    (9, 'Cash'),
-    (10, 'Half won'),
-    (11, 'reject'),
-    (12, 'waiting'),
-    (13, 'waiting running'),
-    (14, 'refund'),
+    # (4, 'Running'),
+    # (5, 'Draw'),
+    # (6, 'Half lose'),
+    # (7, 'Rollback'),
+    # (8, 'Cancel'),
+    # (9, 'Cash'),
+    # (10, 'Half won'),
+    # (11, 'reject'),
+    # (12, 'waiting'),
+    # (13, 'waiting running'),
+    # (14, 'refund'),
+]
+
+
+GAME_STATUS_OPEN = 0
+GAME_STATUS_CLOSE = 1
+
+GAME_STATUS_CHOICES = [
+    (GAME_STATUS_OPEN, 'Open'),
+    (GAME_STATUS_CLOSE, 'Close')
 ]
 
 ACTIVE_STATE = 0
@@ -743,6 +752,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["PRODUCTION"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["PRODUCTION"]["NAMESPACE"]
+    
 elif "dev" in os.getenv("ENV"):
     API_DOMAIN = "https://ibet-django-apdev.claymoreasia.com/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
@@ -770,8 +780,9 @@ elif "dev" in os.getenv("ENV"):
     ASTROPAY_CONFIRM_URL = API_DOMAIN + '/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
+    
 else:
-    API_DOMAIN = "http://3fb2738f.ngrok.io/"
+    API_DOMAIN = "http://cf61d044.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -788,8 +799,8 @@ else:
     qt = keys["QTGAMES"]["SANDBOX"]
     H2P_PAYOUT_URL_THB = "http://app.besthappylife.biz/MerchantPayout/M0513"
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
-    BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
-    REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
+    BackURI = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_result"
+    REDIRECTURL = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_success"
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
@@ -797,6 +808,7 @@ else:
     ASTROPAY_CONFIRM_URL = 'http://3fb2738f.ngrok.io/accounting/api/astropay/confirm'
     GDCASINO_MERCHANT_CODE = keys["GD_CASINO"]["STAGING"]["MERCHANT_CODE"]
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
+    
 
 
 
@@ -1553,9 +1565,10 @@ ONEBOOK_OPERATORID = keys["ONEBOOK"]["OPERATORID"]
 ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
 ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
 ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
+ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
 ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
-ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
+
 # AllBet
 AB_URL = "https://platform-api.apidemo.net:8443/"
 
@@ -1566,11 +1579,14 @@ SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
-# GB_PROVIDER = keys["GB"]["PROVIDER"]
+GB_PROVIDER = keys["GB"]["PROVIDER"]
 GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
+GB_GENERALKEY = keys["GB"]["GeneralKey"]
+GB_SECRETKEY = keys["GB"]["SecretKey"]
+
 
 # QT
 QT_STATUS_SUCCESS = 0
@@ -1601,3 +1617,8 @@ AG_DES = "MJp7ScbZ"
 AG_DM = "http://ibet.com"
 #IMES
 IMES_PROVIDER = "IMES"
+
+#BTI
+BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
+BTI_AGENT_USERNAME = keys["BTI"]["USERNAME"]
+BTI_AGENT_PW = keys["BTI"]["PASSWORD"]

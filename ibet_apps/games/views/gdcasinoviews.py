@@ -544,7 +544,8 @@ class LiveDealerSoapService(ServiceBase):
                                         market=ibetCN,
                                         ref_no=request.transactionId,
                                         amount_wagered=decimal.Decimal(request.amount),
-                                        outcome=3
+                                        outcome=3,
+                                        resolved_time=timezone.now(),
                                         )
                 user.main_wallet = userBalance
                 user.save()

@@ -337,7 +337,7 @@ class BetSoftBetRefund(View):
                 response = xmltodict.unparse(response, pretty=True)
                 return HttpResponse(response, content_type='text/xml')
 
-            check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=casino_transaction_id, outcome=14)
+            check_duplicate_trans = GameBet.objects.filter(other_data__provider_trans_id=casino_transaction_id, outcome=3)
             if check_duplicate_trans.count() > 0:
                 response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "OK"
                 response["EXTSYSTEM"]["RESPONSE"]["EXTSYSTEMTRANSACTIONID"] = prev_bet.transaction_id
@@ -358,7 +358,8 @@ class BetSoftBetRefund(View):
                                                 market=ibetCN,
                                                 ref_no=prev_bet.ref_no,
                                                 transaction_id=trans_id,
-                                                outcome=14,
+                                                outcome=3, #Void
+                                                resolved_time=timezone.now(),
                                                 other_data={
                                                             'provider_trans_id': casino_transaction_id
                                                         }
