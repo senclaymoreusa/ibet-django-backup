@@ -527,8 +527,8 @@ class AgentDetailView(CommAdminView):
                 'recordsTotal': total,
                 'recordsFiltered': count,
             }
-
             return HttpResponse(json.dumps(result), content_type='application/json')
+
         else:
             context = super().get_context()
             affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
@@ -547,31 +547,42 @@ class AgentDetailView(CommAdminView):
                 transaction_type=TRANSACTION_COMMISSION)
 
             context["title"] = title
-            context["breadcrumbs"].append(
-                {'url': '/cwyadmin/', 'title': title})
+            context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
             context['time'] = timezone.now()
-            # affiliate details
+
+            # AFFILIATE DETAILS
             context["affiliate"] = affiliate
             context["name"] = affiliate.username
             context["id"] = affiliate.id
+            context["manager"] = affiliate.affiliate_managed_by.username if affiliate.affiliate_managed_by else ""
             context["balance"] = affiliate.main_wallet
-            context["affiliate_referee"] = downline
+            # context["affiliate_referee"] = downline
             context["affiliate_level"] = affiliate.affiliate_level
             context["affiliate_status"] = affiliate.affiliate_status
             context["transerfer_between_levels"] = affiliate.transerfer_between_levels
 
-            # commission
-            context["commission_this_month"] = affiliate_commission_tran.filter(request_time__gte=(
-                today.replace(day=1))).aggregate(comm=Coalesce(Sum('amount'), 0))
+            # COMMISSION
+            context["commission_this_month"] = affiliate_commission_tran.filter(arrive_time__gte=
+                this_month).aggregate(amount=Coalesce(Sum('amount'), 0))
+
             context["commission_last_month"] = affiliate_commission_tran.filter(
-                Q(request_time__lte=(today.replace(day=1))) & Q(
-                    request_time__gte=today.replace(day=1) + relativedelta(months=-1))).aggregate(
-                comm=Coalesce(Sum('amount'), 0))
+                Q(arrive_time__lte=this_month)
+                & Q(arrive_time__gte=last_month)).aggregate(amount=Coalesce(Sum('amount'), 0))
+
             context["commission_before_last"] = affiliate_commission_tran.filter(
-                Q(request_time__lte=(today.replace(day=1) + relativedelta(months=-1))) & Q(
-                    request_time__gte=today.replace(day=1) + relativedelta(months=-2))).aggregate(
-                comm=Coalesce(Sum('amount'), 0))
-            # downline status
+                Q(request_time__lte=last_month)
+                & Q(request_time__gte=before_last_month)).aggregate(amount=Coalesce(Sum('amount'), 0))
+
+            context["commission_set"] = affiliate.commission_setting
+            context["transfer_between_levels"] = affiliate.transerfer_between_levels
+
+            # COMMISSION LEVELS
+            if affiliate.commission_setting == "System":
+                context["commission_levels"] = SystemCommissionLevel.objects.all()
+            else:
+                context["commission_levels"] = PersonalCommissionLevel.objects.filter(user_id=affiliate)
+
+            # DOWNLINE STATUS
             context["downline_number"] = getPlayers(affiliate).count() if getPlayers(affiliate) else 0
             active_users = filterActiveUser(getDownlines(affiliate), None, None, True, None)
             context["active_users"] = active_users.count() if active_users else 0

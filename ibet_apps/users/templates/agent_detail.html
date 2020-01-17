@@ -87,7 +87,7 @@
                             <strong>This month</strong>
                         </div>
                         <div class="col-md-6">
-                            {{ commission_this_month.comm }}
+                            {{ commission_this_month.amount }}
                         </div>
                     </div>
                     <div class="row">
@@ -95,7 +95,7 @@
                             <strong>Last month</strong>
                         </div>
                         <div class="col-md-6">
-                            {{ commission_last_month.comm }}
+                            {{ commission_last_month.amount }}
                         </div>
                     </div>
                     <div class="row">
@@ -103,7 +103,7 @@
                             <strong>Month before last</strong>
                         </div>
                         <div class="col-md-6">
-                            {{ commission_before_last.comm }}
+                            {{ commission_before_last.amount }}
                         </div>
                     </div>
                     <div class="row">
@@ -111,22 +111,20 @@
                             <strong>Commssion set</strong>
                         </div>
                         <div class="col-md-6">
-                            {{ status }}
+                            {{ commission_set }}
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row" style="margin-bottom: -12px;">
                         <div class="col-md-6">
                             <strong>Transfer between levels</strong>
                         </div>
                         <div class="col-md-4">
-                            {{ balance }}
+                            {{ transfer_between_levels }}
                         </div>
                         <div style="float: right;">
                             <br>
                             <button id="commission-detail-btn" type="button" data-toggle="modal"
-                                    data-target="#affiliate_commission_detail"
-                                    style="background-color: #428bca; color:white; float:right; margin-right: 3px;"><i
-                                    class="fa fa-search"></i></button>
+                                    data-target="#affiliate_commission_detail"><span class="glyphicon glyphicon-search"></span></button>
                         </div>
                     </div>
                 </div>
@@ -204,25 +202,25 @@
                 </div>
             </div>
 
-            {% for c in commission_type%}
+            {% for cl in commission_levels%}
             <div class="row " style="margin-top: 10px; font-size: 12px;">
                 <div class="col-md-1">
-                    {{ c.commission_level }}
+                    {{ cl.commission_level }}
                 </div>
                 <div class="col-md-2">
-                    {{ c.commission_percentage }}
+                    {{ cl.commission_percentage }}
                 </div>
                 <div class="col-md-2">
-                    {{ c.downline_commission_percentage }}
+                    {{ cl.downline_commission_percentage }}
                 </div>
                 <div class="col-md-2">
-                    {{ c.active_downline_needed }}
+                    {{ cl.active_downline_needed }}
                 </div>
                 <div class="col-md-2">
-                    {{ c.monthly_downline_ftd_needed }}
+                    {{ cl.monthly_downline_ftd_needed }}
                 </div>
                 <div class="col-md-2">
-
+                    {{ cl.ngr }}
                 </div>
             </div>
             {% endfor %}

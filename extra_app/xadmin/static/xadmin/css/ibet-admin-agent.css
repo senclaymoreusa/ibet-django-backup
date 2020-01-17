@@ -627,3 +627,12 @@ table thead tr th {
 #affiliates_wrapper .dataTables_scroll{
     margin-bottom: 100px;
 }
+
+#commission-detail-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #428bca;
+    color:white;
+    float:right;
+    margin-right: 3px;
+}

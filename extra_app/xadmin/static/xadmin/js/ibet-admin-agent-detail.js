@@ -32,15 +32,15 @@
         });
 
         // DOWNLINE LIST TABLE
-        var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
-            responsive: true,
-            dom: '<<t>Bpil>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 1],
-            }],
+//        var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
+//            responsive: true,
+//            dom: '<<t>Bpil>',
+//            buttons: [
+//                'csv'
+//            ],
+//            "columnDefs": [{
+//                "searchable": false, "targets": [0, 1],
+//            }],
         var downlineListTable = $('#downline-list-table').DataTable({
             "serverSide": true,
             "language": {
