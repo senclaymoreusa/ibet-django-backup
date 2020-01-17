@@ -73,6 +73,27 @@ def transCurrency(user):
         return ""
 
 
+def transLang(user):
+    try:
+        language = user.language
+
+        if language == "English":
+            language = "en-us"
+        elif language == "Chinese":
+            language = "zh-cn"
+        elif language == "Thai":
+            language = "th-th"
+        elif language == "Vietnamese":
+            language = "vi-vn"
+        else:
+            language = "en-us" # default
+        
+        return language
+    except Exception as e:
+        logger.warning("GPI transLang Function Error: {}".format(repr(e)))
+        return "en-us"
+
+
 # class LoginAPI(View):
 #     def post(self, request, *kw, **args):
 #         try:
@@ -110,17 +131,24 @@ class ValidateUserAPI(View):
 
         try:
             user = Token.objects.get(key=token).user
+
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+
             resp = {}
             res["resp"] = resp
 
             resp["error_code"] = 0
             resp["cust_id"] = user.pk
             resp["cust_name"] = user.username
-            resp["currency_code"] = "currency_code"
-            resp["language"] = "language"
+            resp["currency_code"] = transCurrency(user)
+            resp["language"] = transLang(user)
             resp["country"] = user.country
-            resp["ip"] = "ip"
-            resp["date_of_birth"] = "date_of_birth"
+            resp["ip"] = ip
+            resp["date_of_birth"] = user.date_of_birth
             resp["test_cust"] = True
 
         except ObjectDoesNotExist:
@@ -129,13 +157,7 @@ class ValidateUserAPI(View):
 
             resp["error_code"] = -2
             resp["err_message"] = "user does not exist"
-            # res["cust_name"] = user.username
-            # res["currency_code"] = "currency_code"
-            # res["language"] = "language"
-            # res["country"] = country
-            # res["ip"] = "ip"
-            # res["date_of_birth"] = "date_of_birth"
-            # res["test_cust"] = True
+
         except Exception as e:
             print(repr(e))
             resp = {}
@@ -148,6 +170,7 @@ class ValidateUserAPI(View):
         return HttpResponse(res, content_type="application/xml", status=200)
 
 
+# System will auto create user on the fly when “Authentication Success” & when “1st Debit request for user Success
 class CreateUserAPI(View):
     def get(self, request, *kw, **args):
         username = request.GET.get("username")
@@ -183,13 +206,11 @@ class GetBalanceAPI(View):
         try:
             user = CustomUser.objects.get(username=username)
 
-            currency = transCurrency(user)
-
             req_param = {}
             req_param["merch_id"] = MERCH_ID
             req_param["merch_pwd"] = MERCH_PWD
-            req_param["cust_id"] = username
-            req_param["currency"] = currency
+            req_param["cust_id"] = user.username
+            req_param["currency"] = transCurrency(user)
 
             req = urllib.parse.urlencode(req_param)
     
@@ -202,10 +223,12 @@ class GetBalanceAPI(View):
             return HttpResponse(json.dumps(res), content_type="json/application", status=200)
 
         except ObjectDoesNotExist:
-            logger.error("Error: can not find user -- {}".format(str(username)))
+            logger.warning("Error: can not find user -- {}".format(str(username)))
+            return HttpResponse(status=404)
         
         except Exception as e:
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            return HttpResponse(status=500)
 
 
 class DebitAPI(View):
@@ -324,4 +347,19 @@ class GetOnlineUserAPI(View):
 
 class GetOpenBetsAPI(View):
     def get(self, request, *args, **kwargs):
+        try:
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+
+            req = urllib.parse.urlencode(req_param)
+
+            url = GPI_LIVE_CASINO_URL + "openBets.html?" + req
+
+            res = requests.get(url)
+
+            return HttpResponse(res)
+        except Exception as e:
+            print(repr(e))
+            return HttpResponse(status=400)
         return HttpResponse(200)
