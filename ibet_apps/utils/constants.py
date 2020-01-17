@@ -1570,11 +1570,14 @@ SA_MD5KEY = 'GgaIMaiNNtg'
 SA_API_URL = 'http://sai-api.sa-apisvr.com/api/api.aspx'
 
 #GB
-# GB_PROVIDER = keys["GB"]["PROVIDER"]
+GB_PROVIDER = keys["GB"]["PROVIDER"]
 GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
+GB_GENERALKEY = keys["GB"]["GeneralKey"]
+GB_SECRETKEY = keys["GB"]["SecretKey"]
+
 
 # QT
 QT_STATUS_SUCCESS = 0
