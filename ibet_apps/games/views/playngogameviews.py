@@ -370,7 +370,7 @@ def png_cancel_reserve(data):
                     user_name = user_obj.username,
                     amount_wagered = 0.00,
                     amount_won = amount_to_refund,
-                    #outcome = None,
+                    outcome = 3,
                     #odds = None,
                     #bet_type = None,
                     #line = None,
@@ -379,7 +379,7 @@ def png_cancel_reserve(data):
                     market = ibetVN, # Need to clarify with provider
                     ref_no = transaction_id,
                     #bet_time = None,
-                    # resolved_time = timezone.now(),
+                    resolved_time = timezone.now(),
                     #other_data = {}
                 )
                 
@@ -472,7 +472,7 @@ def png_release(data):
                     user_name = user_obj.username,    
                     amount_wagered = 0.00,
                     amount_won = win_amount_decimal,
-                    #outcome = None,
+                    outcome = 0,
                     #odds = None,
                     #bet_type = None,
                     #line = None,
