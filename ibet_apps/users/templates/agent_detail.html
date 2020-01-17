@@ -268,13 +268,13 @@
             </div>
             <div class="row">
                 <div class="col-md-2  dowline_col_style" style="width: 32%">
-                    0
+                    {{ downline_turnover }}
                 </div>
                 <div class="col-md-2  dowline_col_style" style="width: 32%">
-                    0
+                    {{ click_number }}
                 </div>
                 <div class="col-md-2  dowline_col_style" style="width: 32%">
-                    0
+                    {{ downline_ggr }}
                 </div>
             </div>
         </div>
@@ -296,7 +296,7 @@
                 <tbody>
                 {% for affiliate in related_affiliates %}
                 <tr>
-                    <td style="margin-right: 2px;">{{ affiliate.member_id }}</td>
+                    <td style="margin-right: 2px;"><a href="{% url 'xadmin:user_detail' affiliate.member_id %}">{{ affiliate.member_id }}</a></td>
                     <td>{{ affiliate.balance }}</td>
                 </tr>
                 {% endfor %}
@@ -529,7 +529,7 @@
                                 <p style="margin-top:20px;"><strong>COMMISSION LEVELS</strong></p>
 
                                 <div class="commission_levels">
-                                    {% for i in commission_type %}
+                                    {% for i in commission_levels %}
                                     <div class="row " style="width: 95%;" id="commission_level_details">
                                         <input type="hidden" value="{{ i.pk }}" id="commission_id">
                                         <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">

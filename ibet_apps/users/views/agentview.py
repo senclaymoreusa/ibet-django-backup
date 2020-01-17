@@ -11,6 +11,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
 
+from rest_framework import status
+from rest_framework.response import Response
 from xadmin.views import CommAdminView
 
 from games.models import Category
@@ -21,6 +23,9 @@ from utils.admin_helper import *
 import logging
 import simplejson as json
 import datetime
+
+from utils.redisClient import RedisClient
+from utils.redisHelper import getDevicesByUserRedisKey, getUsersByDeviceRedisKey, RedisHelper
 
 logger = logging.getLogger('django')
 
@@ -535,13 +540,10 @@ class AgentDetailView(CommAdminView):
             title = "Affiliate " + affiliate.username
 
             downline = getDownlines(affiliate)
+            downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
+                                                          Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
+                aggregate(total_deposit=Coalesce(Sum('amount'), 0))
 
-            if downline:
-                downline_deposit = Transaction.objects.filter(Q(transaction_type=TRANSACTION_DEPOSIT) &
-                                                              Q(user_id__in=downline) & Q(status=TRAN_SUCCESS_TYPE)).\
-                    aggregate(total_deposit=Coalesce(Sum('amount'), 0))
-            else:
-                downline_deposit = 0
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
                 transaction_type=TRANSACTION_COMMISSION)
@@ -583,12 +585,15 @@ class AgentDetailView(CommAdminView):
                 context["commission_levels"] = PersonalCommissionLevel.objects.filter(user_id=affiliate)
 
             # DOWNLINE STATUS
-            context["downline_number"] = getPlayers(affiliate).count() if getPlayers(affiliate) else 0
-            active_users = filterActiveUser(getDownlines(affiliate), None, None, True, None)
-            context["active_users"] = active_users.count() if active_users else 0
+            context["downline_number"] = getDownlines(affiliate).count()
+            context["active_users"] = filterActiveUser(getDownlines(affiliate), None, None, True, None).count()
             context["downline_deposit"] = downline_deposit
+            context["downline_turnover"] = calculateTurnover(affiliate, None, None, None)
+            context["downline_ggr"] = calculateGGR(affiliate, None, None, None)
+            context["click_number"] = 0     ## TODO: track link
             context['domain'] = LETOU_DOMAIN
             context['referral_code'] = affiliate.referral_code
+
             try:
                 context["promotion_link"] = ReferChannel.objects.get(
                     user_id=affiliate, refer_channel_name="default").pk
@@ -597,35 +602,40 @@ class AgentDetailView(CommAdminView):
             context["promotion_link_list"] = ReferChannel.objects.filter(
                 user_id=affiliate)
 
-            # related affiliates
-            # get this affiliate's all ip addresses
-            # filer other affiliate who have use these addresses before
-            affiliate_ip_list = UserAction.objects.filter(
-                user=affiliate.pk).values_list('ip_addr').distinct()
-            related_affiliate_list = UserAction.objects.filter(
-                ip_addr__in=affiliate_ip_list).values_list('user', flat=True).exclude(user=affiliate.pk).distinct()
-
-            related_affiliates_data = []
-            for related_affiliate in related_affiliate_list:
-                related_affiliates_info = {}
-                related_affiliate = CustomUser.objects.get(pk=related_affiliate)
-                related_affiliates_info['member_id'] = related_affiliate.pk
-                related_affiliates_info['balance'] = related_affiliate.main_wallet
-                related_affiliates_data.append(related_affiliates_info)
-            context["related_affiliates"] = related_affiliates_data
-
-            # edit detail bottom
             try:
-                context["commission_type"] = PersonalCommissionLevel.objects.filter(
-                    user_id=affiliate).order_by('commission_level')
-            except ObjectDoesNotExist:
-                context["commission_type"] = ""
+                RedisClient().connect()
+                redis = RedisHelper()
+            except Exception as e:
+                logger.error("There is something wrong with redis connection: " + str(e))
 
+            # related affiliates: share the same device
+            try:
+                device = redis.get_devices_by_user(affiliate)
+                related_user_list = None
+                related_affiliates_data = []
+                if device:
+                    related_user_list = redis.get_users_by_device(device.pop().decode('utf-8'))
+
+                while related_user_list:
+                    username = related_user_list.pop().decode('utf-8')
+                    related_user = CustomUser.objects.get(username=username)
+                    if related_user == affiliate or related_user.user_to_affiliate_time is None:
+                        continue
+                    related_affiliates_info = {'member_id': related_user.pk,
+                                               'balance': related_user.main_wallet}
+                    related_affiliates_data.append(related_affiliates_info)
+                context["related_affiliates"] = related_affiliates_data
+            except Exception as e:
+                logger.error("Error getting related affiliates: " + str(e))
+
+            # DETAIL PAGE
             manager = affiliate.affiliate_managed_by
-            if manager == None:
+            if manager is None:
                 context["manager"] = ""
             else:
                 context["manager"] = manager
+
+            #=====================================================
 
             # ACTIVITY
             user_activities = UserActivity.objects.filter(user=affiliate)
