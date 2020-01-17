@@ -569,7 +569,8 @@ class ProcessRollback(APIView):
                     amount_wagered=0.00,
                     amount_won=amount,
                     transaction_id=trans_id,
-                    outcome=7,
+                    outcome=3,
+                    resolved_time=timezone.now(),
                     currency=user.currency,
                     market=ibetCN,
                     other_data={
