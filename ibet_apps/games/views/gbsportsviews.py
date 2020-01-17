@@ -544,7 +544,7 @@ class GenerateGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": GB_GeneralKey,
+            "AuthKey": GB_GENERALKEY,
             "Params": {
                 "MemberID": self.request.user.username,
                 "TPUniqueID": str(TPUniqueID) 
@@ -572,7 +572,7 @@ class GenerateGameURL(APIView):
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": GB_GeneralKey,
+                "AuthKey": GB_GENERALKEY,
                 "Params": {
                     "MemberID": self.request.user.username,
                     "FirstName": self.request.user.first_name,
@@ -626,7 +626,7 @@ class GenerateFakeUserGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": GB_GeneralKey,
+            "AuthKey": GB_GENERALKEY,
             "Params": {
                 "MemberID": 'Fakeuser',
                 "TPUniqueID": str(TPUniqueID) 
@@ -643,7 +643,7 @@ class GenerateFakeUserGameURL(APIView):
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": GB_GeneralKey,
+                "AuthKey": GB_GENERALKEY,
                 "Params": {
                     "MemberID": 'Fakeuser',
                     "FirstName": 'Fake',
