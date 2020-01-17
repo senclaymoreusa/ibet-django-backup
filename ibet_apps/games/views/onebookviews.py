@@ -330,7 +330,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             transfer_from=fund_wallet,
                                                             transfer_to='Onebook',
                                                             product=GAME_TYPE_SPORTS,
-                                                            transaction_type=TRANSACTION_TRANSFER_OUT,
+                                                            transaction_type=TRANSACTION_TRANSFER,
                                                             status=TRAN_SUCCESS_TYPE)
                                     return CODE_SUCCESS
                                 except Exception as e:
@@ -350,7 +350,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             transfer_from='Onebook',
                                                             transfer_to=fund_wallet,
                                                             product=GAME_TYPE_SPORTS,
-                                                            transaction_type=TRANSACTION_TRANSFER_IN,
+                                                            transaction_type=TRANSACTION_TRANSFER,
                                                             status=TRAN_SUCCESS_TYPE)
                                     return CODE_SUCCESS
                             # user.save() 
