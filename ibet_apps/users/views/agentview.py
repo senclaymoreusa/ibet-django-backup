@@ -587,7 +587,7 @@ class AgentDetailView(CommAdminView):
             # DOWNLINE STATUS
             context["downline_number"] = getDownlines(affiliate).count()
             context["active_users"] = filterActiveUser(getDownlines(affiliate), None, None, True, None).count()
-            context["downline_deposit"] = downline_deposit
+            context["downline_deposit"] = downline_deposit['total_deposit'] or 0
             context["downline_turnover"] = calculateTurnover(affiliate, None, None, None)
             context["downline_ggr"] = calculateGGR(affiliate, None, None, None)
             context["click_number"] = 0     ## TODO: track link
