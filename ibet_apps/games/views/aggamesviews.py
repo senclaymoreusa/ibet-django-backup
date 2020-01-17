@@ -218,7 +218,17 @@ def forwardGame(request):
             lang = '6'
         elif user.language == 'Vietnamese':
             lang = '8'
-
+        elif user.language == 'en':
+            lang = '3'
+        elif user.language == 'zh':
+            lang = '1'
+        elif user.language == 'Th':
+            lang = '6'
+        elif user.language == 'Vi':
+            lang = '8'   
+        else:
+            lang = '1'
+            
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
             
