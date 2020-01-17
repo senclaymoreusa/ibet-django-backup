@@ -147,6 +147,7 @@ class GetPlayer(APIView):
                         balance = rrdata['result']['BALANCE']
                         bonus = rrdata['result']['BONUSBALANCE']
                         password = rrdata['result']['PASSWORD']
+                        ptusername = rrdata['result']['PLAYERNAME']
                         if (float(balance) <= 0 and float(bonus) <= 0):
                             data = {
                                 "errorInfo": "balance not enough",
@@ -157,7 +158,8 @@ class GetPlayer(APIView):
                             data = {
                                 "status": PT_STATUS_SUCCESS,
                                 "info": "user exist, balance enough",
-                                "password": password
+                                "password": password,
+                                "playername": ptusername
                             }
                     except Exception as e:
                         data = {
