@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 
 # Django
 from django.views import View
-from django.db import DatabaseError
+from django.db import transaction, DatabaseError
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from django.db import transaction
@@ -231,6 +231,7 @@ class GetBalanceAPI(View):
             return HttpResponse(status=500)
 
 
+# multiple requests with the same “trx_id” will only be executed once and no error message will be responded on the latter requests.
 class DebitAPI(View):
     def get(self, request, *args, **kwargs):
         username = request.GET.get("username")
@@ -257,14 +258,36 @@ class DebitAPI(View):
             
             res = xmltodict.parse(res.text)
 
-            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+            res = json.dumps(res)
+
+            with transaction.atomic():
+                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                trans = Transaction.objects.create(
+                    transaction_id=trans_id,
+                    user_id=user,
+                    order_id=res["resp"]["trx_id"],
+                    amount=amount,
+                    currency=user.currency,
+                    transfer_from="GPI",
+                    transfer_to="main_wallet",
+                    product=GAME_TYPE_LIVE_CASINO,
+                    transaction_type=TRANSACTION_TRANSFER,
+                    status=TRAN_COMPLETED_TYPE
+                )
+
+                user.main_wallet = user.main_wallet + Decimal(amount)
+                user.save()
+
+                return HttpResponse(json.dumps(res), content_type="json/application", status=200)
 
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
+            return HttpResponse(status=400)
         
         except Exception as e:
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
-            return HttpResponse('GET request!')
+            return HttpResponse(repr(e))
 
 
 class CreditAPI(View):
@@ -294,7 +317,6 @@ class CreditAPI(View):
             res = xmltodict.parse(res.text)
 
             return HttpResponse(json.dumps(res), content_type="json/application", status=200)
-
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         
