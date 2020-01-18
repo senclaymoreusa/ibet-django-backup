@@ -38,13 +38,6 @@ logger = logging.getLogger('django')
 import base64
 from simplejson import JSONDecodeError
 
-
-# connect AWS S3
-third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
-KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
-
-
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 
