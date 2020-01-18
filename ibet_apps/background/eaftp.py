@@ -164,6 +164,12 @@ def gameHistoryToDatabase(bet_detail, game_code):
 
         user = CustomUser.objects.get(username=username)
         ibet_trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+        if int(bet_amount) > int(payout_amount):
+            outcome = 1
+        elif int(bet_amount) == int(payout_amount):
+            outcome = 2
+        else:
+            outcome = 0
         GameBet.objects.create(
             provider=provider,
             category=category,
@@ -173,7 +179,7 @@ def gameHistoryToDatabase(bet_detail, game_code):
             user_name=user.username,
             amount_wagered = float(int(bet_amount)/100),
             amount_won = float(int(payout_amount)/100),
-            #outcome = None,
+            outcome = outcome,
             #odds = None,
             #bet_type = None,
             #line = None,
