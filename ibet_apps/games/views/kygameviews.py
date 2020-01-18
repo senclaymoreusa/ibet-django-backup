@@ -121,55 +121,59 @@ class KyBets(View):
             url = url + '?' + req
             res = requests.get(url)
 
-            data = res.json()
+            if res.status_code == 200:
+                data = res.json()
 
-            if data['d']['code'] == 0:
-                count = int(data['d']['count'])
-                record_list = data['d']['list']
+                if data['d']['code'] == 0:
+                    count = int(data['d']['count'])
+                    record_list = data['d']['list']
 
-                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
-                category = Category.objects.filter(name='Table Games')
+                    provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                    category = Category.objects.filter(name='Table Games')
 
-                game_id = record_list['GameID']
-                accounts = record_list['Accounts']
-                # server_id = record_list['ServerID']
-                # kind_id = record_list['KindID']
-                # table_id = record_list['TableID']
-                cell_score = record_list['CellScore']
-                profit = record_list['Profit']
-                revenue = record_list['Revenue']
+                    game_id = record_list['GameID']
+                    accounts = record_list['Accounts']
+                    # server_id = record_list['ServerID']
+                    # kind_id = record_list['KindID']
+                    # table_id = record_list['TableID']
+                    cell_score = record_list['CellScore']
+                    profit = record_list['Profit']
+                    revenue = record_list['Revenue']
 
-                for i in range(0, count):
-                    username = accounts[i][6:]
-                    user = CustomUser.objects.get(username=username)
+                    for i in range(0, count):
+                        username = accounts[i][6:]
+                        user = CustomUser.objects.get(username=username)
 
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                    win_amount = float(profit[i]) - float(revenue[i])
+                        win_amount = float(profit[i]) - float(revenue[i])
 
-                    if win_amount > 0:
-                        outcome = 0
-                    else:
-                        outcome = 1
+                        if win_amount > 0:
+                            outcome = 0
+                        else:
+                            outcome = 1
 
-                    GameBet.objects.create(
-                        provider=provider,
-                        category=category[0],
-                        user=user,
-                        user_name=user.username,
-                        amount_wagered=decimal.Decimal(cell_score[i]),
-                        amount_won=decimal.Decimal(win_amount),
-                        outcome=outcome,
-                        transaction_id=trans_id,
-                        market=ibetCN,
-                        ref_no=game_id[i],
-                        resolved_time=timezone.now(),
-                        other_data={}
-                    )
+                        GameBet.objects.create(
+                            provider=provider,
+                            category=category[0],
+                            user=user,
+                            user_name=user.username,
+                            amount_wagered=decimal.Decimal(cell_score[i]),
+                            amount_won=decimal.Decimal(win_amount),
+                            outcome=outcome,
+                            transaction_id=trans_id,
+                            market=ibetCN,
+                            ref_no=game_id[i],
+                            resolved_time=timezone.now(),
+                            other_data={}
+                        )
 
-                return HttpResponse("You have add {} records".format(count), status=200)
+                    return HttpResponse("You have add {} records".format(count), status=200)
+                else:
+                    return HttpResponse("No record at this time", status=200)
             else:
-                return HttpResponse("No record at this time", status=200)
+                logger.warning("Kaiyuan GetRecord Failed: {}".format(repr(res)))
+                return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
             return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
