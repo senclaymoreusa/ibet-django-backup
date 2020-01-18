@@ -28,7 +28,7 @@ class TransferDeposit():
         return requestEADeposit(self.user, self.amount, self.from_wallet)
 
     def OnebookDeposit(self):
-        return fundTransfer(self.user, self.amount, self.from_wallet, 1, 1, 2)
+        return fundTransfer(self.user, self.amount, self.from_wallet, "1", "1", "2")
 
     def KYDeposit(self):
         return kyTransfer(self.user, self.amount, self.from_wallet, 0)
@@ -56,7 +56,7 @@ class TransferWithdraw():
         return requestEAWithdraw(self.user, self.amount, self.to_wallet)
 
     def OnebookWithdraw(self):
-        return fundTransfer(self.user, self.amount, self.to_wallet, 0, 1, 2)
+        return fundTransfer(self.user, self.amount, self.to_wallet, "0", "1", "2")
 
     def KYWithdraw(self):
         return kyTransfer(self.user, self.amount, self.to_wallet, 1)

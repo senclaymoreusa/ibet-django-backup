@@ -36,6 +36,7 @@ from utils.aws_helper import getThirdPartyKeys
 logger = logging.getLogger('django')
 
 import base64
+from simplejson import JSONDecodeError
 
 
 # connect AWS S3
@@ -144,18 +145,26 @@ class KyBets(View):
 
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
+                    win_amount = float(profit[i]) - float(revenue[i])
+
+                    if win_amount > 0:
+                        outcome = 0
+                    else:
+                        outcome = 1
+
                     GameBet.objects.create(
                         provider=provider,
                         category=category[0],
                         user=user,
                         user_name=user.username,
                         amount_wagered=decimal.Decimal(cell_score[i]),
-                        amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
+                        amount_won=decimal.Decimal(win_amount),
+                        outcome=outcome,
                         transaction_id=trans_id,
                         market=ibetCN,
                         ref_no=game_id[i],
                         resolved_time=timezone.now(),
-                        other_data=json.dumps({"game_id": game_id[i]})
+                        other_data={}
                     )
 
                 return HttpResponse("You have add {} records".format(count), status=200)
@@ -332,7 +341,7 @@ def kyTransfer(user, amount, wallet, method):
                         currency=user.currency,
                         transfer_from=wallet,
                         transfer_to='ky',
-                        product=1,
+                        product=GAME_TYPE_TABLE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE
@@ -351,7 +360,7 @@ def kyTransfer(user, amount, wallet, method):
                         currency=user.currency,
                         transfer_from='ky',
                         transfer_to=wallet,
-                        product=1,
+                        product=GAME_TYPE_TABLE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
                         channel=None,
                         status=TRAN_SUCCESS_TYPE

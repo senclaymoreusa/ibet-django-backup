@@ -18,6 +18,7 @@ import datetime
 from django.http import HttpResponseRedirect, HttpResponse
 from users.views.helper import set_loss_limitation, set_deposit_limitation, set_temporary_timeout, set_permanent_timeout, get_old_limitations
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
 from system.models import UserToUserGroup
 from django.views import View
 from django.contrib.auth import update_session_auth_hash
@@ -25,6 +26,7 @@ from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
 from users.views.helper import *
+from games.models import GameBet, Category
 
 import requests
 import logging
@@ -203,11 +205,12 @@ class UserDetailView(CommAdminView):
         for t in Transaction._meta.get_field('channel').choices:
             channelMap[t[0]] = t[1]
 
-
-        if Transaction.objects.filter(user_id=customUser).count() == 0:
+        # transaction
+        transactions_list = Transaction.objects.filter(user_id=customUser)
+        if transactions_list.count() == 0:
             context['userTransactions'] = ''
         else:
-            transactions = Transaction.objects.filter(user_id=customUser).order_by("-request_time")[:20]
+            transactions = transactions_list.order_by("-request_time")[:20]
             transactions = serializers.serialize('json', transactions)
             transactions = json.loads(transactions)
             trans = []
@@ -218,12 +221,13 @@ class UserDetailView(CommAdminView):
                     time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
                 time = time.strftime("%B %d, %Y, %I:%M %p")
                 transDict = {
-                    'transactionId': str(tran['pk']),
+                    'transactionId': str(tran['fields']['transaction_id']),
                     'category': str(transTypeMap[tran['fields']['transaction_type']]),
                     'transType': transTypeMap[tran['fields']['transaction_type']],
                     'transTypeCode': tran['fields']['transaction_type'],
                     'product': productMap[tran['fields']['product']],
-                    'toWhichWallet': str(tran['fields']['transfer_to']),
+                    'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                    'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
                     'currency': currencyMap[tran['fields']['currency']],
                     'time': time,
                     'amount': tran['fields']['amount'],
@@ -231,17 +235,63 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[tran['fields']['status']],
                     # 'bank': str(tran['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[tran['fields']['channel']],
-                    'method': tran['fields']['method'],
+                    'channel': channelMap[tran['fields']['channel']] if tran['fields']['channel'] else "",
+                    'method': tran['fields']['method'] if tran['fields']['method'] else "",
                 }
                 # transDict = serializers.serialize('json')
                 trans.append(transDict)
             context['userTransactions'] = trans
             
+        # bet hisotry
+        bet_history_list = GameBet.objects.filter(user=customUser)
+
+        if bet_history_list.count() <= 20:
+            context['betIsLastPage'] = True
+        else:
+            context['betIsLastPage'] = False
+
+        if bet_history_list.count() == 0:
+            context['userBetHistory'] = ''
+        else:
+            bet_history = bet_history_list.order_by("-bet_time")[:20]
+            bet_history = serializers.serialize('json', bet_history)
+            bet_history = json.loads(bet_history)
+
+            bet_list = []
+
+            for i in bet_history:
+                try:
+                    time = datetime.datetime.strptime(i['fields']['bet_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                except:
+                    time = datetime.datetime.strptime(i['fields']['bet_time'], "%Y-%m-%dT%H:%M:%SZ")
+                time = time.strftime("%B %d, %Y, %I:%M %p")
+                betDict = {
+                    'pk': i['pk'],
+                    'transactionId': str(i['fields']['transaction_id']),
+                    'category': 'Bet',
+                    # 'transType': transTypeMap[tran['fields']['transaction_type']],
+                    # 'transTypeCode': tran['fields']['transaction_type'],
+                    'product': str(Category.objects.get(pk=i['fields']['category']).name),
+                    # 'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                    # 'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
+                    'currency': currencyMap[i['fields']['currency']],
+                    'time': time,
+                    'amount_won': i['fields']['amount_won'] if i['fields']['amount_won'] else "",
+                    'amount_wagered': i['fields']['amount_wagered'] ,
+                    'status': 'Open' if not i['fields']['resolved_time'] else 'Close',
+                    # 'bank': str(tran['fields']['bank']),
+                    'bank': "",
+                    # 'channel': channelMap[tran['fields']['channel']],
+                    # 'method': tran['fields']['method'],
+                }
+                bet_list.append(betDict)
+            context['userBetHistory'] = bet_list
+
 
         userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
         context['userLastIpAddr'] = userLastLogin
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
+        context['activeTime'] = GameBet.objects.filter(user=customUser, amount_wagered__gte=0).count()
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
@@ -249,11 +299,13 @@ class UserDetailView(CommAdminView):
         else:
             context['isLastPage'] = False
 
-        depositAmount = Transaction.objects.filter(user_id=customUser, transaction_type=0).aggregate(Sum('amount'))
-        withdrawAmount = Transaction.objects.filter(user_id=customUser, transaction_type=1).aggregate(Sum('amount'))
-        depositCount = Transaction.objects.filter(user_id=customUser, transaction_type=0).count()
-        withdrawCount = Transaction.objects.filter(user_id=customUser, transaction_type=1).count()
-        bonusAmount = Transaction.objects.filter(user_id=customUser, transaction_type=6).aggregate(Sum('amount'))
+        deposit_trans = transactions_list.filter(transaction_type=0)
+        withdraw_trans = transactions_list.filter(transaction_type=1)
+        depositAmount = deposit_trans.aggregate(Sum('amount'))
+        withdrawAmount = withdraw_trans.aggregate(Sum('amount'))
+        depositCount = deposit_trans.count()
+        withdrawCount = withdraw_trans.count()
+        bonusAmount = transactions_list.filter(transaction_type=6).aggregate(Sum('amount'))
 
         if bonusAmount['amount__sum'] is None:
             bonusAmount['amount__sum'] = 0
@@ -282,7 +334,7 @@ class UserDetailView(CommAdminView):
             context['relativeAccount'] = self.account_by_ip(userLastLogin.ip_addr, userLastLogin.user)
         # print(str(context['relativeAccount']))
 
-        deposits = Transaction.objects.filter(user_id=customUser, transaction_type=0).order_by('-request_time').first()
+        deposits = deposit_trans.order_by('-request_time').first()
         if deposits:
             deposits = serializers.serialize('json', [deposits])
             deposits = json.loads(deposits)
@@ -306,7 +358,7 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[deposit['fields']['status']],
                     # 'bank': str(deposit['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[deposit['fields']['channel']],
+                    'channel': channelMap[deposit['fields']['channel']] if deposit['fields']['channel'] else "",
                     'method': deposit['fields']['method'],
                 }
                 lastDeposit.append(depositDict)
@@ -314,7 +366,7 @@ class UserDetailView(CommAdminView):
         else:
             context['lastDeposits'] = {}
 
-        withdraws = Transaction.objects.filter(user_id=customUser, transaction_type=1).order_by('-request_time').first() 
+        withdraws = withdraw_trans.order_by('-request_time').first() 
         if withdraws:
             withdraws = serializers.serialize('json', [withdraws])
             withdraws = json.loads(withdraws)
@@ -338,7 +390,7 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[withdraw['fields']['status']],
                     # 'bank': str(withdraw['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[withdraw['fields']['channel']],
+                    'channel': channelMap[withdraw['fields']['channel']] if withdraw['fields']['channel'] else "",
                     'method': withdraw['fields']['method'],
                 }
                 lastWithdraw.append(withdrawDict)
@@ -494,72 +546,6 @@ class UserDetailView(CommAdminView):
                 actDict['message'] = act['fields']['message']
                 response.append(actDict)
             # print(str(response))
-
-            return HttpResponse(json.dumps(response), content_type='application/json')
-
-        elif post_type == 'get_user_transactions':
-            time_from = request.POST.get('from')
-            time_to = request.POST.get('to')
-            pageSize = int(request.POST.get('pageSize'))
-            fromItem = int(request.POST.get('fromItem'))
-            endItem = fromItem + pageSize
-            category = request.POST.get('transaction_category')
-            user = CustomUser.objects.get(pk=user_id)
-
-            if time_from == 'Invalid date':
-                time_from = datetime.datetime(2000, 1, 1)
-            if time_to == 'Invalid date':
-                time_to = datetime.datetime(2400, 1, 1)
-
-            logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
-            logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
-            
-            if category == 'all':
-                transactions = Transaction.objects.filter(
-                    Q(user_id=user) & Q(request_time__range=[time_from, time_to])
-                ).order_by('-request_time')[fromItem:endItem]
-                count = Transaction.objects.filter(Q(user_id=user) & Q(request_time__range=[time_from, time_to])).count()
-            else:
-                transactions = Transaction.objects.filter(
-                    Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])
-                ).order_by('-request_time')[fromItem:endItem]
-                count = Transaction.objects.filter(Q(user_id=user) & Q(transaction_type=category) & Q(request_time__range=[time_from, time_to])).count()
-
-            response = {}
-            if endItem >= count:
-                response['isLastPage'] = True
-            else:
-                response['isLastPage'] = False
-
-            if fromItem == 0:
-                response['isFirstPage'] = True
-            else:
-                response['isFirstPage'] = False
-
-            transactionsJson = serializers.serialize('json', transactions)
-            transactionsList = json.loads(transactionsJson)
-            statusMap = {}
-            for t in Transaction._meta.get_field('status').choices:
-                statusMap[t[0]] = t[1]
-
-            currencyMap = {}
-            for t in Transaction._meta.get_field('currency').choices:
-                currencyMap[t[0]] = t[1]
-
-            for tran in transactionsList:
-                tran['fields']['status'] = statusMap[tran['fields']['status']]
-                tran['fields']['currency'] = currencyMap[tran['fields']['currency']]
-                try:
-                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                except:
-                    time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
-                tran['fields']['time'] = time
-    
-                
-            
-            # transactionsJson = json.dumps(transactionsList)
-            response['transactions'] = transactionsList
 
             return HttpResponse(json.dumps(response), content_type='application/json')
 
@@ -840,30 +826,19 @@ class UserListView(CommAdminView):
         context['title'] = title
         context['time'] = timezone.now()
         context['status'] = dict(MEMBER_STATUS)
-        # if search:
-        #     count = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search))).count()
-        #     customUser = CustomUser.objects.filter(Q(block=block)&(Q(pk__contains=search)|Q(username__contains=search)|Q(email__contains=search)|Q(phone__contains=search)|Q(first_name__contains=search)|Q(last_name__contains=search)))[offset:offset+pageSize]
-
-        #     if count == 0:
-        #         count = CustomUser.objects.filter(block=block).count()
-        #         customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
-        #         context['searchError'] = _("No search data")
-
-        # else:
-        #     count = CustomUser.objects.filter(block=block).count()
-        #     customUser = CustomUser.objects.filter(block=block)[offset:offset+pageSize]
 
         user_filter = Q()
 
-        if status:
+        if status and status != '-1':
             user_filter &= Q(member_status=status)
         
         if search:
             user_filter &= (Q(pk__contains=search)|Q(username__icontains=search)|Q(email__icontains=search)|Q(phone__contains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
 
-        customUser = CustomUser.objects.filter(user_filter)
+        customUser = CustomUser.objects.filter(user_filter).order_by('username')
         count = customUser.count()
 
+        customUser = customUser[offset:offset+pageSize]
 
         if offset == 0:
             context['isFirstPage'] = True
@@ -889,16 +864,20 @@ class UserListView(CommAdminView):
             userDict['verfication_time'] = user.verfication_time
             userDict['id_location'] = user.id_location
             userDict['phone'] = user.phone
-            userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
+            userDict['address'] = user.get_user_address()
+            # userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
             userDict['deposit_turnover'] = ''
             userDict['bonus_turnover'] = ''
             userDict['contribution'] = 0
-            depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
-            withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
-            betTims = Transaction.objects.filter(user_id=user, transaction_type=2).count()
-            activeDays = int(depositTimes) + int(withdrawTimes) + int(betTims)
-            userDict['active_days'] = ''
-            userDict['bet_platform'] = user.product_attribute
+            # depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            # withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
+            betTims = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
+            activeDays = int(betTims)
+            userDict['active_days'] = activeDays
+            userDict['member_status'] = user.get_member_status_display() if user.get_member_status_display() else ""
+            userDict['status_changed'] = ''
+            userDict['changed_by'] = ''
+            userDict['closure_reason'] = ''
 
 
             userDict['last_login_time'] = user.last_login_time
@@ -912,7 +891,7 @@ class UserListView(CommAdminView):
             userDict['withdrawal_amount'] = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
             userDict['last_login_ip'] = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
 
-            if user.is_admin is True:
+            if user.is_admin:
                 userDict['is_admin'] = 'Yes'
             else:
                 userDict['is_admin'] = 'No'
@@ -920,7 +899,6 @@ class UserListView(CommAdminView):
             user_data.append(userDict)
         
         context['user_data'] = user_data
-
 
         return render(request, 'user_list.html', context)
 
@@ -1178,3 +1156,266 @@ class UserProfileView(CommAdminView):
 
             logger.info("Finished update admin user profile")
             return response
+
+
+
+class GetUserInfo(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            user_id = request.GET.get('user_id', '')
+            user = CustomUser.objects.get(pk=user_id)
+            name =  user.first_name + " " + user.last_name if user.first_name else user.last_name
+            response = {
+                'userId': user.pk,
+                'username': user.username,
+                'name': name,
+                'idNumber': '',
+                'birthday': user.date_of_birth,
+                'status': user.member_status if user.member_status else '',
+                'playerSegment': user.vip_level.level if user.vip_level else '',
+                'riskLevel': user.risk_level,
+                'manager': user.vip_managed_by.username if user.vip_managed_by else '',
+                'email': user.email,
+                'phone': user.phone,
+                'address': user.street_address_1 + ( " " + user.street_address_2 if user.street_address_2 else ""),
+                'city': user.city,
+                'zipcode': user.zipcode,
+                'country': user.country,
+                'idApplicationTime': user.verfication_time if user.verfication_time else "",
+                'idReviewTime': user.verfication_time if  user.verfication_time else "",
+                'idReviewer': '',
+            }
+            return HttpResponse(json.dumps(response), content_type="application/json")
+        except Exception as e:
+            response = {}
+            return HttpResponse(response, content_type="application/json", status=404)
+
+
+
+class GetUserTransaction(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            trans_type = request.GET.get('type')
+            user_id = request.GET.get('user_id')
+            time_from = request.GET.get('from')
+            time_to = request.GET.get('to')
+            pageSize = int(request.GET.get('pageSize'))
+            fromItem = int(request.GET.get('fromItem'))
+            endItem = fromItem + pageSize
+            category = request.GET.get('category')
+            product = request.GET.get('product')
+            
+
+            if trans_type == "transaction":
+                # print(user_id, time_from, time_to, pageSize, fromItem, endItem, category, product)
+
+                transaction_filter = Q(user_id__pk=user_id)
+
+                current_tz = timezone.get_current_timezone()
+                tz = pytz.timezone(str(current_tz))
+
+                if time_from:
+                    time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
+                    aware = time_from.replace(tzinfo=tz)
+                    time_from = aware.astimezone(pytz.UTC)
+                    min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min))
+                    transaction_filter &= Q(request_time__gte=min_time_from)
+
+                if time_to:
+                    time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
+                    # max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
+                    aware = time_to.replace(tzinfo=tz)
+                    time_to = aware.astimezone(pytz.UTC)
+                    max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))
+                    transaction_filter &= Q(request_time__lte=max_time_to)
+
+                # logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+                # logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
+                
+                if category and category != 'all':
+                    transaction_filter &= Q(transaction_type=category)
+
+                if product and product != 'all':
+                    transaction_filter &= Q(product=product)
+                
+
+                all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+                response = {}
+                if endItem >= all_transactions.count():
+                    response['isLastPage'] = True
+                else:
+                    response['isLastPage'] = False
+
+                if fromItem == 0:
+                    response['isFirstPage'] = True
+                else:
+                    response['isFirstPage'] = False
+
+
+                all_transactions = all_transactions[fromItem: endItem]
+                transactions_json = serializers.serialize('json', all_transactions)
+                transactions_list = json.loads(transactions_json)
+
+                # for tran in transactions_list:
+                #     tran['fields']['status'] = statusMap[tran['fields']['status']]
+                #     tran['fields']['currency'] = currencyMap[tran['fields']['currency']]
+                #     try:
+                #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                #     except:
+                #         time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                #     time = time.strftime("%B %d, %Y, %I:%M %p")
+                #     tran['fields']['time'] = time
+                
+
+                trans = []
+                for tran in transactions_list:
+                    try:
+                        time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    except:
+                        time = datetime.datetime.strptime(tran['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = time.strftime("%B %d, %Y, %I:%M %p")
+                    transDict = {
+                        'transactionId': str(tran['fields']['transaction_id']),
+                        'category': str(dict(TRANSACTION_TYPE_CHOICES).get(tran['fields']['transaction_type'])),
+                        'transTypeCode': tran['fields']['transaction_type'],
+                        'product': str(dict(GAME_TYPE_CHOICES).get(tran['fields']['product'])),
+                        'fromWallet': str(tran['fields']['transfer_from']) if tran['fields']['transfer_from'] else "",
+                        'toWallet': str(tran['fields']['transfer_to']) if tran['fields']['transfer_to'] else "",
+                        'currency': str(dict(CURRENCY_CHOICES).get(tran['fields']['currency'])),
+                        'time': time,
+                        'amount': tran['fields']['amount'],
+                        'balance': tran['fields']['amount'],
+                        'status': str(dict(STATE_CHOICES).get(tran['fields']['status'])),
+                        
+                        # 'bank': str(tran['fields']['bank']),
+                        'bank': "",
+                        'channel':  str(dict(CHANNEL_CHOICES).get(tran['fields']['channel'])),
+                        'method': tran['fields']['method'],
+                    }
+                    # transDict = serializers.serialize('json')
+                    trans.append(transDict)
+
+                    
+                response['transactions'] = trans
+                # transactionsJson = json.dumps(transactionsList)
+                
+                return HttpResponse(json.dumps(response), content_type='application/json')
+            else:
+                response = {}
+
+                bet_filter = Q(user__pk=user_id)
+
+                current_tz = timezone.get_current_timezone()
+                tz = pytz.timezone(str(current_tz))
+
+                if time_from:
+                    time_from = datetime.datetime.strptime(time_from, '%m/%d/%Y')
+                    aware = time_from.replace(tzinfo=tz)
+                    time_from = aware.astimezone(pytz.UTC)
+                    min_time_from = tz.localize(datetime.datetime.combine(time_from, datetime.time.min))
+                    bet_filter &= Q(bet_time__gte=min_time_from)
+
+                if time_to:
+                    time_to= datetime.datetime.strptime(time_to, '%m/%d/%Y')
+                    # max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))  
+                    aware = time_to.replace(tzinfo=tz)
+                    time_to = aware.astimezone(pytz.UTC)
+                    max_time_to = tz.localize(datetime.datetime.combine(time_to, datetime.time.max))
+                    bet_filter &= Q(bet_time__lte=max_time_to)
+
+                # logger.info('Transactions filter: username "' + str(user.username) + '" send transactions filter request which time form: ' + str(time_from) + ',to: ' + str(time_to) + ',category: ' + str(category))
+                # logger.info('Pagination: Maximum size of the page is ' + str(pageSize) + 'and from item #' + str(fromItem) + ' to item # ' + str(endItem))
+
+                if product and product != 'all':
+                    bet_filter &= Q(category__name=product)
+
+                all_bet_objs = GameBet.objects.filter(bet_filter).order_by('-bet_time')
+                response = {}
+                if endItem >= all_bet_objs.count():
+                    response['isLastPage'] = True
+                else:
+                    response['isLastPage'] = False
+
+                if fromItem == 0:
+                    response['isFirstPage'] = True
+                else:
+                    response['isFirstPage'] = False
+
+
+                all_bet_objs = all_bet_objs[fromItem: endItem]
+                # transactions_json = serializers.serialize('json', all_transactions)
+                # transactions_list = json.loads(transactions_json)
+
+                bet_list = []
+                for bet in all_bet_objs:
+                    betDict = {
+                        'pk': bet.pk,
+                        'transactionId': bet.transaction_id,
+                        'category': 'Bet',
+                        'product': str(bet.category),
+                        'currency': bet.get_currency_display(),
+                        'bet_time':  bet.bet_time.strftime("%B %d, %Y, %I:%M %p") if bet.bet_time else "",
+                        'resolved_time': bet.resolved_time.strftime("%B %d, %Y, %I:%M %p") if bet.resolved_time else "",
+                        'amount_won': bet.amount_won if bet.amount_won else "0.0000",
+                        'amount_wagered': bet.amount_wagered if bet.amount_wagered else "0.0000",
+                        'status': 'Open' if not bet.resolved_time else 'Close',
+                    }
+                    # transDict = serializers.serialize('json')
+                    bet_list.append(betDict)
+
+                response['transactions'] = bet_list
+
+                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+
+
+        except Exception as e:
+            logger.error("Admin getting user transaction error: ", e)
+            return HttpResponse(status=404)
+
+
+
+class GetBetHistoryDetail(View):
+
+    def get(self, request, *args, **kwargs):
+        try:
+            bet_id = request.GET.get('bet_id')
+
+            bet_obj = GameBet.objects.get(pk=bet_id)
+
+            # try:
+            #     bet_time = datetime.datetime.strptime(bet_obj.bet_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # except:
+            #     bet_time = datetime.datetime.strptime(bet_obj.bet_time, "%Y-%m-%dT%H:%M:%SZ")
+            if bet_obj.bet_time:
+                bet_time = bet_obj.bet_time.strftime("%B %d, %Y, %I:%M %p")
+            else:
+                bet_time = ''
+
+            # try:
+            #     resolved_time = datetime.datetime.strptime(bet_obj.resolved_time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            # except:
+            #     resolved_time = datetime.datetime.strptime(bet_obj.resolved_time, "%Y-%m-%dT%H:%M:%SZ")
+            if bet_obj.resolved_time:
+                resolved_time = bet_obj.resolved_time.strftime("%B %d, %Y, %I:%M %p")
+            else:
+                resolved_time = ''
+
+            response = {
+                'bet_id': bet_obj.transaction_id,
+                'amount_won': bet_obj.amount_won,
+                'amount_wagered': bet_obj.amount_wagered,
+                'bet_time': bet_time,
+                'resolved_time': resolved_time,
+                'outcome': bet_obj.get_outcome_display() if bet_obj.get_outcome_display() else "None",
+                'user': bet_obj.user.username,
+                'status': "Close" if bet_obj.resolved_time else "Open"
+            }
+
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+
+        except Exception as e:
+            logger.error("Admin getting user bet deatil: ", e)
+            return HttpResponse(status=404)

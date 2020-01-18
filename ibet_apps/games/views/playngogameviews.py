@@ -234,8 +234,8 @@ def png_reserve(data):
         actual_value = req_dict['reserve']['actualValue']
         
         user_obj = CustomUser.objects.get(username=username)
-        user_balance = int(user_obj.main_wallet * 100) / 100.0
-        bet_amount_decimal = float(bet_amount_str)
+        user_balance = user_obj.main_wallet
+        bet_amount_decimal = decimal.Decimal(bet_amount_str)
         user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
         status_code = PNG_STATUS_OK
@@ -370,7 +370,7 @@ def png_cancel_reserve(data):
                     user_name = user_obj.username,
                     amount_wagered = 0.00,
                     amount_won = amount_to_refund,
-                    #outcome = None,
+                    outcome = 3,
                     #odds = None,
                     #bet_type = None,
                     #line = None,
@@ -379,7 +379,7 @@ def png_cancel_reserve(data):
                     market = ibetVN, # Need to clarify with provider
                     ref_no = transaction_id,
                     #bet_time = None,
-                    # resolved_time = timezone.now(),
+                    resolved_time = timezone.now(),
                     #other_data = {}
                 )
                 
@@ -439,8 +439,8 @@ def png_release(data):
         # free_game_total_gain = req_dict['release']['freegameTotalGain']
 
         user_obj = CustomUser.objects.get(username=username)
-        user_balance = int(user_obj.main_wallet * 100) / 100.0
-        win_amount_decimal = float(win_amount_str)
+        user_balance = user_obj.main_wallet
+        win_amount_decimal = decimal.Decimal(win_amount_str)
         user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
         status_code = PNG_STATUS_OK
@@ -472,7 +472,7 @@ def png_release(data):
                     user_name = user_obj.username,    
                     amount_wagered = 0.00,
                     amount_won = win_amount_decimal,
-                    #outcome = None,
+                    outcome = 0,
                     #odds = None,
                     #bet_type = None,
                     #line = None,

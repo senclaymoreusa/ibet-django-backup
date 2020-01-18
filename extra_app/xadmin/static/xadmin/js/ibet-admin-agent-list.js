@@ -384,7 +384,7 @@ $(document).ready(function () {
         "dom": '<<t>pil>',
         "scrollX": true,
         "ajax": {
-            type: 'GET',
+            type: 'POST',
             url: agent_list_url,
             data: {
                 'type': 'getAffiliateInfo',

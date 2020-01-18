@@ -390,10 +390,19 @@ class LoginView(GenericAPIView):
         #    item['key'] if 'key' in item else None
         try:
             statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
-            result = self.iovationData['result']
-            device = self.iovationData['details']['device']['os'] if 'device' in self.iovationData['details'] else ''
-            browser = self.iovationData['details']['device']['browser'] if 'device' in self.iovationData['details'] else ''
-            ipLocation = self.iovationData['details']['realIp']['ipLocation'] if 'ipLocation' in self.iovationData['details']['realIp'] else None
+            result = self.iovationData['result'] if 'result' in self.iovationData else ''
+            if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device']:
+                device = self.iovationData['details']['device']['os'] 
+            else:
+                device = ''
+            if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'browser' in self.iovationData['details']['device']:
+                browser = self.iovationData['details']['device']['browser'] 
+            else:
+                browser = ''
+            if 'details' in self.iovationData and 'realIp' in self.iovationData['details'] and 'ipLocation' in self.iovationData['details']['realIp']:
+                ipLocation = self.iovationData['details']['realIp']['ipLocation'] 
+            else:
+                ipLocation = None
             otherData = self.iovationData
            
 
@@ -422,7 +431,7 @@ class LoginView(GenericAPIView):
                 loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
-            logger.error("FATAL__ERROR: cannot get users device info in login iovation", e)
+            logger.error("cannot get users device info in login iovation", e)
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()

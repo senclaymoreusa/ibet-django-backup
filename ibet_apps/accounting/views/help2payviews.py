@@ -148,6 +148,11 @@ class DepositResult(generics.GenericAPIView):
             update_data.status = 0
             result = "Success"
             helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('Amount'), 'add')
+            if not helpers:
+                return Response({
+                    'message': 'There was an error with updating the user balance',
+                    'success': False
+                })
         elif trans_status == '001':
             update_data.status = 1
             result = "Failed"
@@ -265,24 +270,25 @@ class SubmitPayout(View):
             toBankAccountNumber = request.POST.get("toBankAccountNumber")
 
             amount = float(request.POST.get("amount"))
+            currency = request.POST.get("currency") or 2
 
             trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             ip = helpers.get_client_ip(request)
             bank = request.POST.get("bank")
-            
+
             user_id=user.pk
-            currency = user.currency
+            
             merchant_code = '123'
             secret_key = '123'
             payoutURL = '123'
             
-            if currency == 2:
+            if int(currency) == 2:
                 merchant_code = HELP2PAY_MERCHANT_THB
                 secret_key = HELP2PAY_SECURITY_THB
                 payoutURL = H2P_PAYOUT_URL_THB
                 
-            elif currency == 8:
+            elif int(currency) == 8:
                 merchant_code = HELP2PAY_MERCHANT_VND
                 secret_key = HELP2PAY_SECURITY_VND
                 payoutURL = H2P_PAYOUT_URL_VND
@@ -317,8 +323,7 @@ class SubmitPayout(View):
                     can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
                 except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-                    logger.critical("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request", exc_info=1, stack_info=1)
-                    traceback.print_exc(file=sys.stdout)
+                    logger.critical("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request", exc_info=1)
                     return HttpResponse(status=500)
             else:
                 logger.error("withdraw password is not correct.")    
