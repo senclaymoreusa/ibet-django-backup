@@ -12,3 +12,7 @@ cron:
  - name: "background_copy_userAction"
    url: "/background/api/user_action_copy"
    schedule: "0 */2 * * *"
+
+ - name: "game_kaiyuan_getbets"
+   url: "/games/api/ky/getbets/"
+   schedule: "*/4 * * * *"
