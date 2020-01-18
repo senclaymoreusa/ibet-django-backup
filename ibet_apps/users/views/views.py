@@ -637,6 +637,8 @@ class LanguageView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         languageCode = serializer.validated_data['languageCode']
+        if languageCode == 'zh':
+            languageCode = "zh-hans"
         request.session[LANGUAGE_SESSION_KEY] = languageCode
         request.session.modified = True
         # Make current response also shows translated result

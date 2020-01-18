@@ -1,0 +1,875 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-01-17 12:15-0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: djauth/settings.py:279 templates/admin/base.html:34
+msgid "English"
+msgstr ""
+
+#: djauth/settings.py:280 templates/admin/base.html:35
+msgid "Chinese"
+msgstr ""
+
+#: djauth/settings.py:281
+msgid "Franch"
+msgstr ""
+
+#: ibet_apps/accounting/apps.py:7
+msgid "Accounting System"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:42
+msgid "Name"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:44 ibet_apps/accounting/models.py:181
+msgid "Method"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:45 ibet_apps/accounting/models.py:271
+#: ibet_apps/accounting/models.py:294
+msgid "Channel"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:46
+msgid "Supplier"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:49 ibet_apps/accounting/models.py:170
+#: ibet_apps/games/models.py:122
+msgid "Currency"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:52
+msgid "Min Amount"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:55
+msgid "Max Amount"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:67
+msgid "Transaction Fee"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:75
+msgid "Transaction Fee Percentage"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:117
+msgid "Priority"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:160
+msgid "Transaction ID"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:163
+msgid "Member"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:165
+msgid "Order ID"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:167
+msgid "Apply Amount"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:176
+msgid "Language"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:179
+msgid "Depositor Tier"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:183
+msgid "Payment"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:186
+msgid "Status Last Updated"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:189
+msgid "Time of Application"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:192
+msgid "Arrive Time"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:195 ibet_apps/users/adminx.py:318
+#: ibet_apps/users/models.py:352
+msgid "Status"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:200 ibet_apps/bonus/models.py:81
+msgid "Transaction Type"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:203
+msgid "Memo"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:205
+msgid "From"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:208
+msgid "To"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:211
+msgid "Product"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:215
+msgid "Review status"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:229
+msgid "QRCode"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:231
+msgid "Commission"
+msgstr ""
+
+#: ibet_apps/accounting/models.py:236
+msgid "released_by"
+msgstr ""
+
+#: ibet_apps/accounting/views/asiapayviews.py:111
+#: ibet_apps/accounting/views/asiapayviews.py:288
+#: ibet_apps/accounting/views/astropayviews.py:83
+#: ibet_apps/accounting/views/astropayviews.py:459
+#: ibet_apps/accounting/views/circlepayviews.py:37
+#: ibet_apps/accounting/views/fgateviews.py:44
+#: ibet_apps/accounting/views/help2payviews.py:79
+#: ibet_apps/accounting/views/payzodviews.py:55
+#: ibet_apps/accounting/views/qaicashviews.py:360
+#: ibet_apps/accounting/views/qaicashviews.py:471
+#: ibet_apps/accounting/views/scratchcardviews.py:49
+#: ibet_apps/operation/views.py:1473 ibet_apps/operation/views.py:1500
+#: ibet_apps/operation/views.py:1561 ibet_apps/users/views/views.py:183
+#: ibet_apps/users/views/views.py:200 ibet_apps/users/views/views.py:362
+#: ibet_apps/users/views/views.py:1181 ibet_apps/users/views/views.py:1464
+#: ibet_apps/users/views/views.py:1498 ibet_apps/users/views/views.py:1551
+#: ibet_apps/users/views/views.py:1596 ibet_apps/users/views/views.py:1697
+#: ibet_apps/users/views/views.py:1731 ibet_apps/users/views/views.py:1777
+#: ibet_apps/users/views/views.py:1825 ibet_apps/users/views/views.py:1859
+#: ibet_apps/users/views/views.py:1888 ibet_apps/users/views/views.py:1917
+#: ibet_apps/users/views/views.py:1945 ibet_apps/users/views/views.py:1976
+#: ibet_apps/users/views/views.py:2015 ibet_apps/users/views/views.py:2053
+#: ibet_apps/users/views/views.py:2087 ibet_apps/users/views/views.py:2138
+msgid "The current user is blocked!"
+msgstr ""
+
+#: ibet_apps/bonus/apps.py:8
+msgid "Bonus System"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:27
+msgid "Bonus Status"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:36
+msgid "Bonus Type"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:42
+msgid "Bonus Currency"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:65 ibet_apps/bonus/models.py:73
+#: ibet_apps/bonus/models.py:85 ibet_apps/bonus/models.py:100
+msgid "Bonus"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:74 ibet_apps/bonus/models.py:94
+msgid "Category"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:93
+msgid "Requirement"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:99
+msgid "Owner"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:103
+msgid "Operator"
+msgstr ""
+
+#: ibet_apps/bonus/models.py:105
+msgid "User Bonus Event Type"
+msgstr ""
+
+#: ibet_apps/games/apps.py:7
+msgid "3rd Party Game System"
+msgstr ""
+
+#: ibet_apps/games/models.py:41
+msgid "Game Category"
+msgstr ""
+
+#: ibet_apps/games/models.py:81 ibet_apps/system/models.py:17
+#: ibet_apps/users/models.py:234 ibet_apps/users/models.py:336
+#: ibet_apps/users/models.py:426 ibet_apps/users/models.py:441
+#: ibet_apps/users/models.py:459
+msgid "Created Time"
+msgstr ""
+
+#: ibet_apps/games/models.py:88 ibet_apps/users/models.py:239
+#: ibet_apps/users/models.py:464
+msgid "Modified Time"
+msgstr ""
+
+#: ibet_apps/games/models.py:95
+msgid "Game"
+msgstr ""
+
+#: ibet_apps/games/models.py:121
+msgid "Transaction id"
+msgstr ""
+
+#: ibet_apps/games/models.py:126
+msgid "Time Bet was Placed"
+msgstr ""
+
+#: ibet_apps/operation/apps.py:8
+msgid "Operation System"
+msgstr ""
+
+#: ibet_apps/operation/models.py:62
+msgid "Notification"
+msgstr ""
+
+#: ibet_apps/system/models.py:12
+msgid "name"
+msgstr ""
+
+#: ibet_apps/system/models.py:13
+msgid "Description"
+msgstr ""
+
+#: ibet_apps/system/models.py:14
+msgid "Group Type"
+msgstr ""
+
+#: ibet_apps/system/models.py:39 ibet_apps/system/models.py:46
+msgid "User Group"
+msgstr ""
+
+#: ibet_apps/system/models.py:40 ibet_apps/system/models.py:54
+msgid "Permission Code"
+msgstr ""
+
+#: ibet_apps/system/models.py:47 ibet_apps/system/models.py:53
+msgid "Custom User"
+msgstr ""
+
+#: ibet_apps/system/views/permissionviews.py:102
+msgid "Group Permission"
+msgstr ""
+
+#: ibet_apps/system/views/permissionviews.py:395 ibet_apps/users/adminx.py:130
+msgid "Roles"
+msgstr ""
+
+#: ibet_apps/system/views/reportviews.py:94
+msgid "Performance reports"
+msgstr ""
+
+#: ibet_apps/system/views/reportviews.py:409
+msgid "Members reports"
+msgstr ""
+
+#: ibet_apps/system/views/reportviews.py:451
+msgid "Finance reports"
+msgstr ""
+
+#: ibet_apps/users/admin.py:60
+msgid "username"
+msgstr ""
+
+#: ibet_apps/users/admin.py:61
+msgid "password"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:32
+msgid "iBet Administration"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:39
+msgid "Players"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:43
+msgid "Player directory"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:48
+msgid "Player groups"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:55
+msgid "Bonuses"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:59
+msgid "Bonus records"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:64
+msgid "Bonus transactions"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:71
+msgid "Affiliate"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:77
+msgid "Marketing"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:81
+msgid "VIP Management"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:100
+msgid "Payments"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:104
+msgid "Deposits"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:109
+msgid "Withdrawals"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:121
+msgid "System admin"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:125
+msgid "Users"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:157
+msgid "Messages"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:162
+msgid "Campaign"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:173
+msgid "Finance report"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:253 ibet_apps/users/models.py:72
+msgid "User Tag"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:260 ibet_apps/utils/constants.py:599
+msgid "Login"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:266
+msgid "Deposit"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:272
+msgid "Withdraw"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:279
+msgid "Bet"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:282 ibet_apps/users/adminx.py:343
+msgid "More actions for this user"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:285 ibet_apps/users/adminx.py:346
+msgid "User action link"
+msgstr ""
+
+#: ibet_apps/users/adminx.py:308
+msgid "Approved tag assign to user"
+msgstr ""
+
+#: ibet_apps/users/apps.py:6
+msgid "User System"
+msgstr ""
+
+#: ibet_apps/users/forms.py:88
+msgid "Invalid date - renewal in past"
+msgstr ""
+
+#: ibet_apps/users/forms.py:91
+msgid "Invalid date - renewal more than 4 weeks ahead"
+msgstr ""
+
+#: ibet_apps/users/models.py:66
+msgid "Tag name"
+msgstr ""
+
+#: ibet_apps/users/models.py:69
+msgid "Notes"
+msgstr ""
+
+#: ibet_apps/users/models.py:86
+msgid "Direct User"
+msgstr ""
+
+#: ibet_apps/users/models.py:87
+msgid "User from Promo"
+msgstr ""
+
+#: ibet_apps/users/models.py:88
+msgid "Advertisements"
+msgstr ""
+
+#: ibet_apps/users/models.py:163
+msgid "User Attribute"
+msgstr ""
+
+#: ibet_apps/users/models.py:164
+msgid "Product Attribute"
+msgstr ""
+
+#: ibet_apps/users/models.py:165
+msgid "Time of Registration"
+msgstr ""
+
+#: ibet_apps/users/models.py:166
+msgid "Time of FTD"
+msgstr ""
+
+#: ibet_apps/users/models.py:167
+msgid "Time of Verification"
+msgstr ""
+
+#: ibet_apps/users/models.py:168
+msgid "Location shown on the ID"
+msgstr ""
+
+#: ibet_apps/users/models.py:169
+msgid "Last Login Time"
+msgstr ""
+
+#: ibet_apps/users/models.py:170
+msgid "Last Betting Time"
+msgstr ""
+
+#: ibet_apps/users/models.py:176
+msgid "Main Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:177
+msgid "Other Game Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:178
+msgid "Bonus Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:179
+msgid "Onebook Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:180
+msgid "EA Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:181
+msgid "Kaiyuan Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:182
+msgid "AG Wallet"
+msgstr ""
+
+#: ibet_apps/users/models.py:185
+msgid "Time of Becoming Agent"
+msgstr ""
+
+#: ibet_apps/users/models.py:186
+msgid "Application Time"
+msgstr ""
+
+#: ibet_apps/users/models.py:187
+msgid "Application Introduction"
+msgstr ""
+
+#: ibet_apps/users/models.py:189
+msgid "Affiliate_status"
+msgstr ""
+
+#: ibet_apps/users/models.py:191
+msgid "Affiliate_level"
+msgstr ""
+
+#: ibet_apps/users/models.py:226
+msgid "withdraw password"
+msgstr ""
+
+#: ibet_apps/users/models.py:228
+msgid "Security answer"
+msgstr ""
+
+#: ibet_apps/users/models.py:250
+msgid "Customer User"
+msgstr ""
+
+#: ibet_apps/users/models.py:296
+msgid "commission Percentage"
+msgstr ""
+
+#: ibet_apps/users/models.py:297
+msgid "Downline commission Percentage"
+msgstr ""
+
+#: ibet_apps/users/models.py:347
+msgid "pending"
+msgstr ""
+
+#: ibet_apps/users/models.py:348
+msgid "approved"
+msgstr ""
+
+#: ibet_apps/users/models.py:350 ibet_apps/users/models.py:416
+#: ibet_apps/users/models.py:448
+msgid "User"
+msgstr ""
+
+#: ibet_apps/users/models.py:351
+msgid "Tag"
+msgstr ""
+
+#: ibet_apps/users/models.py:360
+msgid "Assign tag to user"
+msgstr ""
+
+#: ibet_apps/users/models.py:414
+msgid "Action Ip"
+msgstr ""
+
+#: ibet_apps/users/models.py:415
+msgid "Event Type"
+msgstr ""
+
+#: ibet_apps/users/models.py:417
+msgid "Device"
+msgstr ""
+
+#: ibet_apps/users/models.py:418
+msgid "Browser"
+msgstr ""
+
+#: ibet_apps/users/models.py:419
+msgid "Refer URL"
+msgstr ""
+
+#: ibet_apps/users/models.py:421
+msgid "Page"
+msgstr ""
+
+#: ibet_apps/users/models.py:432
+msgid "User action history"
+msgstr ""
+
+#: ibet_apps/users/models.py:490 ibet_apps/users/models.py:496
+msgid "Wallet"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:82 ibet_apps/users/serializers.py:289
+msgid "A user is already registered with this username."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:89 ibet_apps/users/serializers.py:296
+msgid "A user is already registered with this e-mail address."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:99
+msgid "First name not valid"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:101
+msgid "Last name not valid"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:103 ibet_apps/users/serializers.py:108
+#: ibet_apps/users/serializers.py:110
+msgid "Date of birth not valid"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:112
+msgid "City not valid"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:114
+msgid "Country not valid"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:116
+msgid "Zipcode not valid"
+msgstr ""
+
+#: ibet_apps/users/serializers.py:178 ibet_apps/users/serializers.py:337
+msgid "Must include \"email\" and \"password\"."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:189 ibet_apps/users/serializers.py:348
+msgid "Must include \"username\" and \"password\"."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:202 ibet_apps/users/serializers.py:361
+msgid "Must include either \"username\" or \"email\" and \"password\"."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:258 ibet_apps/users/serializers.py:403
+msgid "User account is disabled."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:261 ibet_apps/users/serializers.py:406
+msgid "Unable to log in with provided credentials."
+msgstr ""
+
+#: ibet_apps/users/serializers.py:270 ibet_apps/users/serializers.py:415
+msgid "E-mail is not verified."
+msgstr ""
+
+#: ibet_apps/users/views/adminview.py:701
+msgid "Cannot block the admin user"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:321 ibet_apps/users/views/views.py:372
+msgid "Please activate your account!"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:469
+msgid "Invalid username/ passowrd"
+msgstr "Tên người dùng / mật khẩu không hợp lệ"
+
+#: ibet_apps/users/views/views.py:520
+msgid "Successfully logged out."
+msgstr ""
+
+#: ibet_apps/users/views/views.py:543
+msgid "You have registered an account at ibet.com, "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:544
+msgid "You username is "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:544
+msgid ", and your email address is "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:547
+msgid "Request of changing email address"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:548
+msgid "Your new Email Address is: "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:551
+msgid " referred you to sign up an account with Claymore"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:552
+msgid "Please use the referral link to register your new account: "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:571
+#, python-format
+msgid "Hi %(username)s, You have requested to reset your password"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:573
+msgid "Click the link to reset your email password: "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:848
+msgid "Please activate you ibet account "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:1114
+msgid "Reset Password"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:1115
+msgid "Use this code to reset your password "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:1266
+msgid "Activation Code"
+msgstr ""
+
+#: ibet_apps/users/views/views.py:1267
+msgid "Your activation code is "
+msgstr ""
+
+#: ibet_apps/users/views/views.py:1972
+msgid "Success"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:351
+msgid "Normal"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:352
+msgid "Suspicious"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:353
+msgid "Restricted"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:354
+msgid "Closed"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:355
+msgid "Blacklisted"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:600
+msgid "Logout"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:601
+msgid "Register"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:604
+msgid "Page Visit"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:606
+msgid "SMS CODE"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1459
+msgid "What is your’s father birthday?"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1460
+msgid "What is your’s mother birthday?"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1461
+msgid "What is your’s spouse birthday?"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1462
+msgid "What is your first company’s employee ID?"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1463
+msgid "What is your primary school class teacher’s name?"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1464
+msgid "What is your best childhood friend’s name?"
+msgstr ""
+
+#: ibet_apps/utils/constants.py:1465
+msgid "What is the name of the person that influenced you the most?"
+msgstr ""
+
+#: templates/admin/base.html:36
+msgid "French"
+msgstr ""
+
+#: templates/admin/base.html:42
+msgid "Welcome,"
+msgstr "Chào mừng bạn,"
+
+#: templates/admin/base.html:47
+msgid "View site"
+msgstr ""
+
+#: templates/admin/base.html:52
+msgid "Documentation"
+msgstr ""
+
+#: templates/admin/base.html:56
+msgid "Change password"
+msgstr ""
+
+#: templates/admin/base.html:58
+msgid "Log out"
+msgstr ""
+
+#: templates/admin/base.html:68 templates/registration/logged_out.html:4
+msgid "Home"
+msgstr ""
+
+#: templates/admin/base_site.html:3
+msgid "Django site admin"
+msgstr ""
+
+#: templates/admin/base_site.html:6
+msgid "Django administration"
+msgstr ""
+
+#: templates/admin/login.html:21
+msgid "Please correct the error below."
+msgstr ""
+
+#: templates/admin/login.html:21
+msgid "Please correct the errors below."
+msgstr ""
+
+#: templates/admin/login.html:37
+#, python-format
+msgid ""
+"You are authenticated as %(username)s, but are not authorized to access this "
+"page. Would you like to login to a different account?"
+msgstr ""
+
+#: templates/admin/login.html:57
+msgid "Forgotten your password or username?"
+msgstr ""
+
+#: templates/admin/login.html:60
+msgid "Save password"
+msgstr ""
+
+#: templates/admin/login.html:62
+msgid "Log in"
+msgstr ""
+
+#: templates/registration/logged_out.html:8
+msgid "Thanks for spending some quality time with the Web site today."
+msgstr ""
+
+#: templates/registration/logged_out.html:10
+msgid "Log in again"
+msgstr ""
