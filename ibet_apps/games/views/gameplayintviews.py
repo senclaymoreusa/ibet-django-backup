@@ -233,6 +233,7 @@ class GetBalanceAPI(View):
 
 # multiple requests with the same “trx_id” will only be executed once and no error message will be responded on the latter requests.
 class DebitAPI(View):
+    @transaction.atomic
     def get(self, request, *args, **kwargs):
         username = request.GET.get("username")
         amount = request.GET.get("amount")
@@ -242,44 +243,60 @@ class DebitAPI(View):
 
             currency = transCurrency(user)
 
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
             req_param = {}
             req_param["merch_id"] = MERCH_ID
             req_param["merch_pwd"] = MERCH_PWD
             req_param["cust_id"] = username
             req_param["currency"] = currency
             req_param["amount"] = amount
-            req_param["trx_id"] = "Test01"
+            req_param["trx_id"] = trans_id
 
             req = urllib.parse.urlencode(req_param)
     
             url = GPI_URL + 'debit' + '?' + req
 
+            trans = Transaction.objects.create(
+                transaction_id=trans_id,
+                user_id=user,
+                order_id=trans_id,
+                amount=amount,
+                currency=user.currency,
+                transfer_from="GPI",
+                transfer_to="main_wallet",
+                product=GAME_TYPE_LIVE_CASINO,
+                transaction_type=TRANSACTION_TRANSFER,
+                status=TRAN_PENDING_TYPE
+            )
+
             res = requests.get(url)
             
             res = xmltodict.parse(res.text)
 
-            res = json.dumps(res)
+            if int(res["resp"]["error_code"]) == 0:
+                trans = Transaction.objects.get(transaction_id=trans_id)
 
-            with transaction.atomic():
-                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                trans = Transaction.objects.create(
-                    transaction_id=trans_id,
-                    user_id=user,
-                    order_id=res["resp"]["trx_id"],
-                    amount=amount,
-                    currency=user.currency,
-                    transfer_from="GPI",
-                    transfer_to="main_wallet",
-                    product=GAME_TYPE_LIVE_CASINO,
-                    transaction_type=TRANSACTION_TRANSFER,
-                    status=TRAN_COMPLETED_TYPE
-                )
+                trans.order_id = res["resp"]["trx_id"]
+                trans.status = TRAN_COMPLETED_TYPE
+                trans.save()
+                # trans = Transaction.objects.create(
+                #     transaction_id=trans_id,
+                #     user_id=user,
+                #     order_id=res["resp"]["trx_id"],
+                #     amount=amount,
+                #     currency=user.currency,
+                #     transfer_from="GPI",
+                #     transfer_to="main_wallet",
+                #     product=GAME_TYPE_LIVE_CASINO,
+                #     transaction_type=TRANSACTION_TRANSFER,
+                #     status=TRAN_COMPLETED_TYPE
+                # )
 
                 user.main_wallet = user.main_wallet + Decimal(amount)
                 user.save()
 
-                return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
 
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
@@ -290,7 +307,9 @@ class DebitAPI(View):
             return HttpResponse(repr(e))
 
 
+# multiple requests with the same “trx_id” will only be executed once and no error message will be responded on the latter requests.
 class CreditAPI(View):
+    @transaction.atomic
     def get(self, request, *args, **kwargs):
         username = request.GET.get("username")
         amount = request.GET.get("amount")
@@ -300,29 +319,67 @@ class CreditAPI(View):
 
             currency = transCurrency(user)
 
+            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
             req_param = {}
             req_param["merch_id"] = MERCH_ID
             req_param["merch_pwd"] = MERCH_PWD
             req_param["cust_id"] = username
             req_param["currency"] = currency
             req_param["amount"] = amount
-            req_param["trx_id"] = "Test11"
+            req_param["trx_id"] = trans_id
 
             req = urllib.parse.urlencode(req_param)
     
             url = GPI_URL + 'credit' + '?' + req
 
+            trans = Transaction.objects.create(
+                transaction_id=trans_id,
+                user_id=user,
+                order_id=trans_id,
+                amount=amount,
+                currency=user.currency,
+                transfer_from="main_wallet",
+                transfer_to="GPI",
+                product=GAME_TYPE_LIVE_CASINO,
+                transaction_type=TRANSACTION_TRANSFER,
+                status=TRAN_PENDING_TYPE
+            )
+
             res = requests.get(url)
             
             res = xmltodict.parse(res.text)
 
+            if int(res["resp"]["error_code"]) == 0:
+                trans = Transaction.objects.get(transaction_id=trans_id)
+
+                trans.order_id = res["resp"]["trx_id"]
+                trans.status = TRAN_COMPLETED_TYPE
+                trans.save()
+                # trans = Transaction.objects.create(
+                #     transaction_id=trans_id,
+                #     user_id=user,
+                #     order_id=res["resp"]["trx_id"],
+                #     amount=amount,
+                #     currency=user.currency,
+                #     transfer_from="GPI",
+                #     transfer_to="main_wallet",
+                #     product=GAME_TYPE_LIVE_CASINO,
+                #     transaction_type=TRANSACTION_TRANSFER,
+                #     status=TRAN_COMPLETED_TYPE
+                # )
+
+                user.main_wallet = user.main_wallet - Decimal(amount)
+                user.save()
+
             return HttpResponse(json.dumps(res), content_type="json/application", status=200)
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
+            return HttpResponse(status=404)
         
         except Exception as e:
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
-            return HttpResponse('GET request!')
+            return HttpResponse(status=500)
 
 
 class CheckTransactionAPI(View):
@@ -363,7 +420,6 @@ class GetOnlineUserAPI(View):
 
             return HttpResponse(res)
         except Exception as e:
-            print(repr(e))
             return HttpResponse(status=400)
 
 
