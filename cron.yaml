@@ -1,0 +1,22 @@
+version: 1
+cron:
+ - name: "game_onebook_getBetDetail"
+   url: "/games/api/onebook/get_bet_detail"
+   schedule: "*/5 * * * *"
+ - name: "background_copy_gamebet"
+   url: "/background/api/gamebet_copy"
+   schedule: "0 */2 * * *"
+ - name: "background_copy_transaction"
+   url: "/background/api/transaction_copy"
+   schedule: "0 */2 * * *"
+ - name: "background_copy_userAction"
+   url: "/background/api/user_action_copy"
+   schedule: "0 */2 * * *"
+
+ - name: "game_kaiyuan_getbets"
+   url: "/games/api/ky/getbets/"
+   schedule: "*/4 * * * *"
+   
+ - name: "background_ea_getBetDetail"
+   url: "/background/api/ea_gamebet"
+   schedule: "*/15 * * * *"
