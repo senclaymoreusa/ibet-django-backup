@@ -381,12 +381,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
         return ERROR_CODE_FAIL
 
 
-class test(View):
-    def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela01")
-        #response = createMember(user, 13, "2")
-        response = fundTransfer(user, "1", "main", "1", "1", "2")
-        return HttpResponse(response)
+
 
     
 # def test01(request, username):
@@ -526,6 +521,7 @@ def getBetDetail(request):
                     "version_key": version_key,
                 })
                 rdata = r.json()
+                
                 if r.status_code == 200:
                     logger.info(rdata)
                     
@@ -540,6 +536,7 @@ def getBetDetail(request):
                         
                         # logger.info(rdata["Data"]["BetDetails"])
                         for i in range(len(rdata["Data"]["BetDetails"])):
+                            
                             username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                             # print(username)
                             
@@ -557,28 +554,31 @@ def getBetDetail(request):
 
                             transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                             outcome = rdata["Data"]["BetDetails"][i]["ticket_status"]
-                            if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
+                            if rdata["Data"]["BetDetails"][i]["settlement_time"] == '':
+                                    if not GameBet.objects.filter(ref_no=trans_id).exists():
                                     
-                                    GameBet.objects.create(provider=PROVIDER,
-                                                        category=cate,
-                                                        user=user,
-                                                        user_name=user.username,
-                                                        transaction_id=transid,
-                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                        ref_no=trans_id,
-                                                        market=ibetCN,
-                                                        other_data=rdata
+                                        GameBet.objects.create(provider=PROVIDER,
+                                                            category=cate,
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            transaction_id=transid,
+                                                            odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                            amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                            currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                            bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                            ref_no=trans_id,
+                                                            market=ibetCN,
+                                                            other_data={
+                                                                "version_key": version_key
+                                                            }
                                                         )
                                 
                             else:
-                                if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
+                                if (outcome == "won" or outcome == "half won" or outcome == "lose" or outcome == "half lose" or outcome == "draw" or outcome == "reject" or  outcome == "refund" or outcome == "void"):
+                                    
                                     resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
-                                        
-                                    GameBet.objects.get_or_create(provider=PROVIDER,
+                                       
+                                    GameBet.objects.create(provider=PROVIDER,
                                                         category=cate,
                                                         transaction_id=transid,
                                                         user=user,
@@ -592,8 +592,12 @@ def getBetDetail(request):
                                                         resolved_time=utcToLocalDatetime(resolve),
                                                         ref_no=trans_id,
                                                         market=ibetCN,
-                                                        other_data=rdata,
-                                                        )
+                                                        other_data={
+                                                                "version_key": version_key
+                                                            }
+                                                    )
+
+
                         # sleep(delay)  
                         # print("sleep")  
                     else:
@@ -788,6 +792,47 @@ def CheckMemberOnline(request):
             return HttpResponse(ET.tostring(root), content_type="text/xml")
         return HttpResponse(ET.tostring(root), content_type="text/xml")
 
+      
+def checkUserBalance(user):
+    
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    delay = 5
+    success = False
+    for x in range(3):
+        r = requests.post(ONEBOOK_API_URL + "CheckUserBalance/", headers=headers, data={
+            "vendor_id": ONEBOOK_VENDORID,
+            "vendor_member_ids": user.username, 
+            "wallet_id": '1'
+        })
+        rdata = r.json()
         
-
-
+        if r.status_code == 200:
+            success = True
+            break
+        elif r.status_code == 204:
+            success = True
+            # Handle error
+            logger.info("Failed to complete a request for onebook createMember...")
+            logger.error(rdata)
+            return Response(rdata)
+        elif r.status_code == 500:
+            logger.info("Request failed {} time(s)'.format(x+1)")
+            logger.info("Waiting for %s seconds before retrying again")
+            sleep(delay)
+    if not success:
+        return json.dumps(rdata)
+    try:
+        Data = rdata['Data']  
+        balance = Data[0]["balance"]
+        return json.dumps({"balance":balance})
+    except:
+        logger.error("Cannot find the data for onebook check user balance.")
+        return json.dump({"error": "Cannot find the data for onebook check user balance."})
+    
+class test(View):
+    def get(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(username="testdave123")
+        
+        #response = createMember(user, 13, "2")
+        response = checkUserBalance(user)
+        return HttpResponse(response)
