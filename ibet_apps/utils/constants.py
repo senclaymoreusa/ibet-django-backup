@@ -22,12 +22,14 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
+    AWS_BET_S3_BUCKET = 'game-bet-history-apdev'
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
     PTKEY= utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
     PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
     
    
 else:
+    AWS_BET_S3_BUCKET = 'game-bet-history-dev'
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
     PTKEY = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
@@ -735,6 +737,9 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["PRODUCTION"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["PRODUCTION"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["PRODUCTION"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
@@ -763,6 +768,9 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["SANDBOX"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
@@ -791,6 +799,9 @@ else:
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["SANDBOX"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
@@ -1525,6 +1536,7 @@ BONUS_PAYOUT_CHOICES = (
 # All provider
 KY_PROVIDER = "KY"
 BETSOFT_PROVIDER = "Betsoft"
+EA_PROVIDER = "EA"
 AG_PROVIDER = "AG"
 FG_PROVIDER = "FG"
 MG_PROVIDER = "MG"

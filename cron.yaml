@@ -16,3 +16,7 @@ cron:
  - name: "game_kaiyuan_getbets"
    url: "/games/api/ky/getbets/"
    schedule: "*/4 * * * *"
+   
+ - name: "background_ea_getBetDetail"
+   url: "/background/api/ea_gamebet"
+   schedule: "*/15 * * * *"
