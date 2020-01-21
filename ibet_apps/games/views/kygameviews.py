@@ -36,7 +36,7 @@ from utils.aws_helper import getThirdPartyKeys
 logger = logging.getLogger('django')
 
 import base64
-from simplejson import JSONDecodeError
+import pytz
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -132,6 +132,7 @@ class KyBets(View):
                     cell_score = record_list['CellScore']
                     profit = record_list['Profit']
                     revenue = record_list['Revenue']
+                    end_time = record_list['GameEndTime']
 
                     for i in range(0, count):
                         username = accounts[i][6:]
@@ -139,12 +140,15 @@ class KyBets(View):
 
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                        win_amount = float(profit[i]) - float(revenue[i])
+                        resolved_time = datetime.strptime(end_time[i], '%Y-%m-%d %H:%M:%S')
+                        resolved_time = resolved_time.astimezone(pytz.timezone(provider.timezone))
 
+                        if int(cell_score[i] == 0):
+                            outcome = 2 # Tie Game
                         if win_amount > 0:
-                            outcome = 0
+                            outcome = 0 # Won
                         else:
-                            outcome = 1
+                            outcome = 1 # Lose
 
                         GameBet.objects.create(
                             provider=provider,
@@ -157,7 +161,7 @@ class KyBets(View):
                             transaction_id=trans_id,
                             market=ibetCN,
                             ref_no=game_id[i],
-                            resolved_time=timezone.now(),
+                            resolved_time=resolved_time,
                             other_data={}
                         )
 
