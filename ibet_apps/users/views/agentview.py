@@ -546,7 +546,7 @@ class AgentDetailView(CommAdminView):
 
             user_transaction = Transaction.objects.filter(user_id=affiliate)
             affiliate_commission_tran = user_transaction.filter(
-                transaction_type=TRANSACTION_COMMISSION)
+                Q(transaction_type=TRANSACTION_COMMISSION) & Q(status=TRAN_SUCCESS_TYPE))
 
             context["title"] = title
             context["breadcrumbs"].append({'url': '/cwyadmin/', 'title': title})
@@ -577,6 +577,31 @@ class AgentDetailView(CommAdminView):
 
             context["commission_set"] = affiliate.commission_setting
             context["transfer_between_levels"] = affiliate.transerfer_between_levels
+
+            # COMMISSION POP UP
+            # print(affiliate_commission_tran)
+            commission_history = []
+            for commission in affiliate_commission_tran:
+                commission_detail = commission.other_data
+                commission_month = commission.arrive_time - relativedelta(month=1)
+
+                commission_start_time = utcToLocalDatetime(commission_month.replace(day=1, hour=0, minute=0, second=0, microsecond=0))
+                commission_end_time = commission_start_time + relativedelta(months=1)
+                commission_dict = {
+                    'month': datetime.datetime.strftime(commission_month, '%b %Y'),
+                    'active_players': commission_detail.get('active_players') or 0,
+                    'downline_ftds': commission_detail.get('downline_ftds') or 0,
+                    'commission_rate': commission_detail.get('commission_rate') or 0,
+                    'deposit': calculateDeposit(affiliate, commission_start_time, commission_end_time)[1],
+                    'withdrawal': calculateWithdrawal(affiliate, commission_start_time, commission_end_time)[1],
+                    'bonus': calculateBonus(affiliate, commission_start_time, commission_end_time, None),
+                    'total_winloss': calculateTurnover(affiliate, commission_start_time, commission_end_time, None),
+                    'commission': commission.amount,
+                    'release_time': datetime.datetime.strftime(commission.arrive_time, '%b %d %Y, %H:%M'),
+                    'operator': commission.release_by
+                }
+                commission_history.append(commission_dict)
+            context['commission_trans'] = commission_history
 
             # COMMISSION LEVELS
             if affiliate.commission_setting == "System":

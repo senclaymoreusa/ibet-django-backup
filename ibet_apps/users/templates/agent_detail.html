@@ -155,20 +155,41 @@
                             <table class="table-striped" id="affiliate-monthly-commission-table"
                                    style="width: 100%">
                                 <thead>
-                                <tr>
-                                    <th scope="col">MONTH</th>
-                                    <th scope="col">ACTIVE PLAYERS</th>
-                                    <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
-                                    <th scope="col">COMMISSION RATE</th>
-                                    <th scope="col">DEPOSIT</th>
-                                    <th scope="col">WITHDRAWAL</th>
-                                    <th scope="col">SYSTEM BONUS</th>
-                                    <th scope="col">TOTAL WINLOSS</th>
-                                    <th scope="col">COMMISSION</th>
-                                    <th scope="col">TIME OF RELEASE</th>
-                                    <th scope="col">OPERATOR</th>
-                                </tr>
+                                    <tr>
+                                        <th scope="col">MONTH</th>
+                                        <th scope="col">ACTIVE DOWNLINES</th>
+                                        <th scope="col">DOWNLINE FIRST DEPOSIT COUNT</th>
+                                        <th scope="col">COMMISSION RATE</th>
+                                        <th scope="col">DEPOSIT</th>
+                                        <th scope="col">WITHDRAWAL</th>
+                                        <th scope="col">SYSTEM BONUS</th>
+                                        <th scope="col">TOTAL WINLOSS</th>
+                                        <th scope="col">COMMISSION</th>
+                                        <th scope="col">TIME OF RELEASE</th>
+                                        <th scope="col">OPERATOR</th>
+                                    </tr>
                                 </thead>
+                                <tbody>
+                                    {% for tran in commission_trans %}
+                                    <tr>
+                                        <td>{{ tran.month }}</td>
+                                        <td>{{ tran.active_players }}</td>
+                                        <td>{{ tran.downline_ftds }}</td>
+                                        <td>{{ tran.commission_rate }}</td>
+                                        <td>{{ tran.deposit }}</td>
+                                        <td>{{ tran.withdrawal }}</td>
+                                        <td>{{ tran.bonus }}</td>
+                                        <td>{{ tran.total_winloss }}</td>
+                                        <td>{{ tran.commission }}</td>
+                                        <td>{{ tran.release_time }}</td>
+                                        {% if tran.operator %}
+                                        <td><a href="{% url 'xadmin:user_detail' tran.operator.pk %}">{{ tran.operator.username }}</a></td>
+                                        {% else %}
+                                        <td></td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
                             </table>
                         </div>
                     </div>

@@ -96,27 +96,27 @@
             return data;
         }
 
-        var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
-            responsive: true,
-            dom: 'B',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 1],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
-        })
-        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
+//        var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
+//            responsive: true,
+//            dom: 'B',
+//            buttons: [
+//                'csv'
+//            ],
+//            "columnDefs": [{
+//                "searchable": false, "targets": [0, 1],
+//            }],
+//            "language": {
+//                "info": " _START_ - _END_ of _TOTAL_",
+//                "infoEmpty": " 0 - 0 of 0",
+//                "infoFiltered": "",
+//                "paginate": {
+//                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
+//                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
+//                },
+//                "lengthMenu": "_MENU_",
+//            },
+//        })
+//        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
 
         // ACTIVITY
         $('#activity-type').change(function () {
