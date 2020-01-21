@@ -22,12 +22,14 @@ print("[" + str(datetime.datetime.now()) + "] Using constants file for " + os.ge
 
 if os.getenv("ENV") != "local":
     AWS_S3_ADMIN_BUCKET = "ibet-admin-"+os.environ["ENV"]
+    AWS_BET_S3_BUCKET = 'game-bet-history-apdev'
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
     PTKEY= utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
     PTPEM = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.pem')
     
    
 else:
+    AWS_BET_S3_BUCKET = 'game-bet-history-dev'
     AWS_S3_ADMIN_BUCKET = "ibet-admin-dev"
     keys = utils.aws_helper.getThirdPartyKeys(AWS_S3_ADMIN_BUCKET, 'config/thirdPartyKeys.json')
     PTKEY = utils.aws_helper.getPTCertContent(AWS_S3_ADMIN_BUCKET, 'PT_CERT/CNY_UAT_FB88.key')
@@ -131,8 +133,8 @@ TRAN_CREATE_TYPE = 2  # deposit / withdraw
 TRAN_PENDING_TYPE = 3  # deposit / withdraw
 TRAN_APPROVED_TYPE = 4  # not being used 
 TRAN_CANCEL_TYPE = 5  # deposit / withdraw
-TRAN_COMPLETED_TYPE = 6  
-TRAN_RESEND_TYPE = 7    
+TRAN_COMPLETED_TYPE = 6
+TRAN_RESEND_TYPE = 7
 TRAN_REJECTED_TYPE = 8  # withdraw
 TRAN_RISK_REVIEW = 9  # withdraw
 
@@ -283,7 +285,7 @@ ACTIVE_STATE = 0
 DISABLED_STATE = 1
 
 THIRDPARTY_STATUS_CHOICES = (
-    (ACTIVE_STATE, "Active"), 
+    (ACTIVE_STATE, "Active"),
     (DISABLED_STATE, "Disabled")
 )
 
@@ -379,7 +381,7 @@ GROUP_TYPE = (
     (OTHER_GROUP, 'other')
 )
 
-   
+
 BANK_LIST_CHOICES = (
     ("OOO6CN", "China UnionPay"),
     ("ABOCCN", "Agricultural Bank of China"),
@@ -696,8 +698,8 @@ ASIAPAY_QRPAYWAY = keys["ASIAPAY"]["QRPAYWAY"]
 ASIAPAY_TRUSTUSER = keys["ASIAPAY"]["TRUSTUSER"]
 
 #iovation
-IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"] 
-IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"] 
+IOVATION_SUBSCRIBERID = keys["IOVATION"]["SUBSCRIBERID"]
+IOVATION_ACCOUNT = keys["IOVATION"]["ACCOUNT"]
 IOVATION_PASSWORD = keys["IOVATION"]["PASSWORD"]
 IOVATION_URL = keys["IOVATION"]["URL"]
 
@@ -735,6 +737,9 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["PRODUCTION"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["PRODUCTION"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["PRODUCTION"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://www.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["PRODUCTION"]["MERCHANT_NAME"]
@@ -745,6 +750,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
     BackURI = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_result"
     REDIRECTURL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_success"
+    HELP2PAY_RETURN_URL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/withdraw_result"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -763,6 +769,9 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["SANDBOX"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
@@ -773,6 +782,7 @@ elif "dev" in os.getenv("ENV"):
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
     BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
     REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
+    HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -791,6 +801,9 @@ else:
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
+    EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
+    EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
+    EA_FTP_PASSWORD = keys["EAGAME"]["SANDBOX"]["FTP_PASSWORD"]
     PAYZOD_API_URL = "https://dev.payzod.com/api/qr/"
     PAYZOD_MERCHANT_ID = keys["PAYZOD"]["SANDBOX"]["MERCHANT_ID"]
     PAYZOD_MERCHANT_NAME = keys["PAYZOD"]["SANDBOX"]["MERCHANT_NAME"]
@@ -801,6 +814,7 @@ else:
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
     BackURI = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_result"
     REDIRECTURL = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_success"
+    HELP2PAY_RETURN_URL = "http://cf61d044.ngrok.io/accounting/api/help2pay/withdraw_result"
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
@@ -812,7 +826,6 @@ else:
 
 
 
-HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
 
 GAME_FILTER_OPTION = [
     {
@@ -822,7 +835,7 @@ GAME_FILTER_OPTION = [
     {
         'name': 'Provider',
         'data': ['Netent', 'Play\'n Go', 'Big Time Gaming', 'Microgaming', 'Quickspin', 'Pragmatic Play', 'Blueprint', 'Novomatic', 'IGT', 'Elk Studios',
-        'Genesis', 'High5', 'Iron Dog', 'Just For The Win', 'Kalamba', 'Leander', 'Lightning Box', 'Nextgen', 'Red7', 'Red Tiger Gaming', 'Scientific Games', 
+        'Genesis', 'High5', 'Iron Dog', 'Just For The Win', 'Kalamba', 'Leander', 'Lightning Box', 'Nextgen', 'Red7', 'Red Tiger Gaming', 'Scientific Games',
         'Thunderkick', 'Yggdrasil', 'Other']
     },
     {
@@ -945,7 +958,7 @@ DEPARTMENT_LIST = [
 
 
 PERMISSION_CODE = [
-    {   
+    {
         "name": "Members",
         "permission": [],
         "menu": [
@@ -985,7 +998,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Report",
         "permission": [
             {
@@ -1002,13 +1015,13 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Bonuses",
         "permission": [
             {
                 "CODE": "4001",
                 "PERMISSION": "No access"
-                
+
             },{
                 "CODE": "4002",
                 "PERMISSION": "READ"
@@ -1019,7 +1032,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Risk control",
         "permission": [
             {
@@ -1036,7 +1049,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Marketing",
         "permission": [],
         "menu": [
@@ -1093,7 +1106,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Affiliates",
         "permission": [],
         "menu": [
@@ -1133,7 +1146,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Messaging",
         "permission": [],
         "menu": [
@@ -1190,7 +1203,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Finance",
         "permission": [],
         "menu": [
@@ -1247,7 +1260,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "Content management",
         "permission": [
             {
@@ -1265,7 +1278,7 @@ PERMISSION_CODE = [
             }
         ]
     },
-    {   
+    {
         "name": "System admin",
         "permission": [],
         "menu": [
@@ -1358,32 +1371,44 @@ BONUS_TYPE_CHOICES = (
     (BONUS_TYPE_MANUAL, 'MANUAL')
 )
 
+BONUS_STATUS_INACTIVE = 0
+BONUS_STATUS_ACTIVE = 1
+BONUS_STATUS_DISABLED = 2
+
 BONUS_STATUS_CHOICES = (
-    (0, 'INACTIVE'),
-    (1, 'ACTIVE'),
-    (2, 'DISABLED'),
+    (BONUS_STATUS_INACTIVE, 'INACTIVE'),
+    (BONUS_STATUS_ACTIVE, 'ACTIVE'),
+    (BONUS_STATUS_DISABLED, 'DISABLED'),
 )
 
 
-BONUS_START = 0
-BONUS_ACTIVE = 1
-BONUS_COMPLETED = 2
-BONUS_EXPIRED = 3
-BONUS_ISSUED = 4
-BONUS_REDEEMED = 5
+BONUS_ISSUED = 0        # bonus credited to player account
+BONUS_CLAIMED = 1       # bonus pushed directly pr player clicked "claim"
+BONUS_START = 2         # player starts to meet deposit and turnover requirement
+BONUS_ACTIVE = 3        # player starts to play toward wager requirements
+BONUS_COMPLETED = 4     # player meets turnover requirements
+BONUS_EXPIRED = 5       # player fails to meet turnover requirements in allocated period or player fails to activate the bonus in allocated time
+BONUS_CANCELLED = 6     # bonus is cancelled at any stage either on player or admin side
+BONUS_PENDING = 7       # bonus pushed directly pr player clicked "claim" due to another bonus of the same type being active
+BONUS_RELEASED = 8      # bonus is released and wagering is cancelled by an admin user clicking 'release'
 
 USER_BONUS_EVENT_TYPE_CHOICES = (
-    (0, 'STARTED'),
-    (1, 'ACTIVE'),
-    (2, 'COMPLETED'),
-    (3, 'EXPIRED'),
-    (4, 'ISSUED'),
-    (5, 'REDEEMED'),
+    (BONUS_ISSUED, 'ISSUED'),
+    (BONUS_CLAIMED, 'CLAIMED'),
+    (BONUS_START, 'START'),
+    (BONUS_ACTIVE, 'ACTIVE'),
+    (BONUS_COMPLETED, 'COMPLETED'),
+    (BONUS_EXPIRED, 'EXPIRED'),
+    (BONUS_CANCELLED, 'CANCELLED'),
+    (BONUS_PENDING, 'PENDING'),
+    (BONUS_RELEASED, 'RELEASED'),
 )
 
+BONUS_PRE_WAGER = 0
+BONUS_POST_WAGER = 1
 BONUS_RELEASE_TYPE_CHOICES = (
-    (0, 'Pre-wager'),
-    (1, 'Post-wager'),
+    (BONUS_PRE_WAGER, 'Pre-wager'),
+    (BONUS_POST_WAGER, 'Post-wager'),
 )
 
 BONUS_AGGREGATE_SUM = 0
@@ -1393,11 +1418,11 @@ BONUS_AGGREGATE_MAX = 3
 BONUS_AGGREGATE_LATEST = 4
 
 BONUS_AGGREGATE_METHOD_CHOICES = (
-    (0, 'SUM'),
-    (1, 'COUNT'),
-    (2, 'AVERAGE'),
-    (3, 'MAX'),
-    (4, 'LATEST'),
+    (BONUS_AGGREGATE_SUM, 'SUM'),
+    (BONUS_AGGREGATE_COUNT, 'COUNT'),
+    (BONUS_AGGREGATE_AVERAGE, 'AVERAGE'),
+    (BONUS_AGGREGATE_MAX, 'MAX'),
+    (BONUS_AGGREGATE_LATEST, 'LATEST'),
 )
 
 #GD CASINO
@@ -1426,7 +1451,7 @@ GDCASINO_STATUS_CODE =(
 GDCASINO_STATUS = (
     (0, 'PENDING'),
     (1, 'DEBIT'),
-    (2, 'CREDIT'), 
+    (2, 'CREDIT'),
     (3, 'TIP'),
     (4, 'CANCEL'),
 )
@@ -1463,7 +1488,7 @@ SECURITY_QUESTION = (
     (4, _('What is your primary school class teacher’s name?')),
     (5, _('What is your best childhood friend’s name?')),
     (6, _('What is the name of the person that influenced you the most?'))
-    
+
 )
 
 # Bonus
@@ -1474,13 +1499,20 @@ BONUS_CATEGORY = (
     (1, 'Triggered'),
 )
 
+BONUS_ID_VERIFIED = 0
+BONUS_PHONE_VERIFIED = 1
+BONUS_EMAIL_VERIFIED = 2
+BONUS_VALID_DEPOSIT = 3
+BONUS_VALID_WITHDRAWAL = 4
+BONUS_VALID_MANUAL_WITHDRAWAL = 5
+
 BONUS_MUST_HAVE = (
-    (0, 'ID verified'),
-    (1, 'Phone verified'),
-    (2, 'Email verified'),
-    (3, 'A successful deposit'),
-    (4, 'A successful withdrawal'),
-    (5, 'Manual audit for first withdrawal'),
+    (BONUS_ID_VERIFIED, 'ID verified'),
+    (BONUS_PHONE_VERIFIED, 'Phone verified'),
+    (BONUS_EMAIL_VERIFIED, 'Email verified'),
+    (BONUS_VALID_DEPOSIT, 'A successful deposit'),
+    (BONUS_VALID_WITHDRAWAL, 'A successful withdrawal'),
+    (BONUS_VALID_MANUAL_WITHDRAWAL, 'Manual audit for first withdrawal'),
 )
 
 BONUS_DELIVERY_PUSH = 0
@@ -1506,6 +1538,7 @@ BONUS_PAYOUT_CHOICES = (
 # All provider
 KY_PROVIDER = "KY"
 BETSOFT_PROVIDER = "Betsoft"
+EA_PROVIDER = "EA"
 AG_PROVIDER = "AG"
 FG_PROVIDER = "FG"
 MG_PROVIDER = "MG"

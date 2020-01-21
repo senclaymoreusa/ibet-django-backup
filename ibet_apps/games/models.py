@@ -23,6 +23,7 @@ class GameProvider(models.Model):
     market = models.CharField(max_length=50, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
     is_transfer_wallet = models.BooleanField(default=False)
+    timezone = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.provider_name
@@ -124,8 +125,8 @@ class GameBet(models.Model):
     ref_no = models.CharField(max_length=100, null=True, blank=True)
     bet_time = models.DateTimeField(
         _('Time Bet was Placed'),
-        auto_now_add=True,
-        editable=False,
+        default=timezone.now,
+        null=True
     )
 
     resolved_time = models.DateTimeField(null=True, blank=True)
