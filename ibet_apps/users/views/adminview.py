@@ -235,8 +235,8 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[tran['fields']['status']],
                     # 'bank': str(tran['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[tran['fields']['channel']],
-                    'method': tran['fields']['method'],
+                    'channel': channelMap[tran['fields']['channel']] if tran['fields']['channel'] else "",
+                    'method': tran['fields']['method'] if tran['fields']['method'] else "",
                 }
                 # transDict = serializers.serialize('json')
                 trans.append(transDict)
@@ -358,7 +358,7 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[deposit['fields']['status']],
                     # 'bank': str(deposit['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[deposit['fields']['channel']],
+                    'channel': channelMap[deposit['fields']['channel']] if deposit['fields']['channel'] else "",
                     'method': deposit['fields']['method'],
                 }
                 lastDeposit.append(depositDict)
@@ -390,7 +390,7 @@ class UserDetailView(CommAdminView):
                     'status': statusMap[withdraw['fields']['status']],
                     # 'bank': str(withdraw['fields']['bank']),
                     'bank': "",
-                    'channel': channelMap[withdraw['fields']['channel']],
+                    'channel': channelMap[withdraw['fields']['channel']] if withdraw['fields']['channel'] else "",
                     'method': withdraw['fields']['method'],
                 }
                 lastWithdraw.append(withdrawDict)
@@ -1389,13 +1389,19 @@ class GetBetHistoryDetail(View):
             #     bet_time = datetime.datetime.strptime(bet_obj.bet_time, "%Y-%m-%dT%H:%M:%S.%fZ")
             # except:
             #     bet_time = datetime.datetime.strptime(bet_obj.bet_time, "%Y-%m-%dT%H:%M:%SZ")
-            bet_time = bet_obj.bet_time.strftime("%B %d, %Y, %I:%M %p")
+            if bet_obj.bet_time:
+                bet_time = bet_obj.bet_time.strftime("%B %d, %Y, %I:%M %p")
+            else:
+                bet_time = ''
 
             # try:
             #     resolved_time = datetime.datetime.strptime(bet_obj.resolved_time, "%Y-%m-%dT%H:%M:%S.%fZ")
             # except:
             #     resolved_time = datetime.datetime.strptime(bet_obj.resolved_time, "%Y-%m-%dT%H:%M:%SZ")
-            resolved_time = bet_obj.resolved_time.strftime("%B %d, %Y, %I:%M %p")
+            if bet_obj.resolved_time:
+                resolved_time = bet_obj.resolved_time.strftime("%B %d, %Y, %I:%M %p")
+            else:
+                resolved_time = ''
 
             response = {
                 'bet_id': bet_obj.transaction_id,

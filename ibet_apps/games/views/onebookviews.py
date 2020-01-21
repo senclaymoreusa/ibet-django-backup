@@ -43,15 +43,12 @@ convertCurrency = {
 outcomeConversion = {
     "won": 0,
     "lose": 1,
-    "running": 4,
-    "draw":5,
-    "half lose":6,
-    "half won" : 10,
-    "reject": 11,
-    "waiting":12,
-    "waiting running": 13,
+    "draw":2,
+    "half lose":0,
+    "half won" : 0,
+    "reject": 3,
     "void": 3,
-    "refund": 14
+    "refund": 3
 }
 def createMember(username, oddsType):
     try:
@@ -94,7 +91,7 @@ def createMember(username, oddsType):
             elif r.status_code == 204:
                 success = True
                 # Handle error
-                logger.info("Failed to complete a request for createMember...")
+                logger.info("Failed to complete a request for onebook createMember...")
                 logger.error(rdata)
                 return ERROR_CODE_FAIL
             elif r.status_code == 500:
@@ -145,7 +142,7 @@ class CreateMember(APIView):
                 elif r.status_code == 204:
                     success = True
                     # Handle error
-                    logger.info("Failed to complete a request for createMember...")
+                    logger.info("Failed to complete a request for onebook createMember...")
                     logger.error(rdata)
                     return Response(rdata)
                 elif r.status_code == 500:
@@ -156,14 +153,14 @@ class CreateMember(APIView):
                 return Response(rdata)
             logger.info(rdata)
             if rdata['error_code'] == 0:
-                return Response({"success":"The user is created successful."})
+                return Response({"success":"The user is created successful in onebook CreateMember."})
             else:
                 message = rdata['message']
                 return Response({"failed": message})
             
             return Response(rdata)
         except ObjectDoesNotExist as e:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The user is not existed in onebook CreateMember."}) 
 
 def createMember(user,currency,oddsType):
 
@@ -195,7 +192,7 @@ def createMember(user,currency,oddsType):
 
 def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
     
-    trans_id = user.username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
     
     
     if user.currency == CURRENCY_CNY:
@@ -245,7 +242,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
             elif r.status_code == 204:
                 success = True
                 # Handle error
-                logger.info("Failed to complete a request for FundTransfer...")
+                logger.info("Failed to complete a request for onebook FundTransfer...")
                 logger.error(rdata)
                 return ERROR_CODE_FAIL
             elif r.status_code == 500:
@@ -333,7 +330,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             transfer_from=fund_wallet,
                                                             transfer_to='Onebook',
                                                             product=GAME_TYPE_SPORTS,
-                                                            transaction_type=TRANSACTION_TRANSFER_OUT,
+                                                            transaction_type=TRANSACTION_TRANSFER,
                                                             status=TRAN_SUCCESS_TYPE)
                                     return CODE_SUCCESS
                                 except Exception as e:
@@ -353,7 +350,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             transfer_from='Onebook',
                                                             transfer_to=fund_wallet,
                                                             product=GAME_TYPE_SPORTS,
-                                                            transaction_type=TRANSACTION_TRANSFER_IN,
+                                                            transaction_type=TRANSACTION_TRANSFER,
                                                             status=TRAN_SUCCESS_TYPE)
                                     return CODE_SUCCESS
                             # user.save() 
@@ -375,7 +372,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                         return  ERROR_CODE_FAIL         
                 elif rr.status_code == 204:
                     # Handle error
-                    logger.info("Failed to complete a request for check fund transfer...")
+                    logger.info("Failed to complete a request for onebook check fund transfer...")
                     logger.error(rrdata)
                     return ERROR_CODE_FAIL
         else:    
@@ -409,7 +406,7 @@ class FundTransfer(APIView):
             trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
             if direction == '1' and user.main_wallet - Decimal(amount.replace(',','')) < 0:
                 #deposit
-                return Response({"error":"Your balance is not enough."})
+                return Response({"error":"Your balance is not enough for onebook."})
             else:
                 headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
                 delay = kwargs.get("delay", 5)
@@ -433,7 +430,7 @@ class FundTransfer(APIView):
                     elif r.status_code == 204:
                         success = True
                         # Handle error
-                        logger.info("Failed to complete a request for FundTransfer...")
+                        logger.info("Failed to complete a request for onebook FundTransfer...")
                         logger.error(rdata)
                         return Response(rdata)
                     elif r.status_code == 500:
@@ -486,13 +483,13 @@ class FundTransfer(APIView):
                                 logger.error(error)          
                         elif rr.status_code == 204:
                             # Handle error
-                            logger.info("Failed to complete a request for check fund transfer...")
+                            logger.info("Failed to complete a request for onebook check fund transfer...")
                             logger.error(rrdata)
                             return Response(rrdata)
                 else:    
-                    return Response({"error":"Request failed"})      
+                    return Response({"error":"Request failed for onebook FundTransfer"})      
         except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed."}) 
+            return Response({"error":"The user is not existed onebook FundTransfer."}) 
 
 
 
@@ -511,6 +508,7 @@ def getBetDetail(request):
         delay = 2
         success = False
         version_key = PROVIDER.notes
+        
         onebook_run = "run"
         try:
             r = RedisClient().connect()
@@ -523,14 +521,26 @@ def getBetDetail(request):
         if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
             while(redis.check_onebook_bet_details(onebook_run)): #loop while the key is existed in redis
-                r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
-                    "vendor_id": ONEBOOK_VENDORID,
-                    "version_key": version_key,
-                })
-                rdata = r.json()
+                try:
+                    r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
+                        "vendor_id": ONEBOOK_VENDORID,
+                        "version_key": version_key,
+                    })
+                    rdata = r.json()
+                except requests.RequestException:
+                    logger.error("Connectivity error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'Connectivity error for onebook GetBetDetail API.'})
+                except ValueError:
+                    logger.error("JSON parsing error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'JSON parsing error for onebook GetBetDetail API.'})
+                except (IndexError, KeyError):
+                    logger.error("JSON format error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'JSON format error for onebook GetBetDetail API.'})
                 if r.status_code == 200:
-                    logger.info(rdata)
-                    # print(rdata)
+                    
                     version_key = rdata["Data"]["last_version_key"]        
                     
                     updates = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
@@ -548,46 +558,54 @@ def getBetDetail(request):
                             cate = Category.objects.get(name='Sports')
                             
                             trans_id = rdata["Data"]["BetDetails"][i]["trans_id"]
-                            user = CustomUser.objects.get(username=username)
+
+                            try:
+                                user = CustomUser.objects.get(username=username)
+                                
+                            except ObjectDoesNotExist:     
+                                redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
+                                logger.error("The user does not exist.")
+                                return Response({'error': 'The user does not exist.'})
+
                             transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                            outcome = rdata["Data"]["BetDetails"][i]["ticket_status"]
                             if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
-                                
-                                GameBet.objects.create(provider=PROVIDER,
-                                                    category=cate,
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    transaction_id=transid,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    ref_no=trans_id,
-                                                    market=ibetCN,
-                                                    other_data=rdata
-                                                    )
-                            else:
-                                
-                                resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
                                     
-                                GameBet.objects.get_or_create(provider=PROVIDER,
-                                                    category=cate,
-                                                    transaction_id=transid,
-                                                    user=user,
-                                                    user_name=user.username,
-                                                    odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                    amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                    currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                    bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                    amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                    outcome=outcomeConversion[rdata["Data"]["BetDetails"][i]["ticket_status"]],
-                                                    resolved_time=utcToLocalDatetime(resolve),
-                                                    ref_no=trans_id,
-                                                    market=ibetCN,
-                                                    other_data=rdata,
-                                                    )
-                        
+                                    GameBet.objects.create(provider=PROVIDER,
+                                                        category=cate,
+                                                        user=user,
+                                                        user_name=user.username,
+                                                        transaction_id=transid,
+                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                        ref_no=trans_id,
+                                                        market=ibetCN,
+                                                        other_data=rdata
+                                                        )
+                                
+                            else:
+                                if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
+                                    resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
+                                        
+                                    GameBet.objects.get_or_create(provider=PROVIDER,
+                                                        category=cate,
+                                                        transaction_id=transid,
+                                                        user=user,
+                                                        user_name=user.username,
+                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
+                                                        outcome=outcomeConversion[outcome],
+                                                        resolved_time=utcToLocalDatetime(resolve),
+                                                        ref_no=trans_id,
+                                                        market=ibetCN,
+                                                        other_data=rdata,
+                                                        )
                         # sleep(delay)  
                         # print("sleep")  
                     else:
@@ -595,14 +613,14 @@ def getBetDetail(request):
                         break
                 else:
                     redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
-                    logger.info("There was something wrong with the result")
-                    return Response({'status': 'There was something wrong with the result'}, status=status.HTTP_400_BAD_REQUEST)
+                    logger.info("There was something wrong with the onebook getBetDetail result")
+                    return Response({'status': 'There was something wrong with the onebook getBetDetail result'}, status=status.HTTP_400_BAD_REQUEST)
             redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
             #print(redis.check_onebook_bet_details(onebook_run))        
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
         else:
-            logger.info("skip running this time.")
-            return Response({'status': 'skip running this time.'}, status=status.HTTP_200_OK)
+            logger.info("skip running this time for onebook getBetDetail.")
+            return Response({'status': 'skip running this time onebook getBetDetail.'}, status=status.HTTP_200_OK)
     
 
     
@@ -711,7 +729,7 @@ class Login(APIView):
                 elif r.status_code == 204:
                     success = True
                     # Handle error
-                    logger.info("Failed to complete a request for createMember...")
+                    logger.info("Failed to complete a request for onebook createMember...")
                     logger.error(rdata)
                     return Response(rdata)
                 elif r.status_code == 500:
@@ -722,24 +740,26 @@ class Login(APIView):
                 return Response(rdata)
             try:
                 Data = rdata['Data']
-                if user.language == 'English':
+                if user.language == ('English' or 'en'):
                     lang = 'en'
-                elif user.language == 'Chinese':
+                elif user.language == ('Chinese' or 'zh'):
                     lang = 'cs'
-                elif user.language == 'Thai':
+                elif user.language == ('Thai' or 'th'):
                     lang = 'th'
-                elif user.language == 'Vietnamese':
-                    lang = 'vn'
+                elif user.language == ('Vietnamese' or 'vi'):
+                    lang = 'vi'
+                else:
+                    lang = 'en'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
                 return Response({"login_url":loginUrl})
             except NameError as e:
                 logger.error(e)
-                return Response({"error": "Cannot find the code."})
+                return Response({"error": "Cannot find the code for onebook login data."})
 
         except ObjectDoesNotExist as e:
             logger.error(e)
-            return Response({"error": "Cannot find the user."})
+            return Response({"error": "Cannot find the user for onebook login."})
 
 def CheckMemberOnline(request):
     if request.method == "POST":
@@ -776,7 +796,7 @@ def CheckMemberOnline(request):
             tr1 = ET.SubElement(root, "StatusCode")
             tr1.text = '2'
             tr2 = ET.SubElement(root, "message")
-            tr2.text = 'User is not exist.'
+            tr2.text = 'User is not exist for onebook.'
             return HttpResponse(ET.tostring(root), content_type="text/xml")
         return HttpResponse(ET.tostring(root), content_type="text/xml")
 

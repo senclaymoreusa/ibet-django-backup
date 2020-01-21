@@ -191,14 +191,15 @@ def confirmWithdrawRequest(request):
                 withdraw_txn.status=TRAN_APPROVED_TYPE
                 withdraw_txn.save()
                 return HttpResponse("true")
+            
+            logger.error("Help2Pay::Withdraw checksum does not match")
             return HttpResponse("false")
 
         except ObjectDoesNotExist as e:
-            logger.error("Help2Pay::Withdraw checksum does not match")
             logger.error(f"transaction id {trans_id} does not exist")
             return HttpResponse("false")
         except Exception as e:
-            logger.critical("FATAL__ERROR::Help2Pay::Exception occured during withdraw process", exc_info=True, stack_info=True)
+            logger.critical("FATAL__ERROR::Help2Pay::Exception occured during withdraw process", exc_info=True)
             return HttpResponse("false")
 
 def withdrawResult(request):
@@ -259,25 +260,28 @@ class SubmitPayout(View):
         return HttpResponse(status=404) 
 
     def post(self, request): # user will need to submit bank acc information
-        username = request.POST.get("username")
+        data = json.loads(request.body)
+        username = request.user.username
+
         try:
             user = CustomUser.objects.get(username=username)
-            withdraw_password = request.POST.get("withdrawPassword")
+            withdraw_password = data.get("withdrawPassword")
             
             # toBankAccountName = 'orion'
             # toBankAccountNumber = '12345123'
-            toBankAccountName = request.POST.get("toBankAccountName")
-            toBankAccountNumber = request.POST.get("toBankAccountNumber")
+            toBankAccountName = data.get("toBankAccountName")
+            toBankAccountNumber = data.get("toBankAccountNumber")
 
-            amount = float(request.POST.get("amount"))
-
+            amount = float(data.get("amount"))
+            currency = data.get("currency") or 2 # 2 = THB, 8 = VND
+            currency = int(currency)
             trans_id = username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             # trans_id = "orion-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
             ip = helpers.get_client_ip(request)
-            bank = request.POST.get("bank")
-            
+            bank = data.get("bank")
+
             user_id=user.pk
-            currency = user.currency
+            
             merchant_code = '123'
             secret_key = '123'
             payoutURL = '123'
@@ -318,12 +322,42 @@ class SubmitPayout(View):
                     )
                     withdraw_request.save()
                     logger.info("Withdraw request created: " + str(withdraw_request))
-                    # can_withdraw = helpers.addOrWithdrawBalance('orion', amount, "withdraw")
+
                     can_withdraw = helpers.addOrWithdrawBalance(username, amount, "withdraw")
 
+                    if can_withdraw:
+                        data = {
+                            "Key": checksum,
+                            "ClientIP": ip,
+                            "ReturnURI": HELP2PAY_RETURN_URL,
+                            "MerchantCode": merchant_code,
+                            "TransactionID": str(trans_id),
+                            "MemberCode": user_id,
+                            "CurrencyCode": currencyConversion[currency],
+                            "Amount": amount,
+                            "TransactionDateTime": Datetime,
+                            "BankCode": bank,
+                            "toBankAccountName": toBankAccountName,
+                            "toBankAccountNumber": toBankAccountNumber,
+                        }
+                        print(data)
+                        r = requests.post(payoutURL, data=data)
+                        
+                        if r.status_code == 200:
+                            return HttpResponse(r.content, content_type="text/xml")
+                        else:
+                            return JsonResponse({
+                                'status_code': ERROR_CODE_FAIL,
+                                'message': 'Payment service unavailable'
+
+                            })
+                    else:
+                        return JsonResponse({
+                            'status_code': ERROR_CODE_FAIL,
+                            'message': 'Insufficient funds'
+                        })
                 except (ObjectDoesNotExist, IntegrityError, DatabaseError) as e:
-                    logger.critical("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request", exc_info=1, stack_info=1)
-                    traceback.print_exc(file=sys.stdout)
+                    logger.critical("FATAL__ERROR::Help2Pay::Exception occured when submitting a payout request", exc_info=1)
                     return HttpResponse(status=500)
             else:
                 logger.error("withdraw password is not correct.")    
@@ -331,38 +365,7 @@ class SubmitPayout(View):
                     'status_code': ERROR_CODE_INVALID_INFO,
                     'message': 'Withdraw password is not correct.'
                 })
-        
-            if can_withdraw:
-                data = {
-                    "Key": MD5(secretMsg),
-                    "ClientIP": ip,
-                    "ReturnURI": HELP2PAY_RETURN_URL,
-                    "MerchantCode": merchant_code,
-                    "TransactionID": str(trans_id),
-                    "MemberCode": user_id,
-                    "CurrencyCode": currencyConversion[currency],
-                    "Amount": amount,
-                    "TransactionDateTime": Datetime,
-                    "BankCode": bank,
-                    "toBankAccountName": toBankAccountName,
-                    "toBankAccountNumber": toBankAccountNumber,
-                }
                 
-                r = requests.post(payoutURL, data=data)
-                
-                if r.status_code == 200:
-                    return HttpResponse(r.content)
-                else:
-                    return JsonResponse({
-                        'status_code': ERROR_CODE_FAIL,
-                        'message': 'Payment service unavailable'
-
-                    })
-            else:
-                return JsonResponse({
-                    'status_code': ERROR_CODE_FAIL,
-                    'message': 'Insufficient funds'
-                })
         except ObjectDoesNotExist as e:
             logger.error(repr(e))
             return HttpResponse(status=500)
