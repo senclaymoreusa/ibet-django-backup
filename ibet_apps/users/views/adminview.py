@@ -478,252 +478,256 @@ class UserDetailView(CommAdminView):
         post_type = request.POST.get('type')
         user_id = request.POST.get('user_id')
 
-        if post_type == 'edit_user_detail':
-            username = request.POST.get('username')
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
-            email = request.POST.get('email')
-            phone = request.POST.get('phone')
-            birthday = request.POST.get('birthday')
-            address = request.POST.get('address')
-            city = request.POST.get('city')
-            zipcode = request.POST.get('zipcode')
-            country = request.POST.get('country')
-            user_id_img = request.POST.get('user_id_img')
-            # upload image to S3
-            self.upload_user_photo_id(username, user_id_img)
+        try:
+            if post_type == 'edit_user_detail':
+                username = request.POST.get('username')
+                first_name = request.POST.get('first_name')
+                last_name = request.POST.get('last_name')
+                email = request.POST.get('email')
+                phone = request.POST.get('phone')
+                birthday = request.POST.get('birthday')
+                address = request.POST.get('address')
+                city = request.POST.get('city')
+                zipcode = request.POST.get('zipcode')
+                country = request.POST.get('country')
+                user_id_img = request.POST.get('user_id_img')
+                # upload image to S3
+                self.upload_user_photo_id(username, user_id_img)
 
-            CustomUser.objects.filter(pk=user_id).update(
-                username=username, first_name=first_name, 
-                last_name=last_name, email=email, 
-                phone=phone, date_of_birth=birthday, 
-                street_address_1=address, city=city,
-                zipcode=zipcode, country=country)
-            
-            logger.info('Finished update user: ' + str(username) + 'info to DB')
-            # print(CustomUser.objects.get(pk=user_id).id_image)
+                CustomUser.objects.filter(pk=user_id).update(
+                    username=username, first_name=first_name, 
+                    last_name=last_name, email=email, 
+                    phone=phone, date_of_birth=birthday, 
+                    street_address_1=address, city=city,
+                    zipcode=zipcode, country=country)
+                
+                logger.info('Finished update user: ' + str(username) + 'info to DB')
+                # print(CustomUser.objects.get(pk=user_id).id_image)
 
-            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
         
-        elif post_type == 'update_message':
-            admin_user = request.POST.get('admin_user')
-            message = request.POST.get('message')
+            elif post_type == 'update_message':
+                admin_user = request.POST.get('admin_user')
+                message = request.POST.get('message')
 
-            UserActivity.objects.create(
-                user = CustomUser.objects.filter(pk=user_id).first(),
-                admin = CustomUser.objects.filter(username=admin_user).first(),
-                message = message,
-                activity_type = 3,
-            )
+                UserActivity.objects.create(
+                    user = CustomUser.objects.filter(pk=user_id).first(),
+                    admin = CustomUser.objects.filter(username=admin_user).first(),
+                    message = message,
+                    activity_type = 3,
+                )
 
-            logger.info('Finished create activity to DB')
-            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+                logger.info('Finished create activity to DB')
+                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
 
-        elif post_type == 'activity_filter':
-            activity_type = request.POST.get('activity_type')
+            elif post_type == 'activity_filter':
+                activity_type = request.POST.get('activity_type')
 
-            user = CustomUser.objects.get(pk=user_id)
-            # print(str(activity_type))
-            
-            if activity_type == 'all':
-                activitys = UserActivity.objects.filter(user=user).order_by('-created_time')
-            else:
-                activitys = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
-            
-            activitys = serializers.serialize('json', activitys)
-            activitys = json.loads(activitys)
-            response = []
-            for act in activitys:
-                actDict = {}
-                try:
-                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                except:
-                    time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
-                actDict['time'] = time
-                adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
-                actDict['adminUser'] = str(adminUser.username)
-                actDict['message'] = act['fields']['message']
-                response.append(actDict)
-            # print(str(response))
-
-            return HttpResponse(json.dumps(response), content_type='application/json')
-
-        elif post_type == 'limitation_setting':
-            
-            loss_limitation = request.POST.getlist('loss_limit')
-            loss_limitation = [item for item in loss_limitation if len(item) > 0]
-            # print("loss_limitation type: " + str(type(loss_limitation)))
-            # print("origin loss_limitation: " + str(loss_limitation))
-            loss_interval = request.POST.getlist('loss_limit_interval')
-            # print("origin loss_interval: " + str(loss_interval))
-            # loss_interval = list(map(lambda x : int(x) if x >= 0, loss_interval))
-            loss_interval = [item for item in loss_interval if int(item) >= 0]
-            deposit_limitation = request.POST.getlist('deposit_limit')
-            # deposit_limitation = [float(item) for item in deposit_limitation if float(item) >= 0]
-            deposit_interval = request.POST.getlist('deposit_limit_interval')
-            # deposit_interval = list(map(lambda x : int(x), deposit_interval))
-            deposit_interval = [int(item) for item in deposit_interval if int(item) >= 0]
-            withdraw_limitation = request.POST.getlist('withdraw_limit')
-            # print("withdraw_limitation type: " + str(withdraw_limitation))
-            # deposit_limitation = [float(item) for item in withdraw_limitation if float(item) >= 0]
-            withdraw_interval = request.POST.getlist('withdraw_limit_interval')
-            withdraw_interval = [int(item) for item in withdraw_interval if int(item) >= 0]
-
-            reason = request.POST.get('reasonTextarea')
-
-            temporary_time = request.POST.get('temporary_time')
-            permanent_time = request.POST.get('permanent_time')
-            # print(temporary_time, permanent_time)
-            # print("reason type: " + str(reason))
-            # print(str(reason))
-
-            access_deny_tags = request.POST.get('access_deny_tags')
-            if access_deny_tags:
-                access_deny_tags = json.loads(access_deny_tags)
-            # print(str(access_deny_tags))
-            user = CustomUser.objects.get(pk=user_id)
-            oldLimitMap = get_old_limitations(user_id)
-
-            # oldLimitMap = {
-            #     LIMIT_TYPE_BET: {},
-            #     LIMIT_TYPE_LOSS: {},
-            #     LIMIT_TYPE_DEPOSIT: {},
-            #     LIMIT_TYPE_WITHDRAW: {},
-            #     LIMIT_TYPE_ACCESS_DENY: {}
-            # }
-
-            # limitations = Limitation.objects.filter(user=user)
-            # for limit in limitations:
-            #     limitType = limit.limit_type
-            #     if limitType == LIMIT_TYPE_ACCESS_DENY:
-            #         oldLimitMap[limitType][limit.product] = limit.amount
-            #     else:
-            #         # oldLimitMap[limitType]['amount'] = limit.amount
-            #         oldLimitMap[limitType][limit.interval] = limit.amount
-            if temporary_time:
-                set_temporary_timeout(user_id, temporary_time)
-            if permanent_time:
-                set_permanent_timeout(user_id, permanent_time)
-            # print("oldLimitMap: " + str(oldLimitMap))
-            # if bet_limitation:
-
-            #     # delete
-            #     for productType in oldLimitMap[LIMIT_TYPE_BET]:
-            #         if productType not in bet_product:
-            #             logger.info('Deleting bet limit for product type' + str(productType))
-            #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=productType).delete()
-
-            #     # insert or update
-            #     for i in range(len(bet_limitation)):
-            #         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).exists():
-            #             logger.info('Update bet limit for product type for' + str(user))
-            #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).update(amount=bet_limitation[i])
-            #         else:
-            #             logger.info('Create new bet limit for product type for' + str(user))
-            #             limitation = Limitation(
-            #                 user= user,
-            #                 limit_type=0,
-            #                 amount=bet_limitation[i],
-            #                 product=bet_product[i],
-            #             )
-            #             limitation.save()
-
-            if access_deny_tags:
-                for productType in oldLimitMap[LIMIT_TYPE_ACCESS_DENY]:
-                    if productType not in access_deny_tags:
-                        logger.info('Deleting access deny limit for product type ' + str(productType))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=productType).delete()
-
-                for i in range(len(access_deny_tags)):
-                    if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=access_deny_tags[i]).exists():
-                        pass
-                    else:
-                        logger.info('Create new access deny for product type for' + str(user))
-                        limitation = Limitation(
-                            user= user,
-                            limit_type=LIMIT_TYPE_ACCESS_DENY,
-                            amount=0,
-                            product=access_deny_tags[i],
-                        )
-                        limitation.save()
-            else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY).delete()
+                user = CustomUser.objects.get(pk=user_id)
+                # print(str(activity_type))
                 
-            
-            # set_loss_deposit_limitation(user_id, loss_limitation, loss_interval, deposit_limitation, deposit_interval, oldLimitMap)
-            if loss_limitation:
-                set_loss_limitation(user_id, loss_limitation, loss_interval, oldLimitMap, user)
-            else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=None)
-
-            if deposit_limitation:
-                set_deposit_limitation(user_id, deposit_limitation, deposit_interval, oldLimitMap, user)
-            else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=None)
-
-            if withdraw_interval:
-                # delete
-                for intervalType in oldLimitMap[LIMIT_TYPE_WITHDRAW]:
-                    if intervalType not in withdraw_interval:
-                        logger.info('Deleting loss limit for interval type: ' + str(intervalType))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW, interval=intervalType).delete()
-
-                # insert or update
-                for i in range(len(withdraw_limitation)):
-                    if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW, interval=withdraw_interval[i]).exists():
-                        logger.info('Update loss limit for interval type: ' + str(user))
-                        Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW, interval=withdraw_interval[i]).update(amount=withdraw_limitation[i])
-                    else:
-                        logger.info('Create new bet limit for product type for' + str(user))
-                        limitation = Limitation(
-                            user= user,
-                            limit_type=LIMIT_TYPE_WITHDRAW,
-                            amount=withdraw_limitation[i],
-                            interval=withdraw_interval[i],
-                        )
-                        limitation.save()
-            else:
-                Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).delete()
-
-            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
-
-        elif post_type == 'block_user':
-            action = request.POST.get('action')
-            adminUsername = request.POST.get('admin_user')
-            admin = CustomUser.objects.get(username=adminUsername)
-            adminId = admin.pk
-            user = CustomUser.objects.get(pk=user_id)
+                if activity_type == 'all':
+                    activitys = UserActivity.objects.filter(user=user).order_by('-created_time')
+                else:
+                    activitys = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
                 
-            if action == 'block':
+                activitys = serializers.serialize('json', activitys)
+                activitys = json.loads(activitys)
+                response = []
+                for act in activitys:
+                    actDict = {}
+                    try:
+                        time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    except:
+                        time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
+                    time = time.strftime("%B %d, %Y, %I:%M %p")
+                    actDict['time'] = time
+                    adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
+                    actDict['adminUser'] = str(adminUser.username)
+                    actDict['message'] = act['fields']['message']
+                    response.append(actDict)
+                # print(str(response))
 
-                if user.is_admin == True:
-                    message = _("Cannot block the admin user")
-                    logger.info("Cannot block the admin user")
-                    error = {
-                        'errorCode': '1001',
-                        'message': str(message)
-                    }
-                    # print(json.dumps(error))
-                    return HttpResponse(json.dumps(error), content_type="application/json")
+                return HttpResponse(json.dumps(response), content_type='application/json')
 
-                with transaction.atomic():
-                    user.block = True
-                    user.temporary_block_time = datetime.datetime.now()
-                    # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
-                    user.save()
-                    limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
-                    logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
-            else:
-                with transaction.atomic():
-                    # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
-                    user.block = False
-                    user.temporary_block_time = None
-                    user.save()
-                    limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
-                    logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
+            elif post_type == 'limitation_setting':
+                
+                loss_limitation = request.POST.getlist('loss_limit')
+                loss_limitation = [item for item in loss_limitation if len(item) > 0]
+                # print("loss_limitation type: " + str(type(loss_limitation)))
+                # print("origin loss_limitation: " + str(loss_limitation))
+                loss_interval = request.POST.getlist('loss_limit_interval')
+                # print("origin loss_interval: " + str(loss_interval))
+                # loss_interval = list(map(lambda x : int(x) if x >= 0, loss_interval))
+                loss_interval = [item for item in loss_interval if int(item) >= 0]
+                deposit_limitation = request.POST.getlist('deposit_limit')
+                # deposit_limitation = [float(item) for item in deposit_limitation if float(item) >= 0]
+                deposit_interval = request.POST.getlist('deposit_limit_interval')
+                # deposit_interval = list(map(lambda x : int(x), deposit_interval))
+                deposit_interval = [int(item) for item in deposit_interval if int(item) >= 0]
+                withdraw_limitation = request.POST.getlist('withdraw_limit')
+                # print("withdraw_limitation type: " + str(withdraw_limitation))
+                # deposit_limitation = [float(item) for item in withdraw_limitation if float(item) >= 0]
+                withdraw_interval = request.POST.getlist('withdraw_limit_interval')
+                withdraw_interval = [int(item) for item in withdraw_interval if int(item) >= 0]
 
-            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+                reason = request.POST.get('reasonTextarea')
+
+                temporary_time = request.POST.get('temporary_time')
+                permanent_time = request.POST.get('permanent_time')
+                # print(temporary_time, permanent_time)
+                # print("reason type: " + str(reason))
+                # print(str(reason))
+
+                access_deny_tags = request.POST.get('access_deny_tags')
+                if access_deny_tags:
+                    access_deny_tags = json.loads(access_deny_tags)
+                # print(str(access_deny_tags))
+                user = CustomUser.objects.get(pk=user_id)
+                oldLimitMap = get_old_limitations(user_id)
+
+                # oldLimitMap = {
+                #     LIMIT_TYPE_BET: {},
+                #     LIMIT_TYPE_LOSS: {},
+                #     LIMIT_TYPE_DEPOSIT: {},
+                #     LIMIT_TYPE_WITHDRAW: {},
+                #     LIMIT_TYPE_ACCESS_DENY: {}
+                # }
+
+                # limitations = Limitation.objects.filter(user=user)
+                # for limit in limitations:
+                #     limitType = limit.limit_type
+                #     if limitType == LIMIT_TYPE_ACCESS_DENY:
+                #         oldLimitMap[limitType][limit.product] = limit.amount
+                #     else:
+                #         # oldLimitMap[limitType]['amount'] = limit.amount
+                #         oldLimitMap[limitType][limit.interval] = limit.amount
+                if temporary_time:
+                    set_temporary_timeout(user_id, temporary_time)
+                if permanent_time:
+                    set_permanent_timeout(user_id, permanent_time)
+                # print("oldLimitMap: " + str(oldLimitMap))
+                # if bet_limitation:
+
+                #     # delete
+                #     for productType in oldLimitMap[LIMIT_TYPE_BET]:
+                #         if productType not in bet_product:
+                #             logger.info('Deleting bet limit for product type' + str(productType))
+                #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=productType).delete()
+
+                #     # insert or update
+                #     for i in range(len(bet_limitation)):
+                #         if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).exists():
+                #             logger.info('Update bet limit for product type for' + str(user))
+                #             Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_BET, product=bet_product[i]).update(amount=bet_limitation[i])
+                #         else:
+                #             logger.info('Create new bet limit for product type for' + str(user))
+                #             limitation = Limitation(
+                #                 user= user,
+                #                 limit_type=0,
+                #                 amount=bet_limitation[i],
+                #                 product=bet_product[i],
+                #             )
+                #             limitation.save()
+
+                if access_deny_tags:
+                    for productType in oldLimitMap[LIMIT_TYPE_ACCESS_DENY]:
+                        if productType not in access_deny_tags:
+                            logger.info('Deleting access deny limit for product type ' + str(productType))
+                            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=productType).delete()
+
+                    for i in range(len(access_deny_tags)):
+                        if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY, product=access_deny_tags[i]).exists():
+                            pass
+                        else:
+                            logger.info('Create new access deny for product type for' + str(user))
+                            limitation = Limitation(
+                                user= user,
+                                limit_type=LIMIT_TYPE_ACCESS_DENY,
+                                amount=0,
+                                product=access_deny_tags[i],
+                            )
+                            limitation.save()
+                else:
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_ACCESS_DENY).delete()
+                    
+                
+                # set_loss_deposit_limitation(user_id, loss_limitation, loss_interval, deposit_limitation, deposit_interval, oldLimitMap)
+                if loss_limitation:
+                    set_loss_limitation(user_id, loss_limitation, loss_interval, oldLimitMap, user)
+                else:
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_LOSS).update(amount=None)
+
+                if deposit_limitation:
+                    set_deposit_limitation(user_id, deposit_limitation, deposit_interval, oldLimitMap, user)
+                else:
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_DEPOSIT).update(amount=None)
+
+                if withdraw_interval:
+                    # delete
+                    for intervalType in oldLimitMap[LIMIT_TYPE_WITHDRAW]:
+                        if intervalType not in withdraw_interval:
+                            logger.info('Deleting loss limit for interval type: ' + str(intervalType))
+                            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW, interval=intervalType).delete()
+
+                    # insert or update
+                    for i in range(len(withdraw_limitation)):
+                        if Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW, interval=withdraw_interval[i]).exists():
+                            logger.info('Update loss limit for interval type: ' + str(user))
+                            Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW, interval=withdraw_interval[i]).update(amount=withdraw_limitation[i])
+                        else:
+                            logger.info('Create new bet limit for product type for' + str(user))
+                            limitation = Limitation(
+                                user= user,
+                                limit_type=LIMIT_TYPE_WITHDRAW,
+                                amount=withdraw_limitation[i],
+                                interval=withdraw_interval[i],
+                            )
+                            limitation.save()
+                else:
+                    Limitation.objects.filter(user=user, limit_type=LIMIT_TYPE_WITHDRAW).delete()
+
+                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+
+            elif post_type == 'block_user':
+                action = request.POST.get('action')
+                adminUsername = request.POST.get('admin_user')
+                admin = CustomUser.objects.get(username=adminUsername)
+                adminId = admin.pk
+                user = CustomUser.objects.get(pk=user_id)
+                    
+                if action == 'block':
+
+                    if user.is_admin == True:
+                        message = _("Cannot block the admin user")
+                        logger.info("Cannot block the admin user")
+                        error = {
+                            'errorCode': '1001',
+                            'message': str(message)
+                        }
+                        # print(json.dumps(error))
+                        return HttpResponse(json.dumps(error), content_type="application/json")
+
+                    with transaction.atomic():
+                        user.block = True
+                        user.temporary_block_time = datetime.datetime.now()
+                        # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
+                        user.save()
+                        limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
+                        logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
+                else:
+                    with transaction.atomic():
+                        # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
+                        user.block = False
+                        user.temporary_block_time = None
+                        user.save()
+                        limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
+                        logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
+
+                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+        except Exception as e:
+            logger.error("User Detail View Error -- {}".format(repr(e)))
+            return HttpResponse(status=400)
     
     def account_by_ip(self, userIp, username):
         relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
