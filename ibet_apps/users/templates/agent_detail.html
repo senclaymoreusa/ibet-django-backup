@@ -191,6 +191,7 @@
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            <button id="export-commission-history" class="btn btn-primary" style="margin-top:40px">Export</button>
                         </div>
                     </div>
                 </div>
@@ -551,39 +552,38 @@
 
                                 <div class="commission_levels">
                                     {% for i in commission_levels %}
-                                    <div class="row " style="width: 95%;" id="commission_level_details">
-                                        <input type="hidden" value="{{ i.pk }}" id="commission_id">
+                                    <div class="row commission_level_details" style="width: 95%;">
+                                        <input type="hidden" value="{{ i.pk }}" class="commission_id">
                                         <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">
-                                            <label id="commission_level_label"
-                                                   class="commission_level">{{ i.commission_level }}</label>
+                                            <label class="commission_level commission_level_label">{{ i.commission_level }}</label>
                                         </div>
                                         <div class="col-md-2">
                                             <label><br>COMMISSION RATE</label>
-                                            <input type="number" class="form-control" id='commission_rate'
+                                            <input type="number" class="form-control commission_rate"
                                                    name="commission_rate" value="{{ i.commission_percentage }}"
                                                    required="required">
                                         </div>
                                         <div class="col-md-2" style="width:20%">
                                             <label>DOWNLINE COMMISSION RATE</label>
-                                            <input type="number" class="form-control" id='downline_commission_rate'
+                                            <input type="number" class="form-control downline_commission_rate"
                                                    name="downline_commission_rate"
                                                    value="{{ i.downline_commission_percentage }}" required="required">
                                         </div>
                                         <div class="col-md-2">
                                             <label><br>ACTIVE DOWNLINE</label>
-                                            <input type="number" class="form-control" id='active_downline'
+                                            <input type="number" class="form-control active_downline"
                                                    name="active_downline" value="{{ i.active_downline_needed }}"
                                                    required="required">
                                         </div>
                                         <div class="col-md-2">
                                             <label>DOWNLINE MONTHLY FTD</label>
-                                            <input type="number" class="form-control" id='downline_monthly_ftd'
+                                            <input type="number" class="form-control downline_monthly_ftd"
                                                    name="downline_monthly_ftd"
                                                    value="{{ i.monthly_downline_ftd_needed }}" required="required">
                                         </div>
                                         <div class="col-md-2">
                                             <label><br>NET PROFIT</label>
-                                            <input type="number" class="form-control" id='downline_net_profit'
+                                            <input type="number" class="form-control downline_net_profit"
                                                    name="downline_net_profit"
                                                    value="{{ i.monthly_downline_ftd_needed }}" required="required">
                                         </div>
@@ -823,8 +823,7 @@
 <script>
 var agent_detail_url = "{% url 'xadmin:agent_detail' %}";
 var admin_user = "{{ user.username }}"
-
-
+var commission_export = "{% url 'xadmin:agent_detail' %}";
 
 </script>
 </body>

@@ -536,6 +536,8 @@ class AgentDetailView(CommAdminView):
 
         else:
             context = super().get_context()
+            export_title = request.GET.get('tableHead')
+
             affiliate = CustomUser.objects.get(pk=self.kwargs.get('pk'))
             title = "Affiliate " + affiliate.username
 
@@ -579,8 +581,8 @@ class AgentDetailView(CommAdminView):
             context["transfer_between_levels"] = affiliate.transerfer_between_levels
 
             # COMMISSION POP UP
-            # print(affiliate_commission_tran)
             commission_history = []
+            commission_history_export = []
             for commission in affiliate_commission_tran:
                 commission_detail = commission.other_data
                 commission_month = commission.arrive_time - relativedelta(month=1)
@@ -601,7 +603,14 @@ class AgentDetailView(CommAdminView):
                     'operator': commission.release_by
                 }
                 commission_history.append(commission_dict)
+                if export_title:
+                    commission_history_export.append(list(commission_dict.values()))
             context['commission_trans'] = commission_history
+
+            if export_title:
+                export_title = json.loads(export_title)
+                commission_history_export.insert(0, export_title)
+                return streamingExport(commission_history_export, 'Affiliate ' + str(affiliate.username) + ' Monthly Commission History')
 
             # COMMISSION LEVELS
             if affiliate.commission_setting == "System":
@@ -843,7 +852,8 @@ class AgentDetailView(CommAdminView):
                         downline_commission_percentage=i['downline_rate'],
                         commission_level=i['level'],
                         active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd']
+                        monthly_downline_ftd_needed=i['downline_ftd'],
+                        ngr=i['downline_net_profit']
                     )
                     current_commission.save()
                     commission_list.append(current_commission.pk)
