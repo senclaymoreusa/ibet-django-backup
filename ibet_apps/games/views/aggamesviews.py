@@ -117,7 +117,7 @@ def agftp(request):
                     root = ET.fromstring(xml)
                     for child in root:
                         dataType = child.attrib['dataType']
-                        print(child.attrib['playerName'])
+                        
                         if dataType == 'HSR': #捕鱼王場景的下注记录
                             playerName = child.attrib['playerName']
                             tradeNo = child.attrib['tradeNo']
