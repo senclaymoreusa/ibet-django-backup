@@ -32,6 +32,8 @@ import boto3
 import logging
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+import games.ftp.ftp_client as ftpClient
+
 logger = logging.getLogger('django')
 AG_SUCCESS = 0
 AG_FAIL = 1
@@ -54,16 +56,14 @@ def MD5(code):
 def agftp(request): 
 
     try:
-        ftp = ftplib.FTP()
-        ftp.connect(AG_FTP)
-        ftp.login(AG_FTP_USERNAME, AG_FTP_PASSWORD)
+        ftp = ftpClient.agFtpConnect()
         
         try:
             r = RedisClient().connect()
             redis = RedisHelper()
         except:
-            logger.error("(FATAL_ERROR)There is something wrong with redis connection.")
-            return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+            logger.critical("(FATAL_ERROR)There is something wrong with AG redis connection.")
+            return HttpResponse({'status': 'There is something wrong with AG redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
         try:
@@ -71,8 +71,8 @@ def agftp(request):
             
         except ftplib.error_perm as resp:
             if str(resp) == "550 No files found":
-                logger.info("No files in this directory")
-                return HttpResponse(ERROR_CODE_NOT_FOUND) 
+                logger.error("No files in this directory of AG folders")
+                return HttpResponse(ERROR_CODE_NOT_FOUND, status=status.HTTP_404_NOT_FOUND) 
             else:
                 raise
         for folder in folders:
@@ -86,8 +86,8 @@ def agftp(request):
                     files = ftp.nlst()
                 except ftplib.error_perm as resp:
                     if str(resp) == "550 No files found":
-                        logger.info("No files in this directory")
-                        return HttpResponse(ERROR_CODE_NOT_FOUND) 
+                        logger.error("No files in this directory of AG small folders")
+                        return HttpResponse(ERROR_CODE_NOT_FOUND, status=status.HTTP_404_NOT_FOUND) 
                     else:
                         raise
                 
@@ -132,7 +132,7 @@ def agftp(request):
                                 user = CustomUser.objects.get(username=playerName)
                             except ObjectDoesNotExist:
                                 logger.info("This user is not existed.")
-                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
+                                return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -167,7 +167,7 @@ def agftp(request):
                                 user = CustomUser.objects.get(username=playerName)
                             except ObjectDoesNotExist:
                                 logger.info("This user is not existed.")
-                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
+                                return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -199,7 +199,7 @@ def agftp(request):
                                 user = CustomUser.objects.get(username=playerName)
                             except ObjectDoesNotExist:
                                 logger.info("This user is not existed.")
-                                return HttpResponse(ERROR_CODE_INVALID_INFO) 
+                                return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -218,10 +218,10 @@ def agftp(request):
                 ftp.cwd('..')
             ftp.cwd('..')
         ftp.quit()
-        return HttpResponse(CODE_SUCCESS)
+        return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
     except ftplib.error_temp:
-        logger.error("(FATAL_ERROR)Cannot connect with ftp.")
-        return HttpResponse(ERROR_CODE_FAIL)
+        logger.critical("(FATAL_ERROR)Cannot connect with AG ftp.")
+        return HttpResponse(ERROR_CODE_FAIL, status=status.HTTP_400_BAD_REQUEST)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
