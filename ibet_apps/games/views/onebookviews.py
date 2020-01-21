@@ -160,7 +160,7 @@ class CreateMember(APIView):
             
             return Response(rdata)
         except ObjectDoesNotExist as e:
-            return Response({"error":"The user is not existed in onebook CreateMember."}) 
+            return Response({"error":"The user does not exist in onebook CreateMember."}) 
 
 def createMember(user,currency,oddsType):
 
@@ -489,7 +489,7 @@ class FundTransfer(APIView):
                 else:    
                     return Response({"error":"Request failed for onebook FundTransfer"})      
         except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed onebook FundTransfer."}) 
+            return Response({"error":"The user does not exist onebook FundTransfer."}) 
 
 
 
@@ -518,7 +518,7 @@ def getBetDetail(request):
             return Response({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
         #print(redis.check_onebook_bet_details(onebook_run))
-        if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
+        if redis.check_onebook_bet_details(onebook_run) is False: #if the key does not exist in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
             while(redis.check_onebook_bet_details(onebook_run)): #loop while the key is existed in redis
                 r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
@@ -691,7 +691,7 @@ class GetBetDetail(APIView):
                                                     )
                 sleep(delay)    
             else:
-                logger.info("BetDetails is not existed.")
+                logger.info("BetDetails does not exist.")
                 break
         return Response(rdata)   
 

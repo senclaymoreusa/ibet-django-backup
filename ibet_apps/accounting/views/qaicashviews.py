@@ -451,8 +451,8 @@ class submitPayout(generics.GenericAPIView):
         try:
             user = CustomUser.objects.get(username=userId)
         except ObjectDoesNotExist:
-            logger.error("The  user is not existed.")
-            return Response({"error":"The  user is not existed."}) 
+            logger.error("The  user does not exist.")
+            return Response({"error":"The  user does not exist."}) 
         trans_id = user.username+strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         mymethod = self.request.POST.get('method')
         list = [merchantId, trans_id, amount, currency, dateTime, userId]

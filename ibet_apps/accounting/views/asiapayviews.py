@@ -268,8 +268,8 @@ class submitCashout(generics.GenericAPIView):
         try:
             user = CustomUser.objects.get(pk=userid)
         except ObjectDoesNotExist:
-            logger.error("The  user is not existed.")
-            return Response({"error":"The  user is not existed."}) 
+            logger.error("The  user does not exist.")
+            return Response({"error":"The  user does not exist."}) 
         trans_id = user.username+strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         #OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""

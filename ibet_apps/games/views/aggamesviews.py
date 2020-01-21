@@ -96,7 +96,7 @@ def agftp(request):
                 for file in files:
                     # print(file)
 
-                    if redis.check_ag_added_file(file) is False:   #if the file is not existed in redis
+                    if redis.check_ag_added_file(file) is False:   #if the file does not exist in redis
                         redis.set_ag_added_file(file)              #then add the file into redis
                     else:
                         continue                                   #if it is already existed then go to next index
@@ -131,7 +131,7 @@ def agftp(request):
                             try:
                                 user = CustomUser.objects.get(username=playerName)
                             except ObjectDoesNotExist:
-                                logger.info("This user is not existed.")
+                                logger.info("This user does not exist.")
                                 return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
@@ -166,7 +166,7 @@ def agftp(request):
                             try:
                                 user = CustomUser.objects.get(username=playerName)
                             except ObjectDoesNotExist:
-                                logger.info("This user is not existed.")
+                                logger.info("This user does not exist.")
                                 return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
@@ -198,7 +198,7 @@ def agftp(request):
                             try:
                                 user = CustomUser.objects.get(username=playerName)
                             except ObjectDoesNotExist:
-                                logger.info("This user is not existed.")
+                                logger.info("This user does not exist.")
                                 return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
@@ -278,8 +278,8 @@ def getBalance(request):
         else:
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        logger.critical("The user is not existed in AG getBalance api.")
-        return Response({"error":"The user is not existed in AG getBalance api."}) 
+        logger.critical("The user does not exist in AG getBalance api.")
+        return Response({"error":"The user does not exist in AG getBalance api."}) 
 
 
 def prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno):    
@@ -436,8 +436,8 @@ def forwardGame(request):
         
         
     except ObjectDoesNotExist:
-        logger.error("The user is not existed in AG forwardGame.")
-        return Response({"error":"The  user is not existed in AG forwardGame."}) 
+        logger.error("The user does not exist in AG forwardGame.")
+        return Response({"error":"The  user does not exist in AG forwardGame."}) 
 
 
 def agFundTransfer(user, fund_wallet, credit, agtype): 
@@ -598,6 +598,6 @@ def agService(request):
                 logger.error("error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")
         except:
-            logger.error("this user is not existed in AG agService.")
-            return HttpResponse("error, this user is not existed in AG agService.")
+            logger.error("this user does not exist in AG agService.")
+            return HttpResponse("error, this user does not exist in AG agService.")
 
