@@ -66,7 +66,7 @@ SECRET_KEY = '7i^ke1w79@h(!g0)e18c8(^j=c8ewfx8=*9n4652o%0f3i^g_-'
 # # SECURITY WARNING: don't run with debug turned on in production!
 if os.environ["ENV"].find('prod') != -1:
     DEBUG = False
-    ALLOWED_HOSTS = ['https://ibet-web-apdev.claymoreasia.com', 'https://www.claymoreasia.com', 'https://ibet-web.claymoreasia.com']
+    ALLOWED_HOSTS = ['.claymoreasia.com']
 else:
     DEBUG = True
     ALLOWED_HOSTS = ['*']
