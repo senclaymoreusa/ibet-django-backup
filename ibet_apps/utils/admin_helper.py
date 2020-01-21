@@ -28,7 +28,7 @@ today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
 last_month = this_month - relativedelta(months=1)
-before_last_month = this_month - relativedelta(months=2)
+month_before_last = this_month - relativedelta(months=2)
 
 
 # transaction filter

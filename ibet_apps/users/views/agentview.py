@@ -343,7 +343,7 @@ class AgentView(CommAdminView):
 
             # Commission Transaction filter by month
             commission_transaction_last_month = getCommissionTrans().filter(
-                Q(arrive_time__gte=before_last_month) & Q(arrive_time__lte=last_month))
+                Q(arrive_time__gte=month_before_last) & Q(arrive_time__lte=last_month))
 
             commission_transaction_last_month_dict = dict(commission_transaction_last_month.values_list('user_id')
                                                           .annotate(total_commission=Coalesce(Sum('amount'), 0)))
@@ -575,7 +575,7 @@ class AgentDetailView(CommAdminView):
 
             context["commission_before_last"] = affiliate_commission_tran.filter(
                 Q(request_time__lte=last_month)
-                & Q(request_time__gte=before_last_month)).aggregate(amount=Coalesce(Sum('amount'), 0))
+                & Q(request_time__gte=month_before_last)).aggregate(amount=Coalesce(Sum('amount'), 0))
 
             context["commission_set"] = affiliate.commission_setting
             context["transfer_between_levels"] = affiliate.transerfer_between_levels
