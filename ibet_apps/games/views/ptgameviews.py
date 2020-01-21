@@ -35,7 +35,7 @@ def createUser(user):
     }
     player = "IBETPU_" + user.username.upper()
     admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
-    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
+    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name +'/password/' + user.username
 
     # all the API cert file are local, will update to S3 and change the path before merge.
     try:
@@ -213,7 +213,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
     direction = "deposit" if method == 0 else "withdraw"
     
     player = "IBETPU_" + user.username.upper()
-    url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
+    url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + str(amount) + "/adminname/IBETPCNYUAT"
     
     try:
     # with tempfile.NamedTemporaryFile(delete=False) as temp:
