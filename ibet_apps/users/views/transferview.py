@@ -152,5 +152,6 @@ def updateWallet(all_trans_wallet, user):
         balance = getattr(wallet_class, function_name)()
         if balance >= 0:
             UserWallet.objects.filter(user=user, provider=i).update(wallet_amount=balance)
+            logger.info("finished update {} the wallet for user {}".format(i.provider_name, user.username))
 
-    print("finished update all the wallet")
+    logger.info("finished update all the wallet")
