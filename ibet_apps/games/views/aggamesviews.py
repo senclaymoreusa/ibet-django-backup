@@ -67,7 +67,7 @@ def agftp(request):
 
 
         try:
-            folders = ftp.nlst()
+            folders = ftp.ftp_session.nlst()
             
         except ftplib.error_perm as resp:
             if str(resp) == "550 No files found":
@@ -76,14 +76,14 @@ def agftp(request):
             else:
                 raise
         for folder in folders:
-            ftp.cwd(folder) 
+            ftp.ftp_session.cwd(folder) 
 
-            small_folders = ftp.nlst()
+            small_folders = ftp.ftp_session.nlst()
             
             for sf in small_folders:
-                ftp.cwd(sf) 
+                ftp.ftp_session.cwd(sf) 
                 try:
-                    files = ftp.nlst()
+                    files = ftp.ftp_session.nlst()
                 except ftplib.error_perm as resp:
                     if str(resp) == "550 No files found":
                         logger.error("No files in this directory of AG small folders")
@@ -94,30 +94,30 @@ def agftp(request):
                 latest_time = None
                 latest_name = None
                 for file in files:
-                    # print(file)
+                    
 
                     if redis.check_ag_added_file(file) is False:   #if the file does not exist in redis
                         redis.set_ag_added_file(file)              #then add the file into redis
                     else:
                         continue                                   #if it is already existed then go to next index
 
-                    time = ftp.voidcmd("MDTM " + file)
+                    time = ftp.ftp_session.voidcmd("MDTM " + file)
                     if (latest_time is None) or (time > latest_time):
                         latest_name = file
                         latest_time = time
 
                     
                     r = BytesIO()
-                    read = ftp.retrbinary('RETR ' + latest_name, r.write)
+                    read = ftp.ftp_session.retrbinary('RETR ' + latest_name, r.write)
                     rdata = r.getvalue().decode("utf-8")
                     xml = '<root>'+rdata+'</root>'
 
-                    writeToS3(latest_name, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(latest_name))
+                    writeToS3(rdata, AWS_S3_ADMIN_BUCKET, 'AG-game-history/{}'.format(latest_name))
                     
                     root = ET.fromstring(xml)
                     for child in root:
                         dataType = child.attrib['dataType']
-                        
+                        print(child.attrib['playerName'])
                         if dataType == 'HSR': #捕鱼王場景的下注记录
                             playerName = child.attrib['playerName']
                             tradeNo = child.attrib['tradeNo']
@@ -127,16 +127,27 @@ def agftp(request):
                             SceneEndTime = child.attrib['SceneEndTime']
                             netAmount = child.attrib['netAmount']
                             gameType = child.attrib['gameType']
+                            sceneId = child.attrib['sceneId']
+                            agtype = child.attrib['type']
+                            Roomid =child.attrib['Roomid']
+                            Roombet =child.attrib['Roombet']
+                            Cost =child.attrib['Cost']
+                            Earn =child.attrib['Earn']
+                            exchangeRate =child.attrib['exchangeRate']
+                            creationTime = child.attrib['creationTime']
+                            deviceType = child.attrib['deviceType']
+                            gameCode = child.attrib['gameCode']
 
                             try:
                                 user = CustomUser.objects.get(username=playerName)
+                                
                             except ObjectDoesNotExist:
-                                logger.info("This user does not exist.")
+                                logger.error("This user does not exist in AG ftp.")
                                 return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                            GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                     category=Category.objects.get(name='Live Casino'),
                                                     user=user,
                                                     user_name=user.username,
@@ -148,6 +159,20 @@ def agftp(request):
                                                     market=ibetCN,
                                                     bet_time=utcToLocalDatetime(SceneStartTime),
                                                     resolved_time=utcToLocalDatetime(SceneEndTime),
+                                                    other_data={
+                                                            "sceneId": sceneId,
+                                                            "type": agtype,
+                                                            "Roomid": Roomid,
+                                                            "Roombet": Roombet,
+                                                            "Cost": Cost,
+                                                            "Earn": Earn,
+                                                            "exchangeRate": exchangeRate,
+                                                            "creationTime": creationTime,
+                                                            "deviceType": deviceType,
+                                                            "gameCode": gameCode,
+                                                            "flag": flag,
+                                                            'netAmount': netAmount
+                                                        }
                                                     )
                             
 
@@ -162,16 +187,25 @@ def agftp(request):
                             netAmount = child.attrib['netAmount']
                             gameType = child.attrib['gameType']
                             result = child.attrib['result']
+                            agentCode = child.attrib['agentCode']
+                            playType = child.attrib['playType']
+                            tableCode = child.attrib['tableCode']
+                            recalcuTime = child.attrib['recalcuTime']
+                            platformType = child.attrib['platformType']
+                            aground = child.attrib['round']
+                            beforeCredit = child.attrib['beforeCredit']
+                            deviceType = child.attrib['deviceType']
 
                             try:
                                 user = CustomUser.objects.get(username=playerName)
+                                
                             except ObjectDoesNotExist:
-                                logger.info("This user does not exist.")
+                                logger.error("This user does not exist in AG ftp.")
                                 return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                            GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                     category=Category.objects.get(name='Live Casino'),
                                                     user=user,
                                                     user_name=user.username,
@@ -182,6 +216,20 @@ def agftp(request):
                                                     ref_no=billNo,
                                                     market=ibetCN,
                                                     resolved_time=timezone.now(),
+                                                    other_data={
+                                                            "agentCode": child.attrib['agentCode'],
+                                                            "gameCode": gameCode,
+                                                            "betTime": betTime,
+                                                            "gameType": gameType,
+                                                            "flag": flag,
+                                                            "playType": playType,
+                                                            "tableCode": tableCode,
+                                                            "recalcuTime": recalcuTime,
+                                                            "platformType": platformType,
+                                                            "round": aground,
+                                                            "beforeCredit": beforeCredit,
+                                                            "deviceType": deviceType,
+                                                        }
                                                     )
 
                         elif dataType == 'EBR': #电子游戏的下注记录
@@ -194,16 +242,25 @@ def agftp(request):
                             netAmount = child.attrib['netAmount']
                             gameType = child.attrib['gameType']
                             result = child.attrib['result']
+                            slottype = child.attrib['slottype']
+                            mainbillno = child.attrib['mainbillno']
+                            subbillno = child.attrib['subbillno']
+                            gameCategory = child.attrib['gameCategory']
+                            netAmountBonus = child.attrib['netAmountBonus']
+                            netAmountBase = child.attrib['netAmountBase']
+                            betAmountBonus = child.attrib['betAmountBonus']
+                            betAmountBase = child.attrib['betAmountBase']
 
                             try:
                                 user = CustomUser.objects.get(username=playerName)
+                                
                             except ObjectDoesNotExist:
-                                logger.info("This user does not exist.")
+                                logger.error("This user does not exist in AG ftp.")
                                 return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
                             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                            GameBet.objects.get_or_create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                            GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                     category=Category.objects.get(name='Live Casino'),
                                                     user=user,
                                                     user_name=user.username,
@@ -214,10 +271,22 @@ def agftp(request):
                                                     ref_no=billNo,
                                                     market=ibetCN,
                                                     resolved_time=timezone.now(),
+                                                    other_data={
+                                                            "gameType": gameType,
+                                                            "result": result,
+                                                            "slottype": slottype,
+                                                            "mainbillno":mainbillno,
+                                                            "subbillno": subbillno,
+                                                            "gameCategory": gameCategory,
+                                                            "netAmountBonus": netAmountBonus,
+                                                            "netAmountBase":netAmountBase,
+                                                            "betAmountBonus": betAmountBonus,
+                                                            "betAmountBase": betAmountBase
+                                                        }
                                                     )
-                ftp.cwd('..')
-            ftp.cwd('..')
-        ftp.quit()
+                ftp.ftp_session.cwd('..')
+            ftp.ftp_session.cwd('..')
+        ftp.ftp_session.quit()
         return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
     except ftplib.error_temp:
         logger.critical("(FATAL_ERROR)Cannot connect with AG ftp.")
