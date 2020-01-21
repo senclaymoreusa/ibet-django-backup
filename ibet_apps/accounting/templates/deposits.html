@@ -200,7 +200,7 @@
 
     <!-- override_txn modal -->
     <div class="modal fade" id="override_deposit" role="dialog">
-        <div id="override" class="modal-dialog" style="width: 60%">
+        <div id="override" class="modal-dialog" style="width: 40%">
             <!-- Modal content-->
             {% include "override_modal.html" %}
         </div>
@@ -456,11 +456,7 @@
 
         // fill in deposit details of modal
         function showDepositDetail (data, id) {
-            console.log("show deposit details");
-            console.log(data);
-
             let txnDetails = $(id);
-            console.log(txnDetails)
             txnDetails.empty();
             let content = "";
             content += "<p>...</p>";  // placeholder for deposit slip upload
@@ -468,9 +464,7 @@
             content += "<p>" + data[9] + "</p>";  // created time
             content += "<p>" + data[8] + "</p>";  // ref no.
             content += "<p>" + data[12] + "</p>";  // amount
-            console.log(content);
             txnDetails.append(content);
-            console.log(txnDetails)
         }
 
         function showBankDetail (data) {

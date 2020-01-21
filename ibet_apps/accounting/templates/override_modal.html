@@ -10,13 +10,13 @@
             <input type="hidden" id="dep_row_index" name="dep_row_index">
 
             <div class="row deposit-request-word">
-                <div class="col-md-4" style="margin-left:12px">TRANSACTION DETAILS</div>
-                <div class="col-md-4" style="margin-left:20px">BANK DETAILS</div>
-                <div class="col-md-3" style="margin-left:12px">MEMBER DETAILS</div>
+                <div class="col-md-4">TRANSACTION DETAILS</div>
+                <!-- <div class="col-md-4" style="margin-left:20px">BANK DETAILS</div>
+                <div class="col-md-3" style="margin-left:12px">MEMBER DETAILS</div> -->
             </div>
 
-            <div class="row" style="margin-left:10px;margin-top: 10px">
-                <div class="col-md-4 deposit-request-details">
+            <div class="row" style="margin-left:10px; margin-top: 10px">
+                <div class="col-md-12 deposit-request-details" style="width: auto">
                     <div class="col-md-6 deposit-request-title">
                         <p>Deposit Slip</p>
                         <p>Transaction No.</p>
@@ -28,7 +28,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 deposit-request-details">
+                <!-- <div class="col-md-4 deposit-request-details">
                     <div class="col-md-6 deposit-request-title">
                         <p>Bank</p>
                         <p>Branch</p>
@@ -57,16 +57,16 @@
                     <div class="col-md-2 deposit-request-data" id="risk-details">
                     </div>
 
-                </div>
+                </div> -->
             </div>
 
-            <div class="row">
-                <button type="button" class="btn btn-danger" id="override-result">Approve</button>
-                <!-- <button type="button" class="btn btn-success" id="deposit-review-appnext">Approve and
-                    Next</button> -->
-                <!-- <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button> -->
-                <!-- <button type="button" class="btn btn-danger" id="deposit-review-rejnext">Reject and
-                    Next</button> -->
+            <div class="row" style="margin-left:10px; margin-top: 10px">
+                <label for="deposit_notes" class="deposit-request-word"
+                style="margin-left: 10px">REASON FOR CHANGING STATUS</label>
+                <textarea id='notes' class="form-control" name="deposit_notes"
+                style="width: 70%; height: 100px; margin-bottom: 15px;" placeholder="Please provide a brief explanation" required></textarea>
+                
+                <button type="submit" class="btn btn-danger" id="override-result">Change status</button>
                 <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
             </div>
         </form>
