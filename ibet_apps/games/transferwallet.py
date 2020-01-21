@@ -8,7 +8,7 @@ from games.models import GameProvider
 import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw, getEAWalletBalance
 from games.views.onebookviews import fundTransfer, checkUserBalance
-from games.views.kygameviews import kyTransfer
+from games.views.kygameviews import kyTransfer, kyBalance
 from games.views.aggamesviews import agFundTransfer, getBalance
 from games.views.ptgameviews import ptTransfer
 import simplejson as json
@@ -113,4 +113,5 @@ class CheckTransferWallet():
         return 0
 
     def KYCheckAmount(self):
-        return 0
+        balance = kyBalance(self.user)
+        return balance
