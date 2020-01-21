@@ -10,6 +10,8 @@ from rest_framework.views import APIView
 from rest_framework import parsers, renderers, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
+
+from bonus.bonus_helper import getValidFTD, checkAndUpdateFTD
 from utils.constants import *
 import utils.helpers as helpers
 from django.contrib.auth.hashers import make_password, check_password
@@ -196,9 +198,9 @@ class submitDeposit(generics.GenericAPIView):
                     amount=amount,
                     user_id=CustomUser.objects.get(pk=userid),
                     currency= int(currency),
-                    transaction_type=0, 
-                    channel=4,
-                    status=2,
+                    transaction_type=TRANSACTION_DEPOSIT,
+                    channel=ASIAPAY,
+                    status=TRAN_CREATE_TYPE,
                     method=bankidConversion[BankID],
                     request_time=timezone.now(),
                     
@@ -378,9 +380,9 @@ class submitCashout(generics.GenericAPIView):
                 amount=amount,
                 user_id=CustomUser.objects.get(pk=userid),
                 currency= int(currency),
-                transaction_type=1, 
-                channel=4,
-                status=2,
+                transaction_type=TRANSACTION_WITHDRAWAL,
+                channel=ASIAPAY,
+                status=TRAN_CREATE_TYPE,
                 method=cashoutMethod,
                 request_time=timezone.now(),
             )
@@ -513,15 +515,22 @@ def depositArrive(request):
         try:
             trans = Transaction.objects.get(transaction_id=OrderID)
             # print(trans)
-            if StatusCode == '001':  
-                trans.status = 0
-                trans.arrive_time = timezone.now()
-                trans.remark = 'Transaction success'
-                trans.qrcode = ''
-                trans.save()
+            if StatusCode == '001':
+                with transaction.atomic():
+                    trans.status = TRAN_SUCCESS_TYPE
+                    arrive_time = timezone.now()
+                    trans.arrive_time = arrive_time
+                    trans.remark = 'Transaction success'
+                    trans.qrcode = ''
+                    trans.save()
+
+                    # check if user has valid first deposit bonus and update the status
+                    if checkAndUpdateFTD(trans):
+                        valid_ube = getValidFTD(trans.user_id, trans.amount, arrive_time)
+
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
-                trans.status = 1
+                trans.status = TRAN_FAIL_TYPE
                 trans.remark = 'Transaction failed'
                 trans.qrcode = ''
                 trans.save()

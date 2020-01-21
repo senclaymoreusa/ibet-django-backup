@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 import users.views.transferview as transferview
 import users.views.paymentsetting as paymentsettingview
 import users.views.vipview as vipview
+from users.views.adminview import *
 
 
 urlpatterns = [
@@ -88,7 +89,12 @@ urlpatterns += [
 
     path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info"),
 
-    path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount")
+    path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount"),
+
+    # admin API
+    path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
+    path('api/admin/get-user-transctions', GetUserTransaction.as_view(), name="get_user_transactions"),
+    path('api/admin/get-bet-history-detail', GetBetHistoryDetail.as_view() ,name="get_bet_history_info")
 
 
     

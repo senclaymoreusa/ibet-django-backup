@@ -105,7 +105,7 @@ urlpatterns = [
     path('api/onebook/login', onebookviews.Login.as_view(), name="Login"),
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
-    # path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+    path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
     # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
@@ -147,8 +147,8 @@ urlpatterns = [
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
 
     # QT
-    path('accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
-    path('accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
+    path('api/qt/accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),
+    path('api/qt/accounts/<str:playerId>/balance', qtgameviews.GetBalance.as_view(), name="get_balance"),
     path('api/qt/game_launch', qtgameviews.GameLaunch.as_view(), name="qt_game_launch"),
     path('api/qt/transactions', qtgameviews.ProcessTransactions.as_view(), name="qt_process_transactions"),
     path('api/qt/transactions/rollback', qtgameviews.ProcessRollback.as_view(), name="qt_process_rollback"),

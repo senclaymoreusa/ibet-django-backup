@@ -104,14 +104,15 @@ class FGLogin(APIView):
                 logger.info("get sessionkey successful.")
                 
                 try:
-                    user = FGSession.objects.get(user=pk)
-                    user.session_key=sessionKey
-                    user.save()
+                    fguser = FGSession.objects.get(user=user)
+                    fguser.session_key = sessionKey
+                    fguser.party_id = partyId
+                    fguser.save()
                     logger.info("fg update sessionkey.")
                 except:
                     
-                    pk = CustomUser.objects.get(pk=pk)        
-                    FGSession.objects.create(user=pk,session_key=sessionKey,party_id=partyId, uuid=uuid)   
+                    # user = CustomUser.objects.get(pk=pk)        
+                    FGSession.objects.create(user=user,session_key=sessionKey,party_id=partyId, uuid=uuid)   
                     logger.info("fg create sessionkey.")
 
             except:
@@ -120,13 +121,13 @@ class FGLogin(APIView):
                         "status": rrdata["status"],
                         "message": rrdata["message"]
                         }
-                logger.error("FATAL__ERROR: fglogin cannot get sessionKey.")
+                logger.critical("FATAL__ERROR: fglogin cannot get sessionKey.")
 
         
             return HttpResponse(json.dumps(data),content_type='application/json',status=200)
         else:
             # Handle error
-            logger.error("FATAL__ERROR: fglogin api status code error.")
+            logger.critical("FATAL__ERROR: fglogin api status code error.")
             return Response(rr)
 
 
@@ -204,7 +205,7 @@ class GetAccountDetail(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.error("FATAL__ERROR: fg cannot find user", e)
+            logger.critical("FATAL__ERROR: fg cannot find user", e)
 
         
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
@@ -243,7 +244,7 @@ class GetBalance(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.error("FATAL__ERROR: cannot find user", e)
+            logger.critical("FATAL__ERROR: cannot find user", e)
 
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 
@@ -281,7 +282,7 @@ class ProcessTransaction(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.error("FATAL__ERROR: in FGgame get object at processtransaction.")
+            logger.critical("FATAL__ERROR: in FGgame get object at processtransaction.")
 
         if tranType == "GAME_BET" :
                 omegaSessionKey = request.GET['omegaSessionKey']
@@ -442,7 +443,8 @@ class ProcessTransaction(APIView):
                                                 market=ibetCN,
                                                 ref_no=gameTranId,
                                                 transaction_id=trans_id,
-                                                outcome=7,
+                                                outcome=3,
+                                                resolved_time=timezone.now(),
                                                 other_data={
                                                             'provider_trans_id':transactionId
                                                         }

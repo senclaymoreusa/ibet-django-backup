@@ -23,6 +23,7 @@ class GameProvider(models.Model):
     market = models.CharField(max_length=50, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
     is_transfer_wallet = models.BooleanField(default=False)
+    timezone = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.provider_name
@@ -124,12 +125,13 @@ class GameBet(models.Model):
     ref_no = models.CharField(max_length=100, null=True, blank=True)
     bet_time = models.DateTimeField(
         _('Time Bet was Placed'),
-        auto_now_add=True,
-        editable=False,
+        default=timezone.now,
+        null=True
     )
 
     resolved_time = models.DateTimeField(null=True, blank=True)
     other_data = JSONField(null=True, default=dict)
+    result = models.SmallIntegerField(choices=GAME_STATUS_CHOICES, default=GAME_STATUS_OPEN)
 
     # def __str__(self):
     #     return self.game_name + ' bet placed on ' + str(bet_time)
@@ -198,3 +200,13 @@ class QTSession(models.Model):
 
 
 
+class GameThirdPartyAccount(models.Model):
+
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    provider = models.ForeignKey('games.GameProvider', on_delete=models.CASCADE)
+    third_party_account = models.CharField(max_length=30, null=True)
+
+    created_time = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )

@@ -639,7 +639,7 @@ $(document).ready(function() {
                             });
                             wagerList.push({
                                 "casino": $(this).find('.dt-casino').val(),
-                                "live_casino": $(this).find('.dt-live-casino').val(),
+                                "live-casino": $(this).find('.dt-live-casino').val(),
                                 "sports": $(this).find('.dt-sports').val(),
                                 "lottery": $(this).find('.dt-lottery').val(),
                             })
@@ -717,11 +717,11 @@ $(document).ready(function() {
             maxTotalTimes = $('#total-claim').val();
             maxAssociatedAccounts = $('#associated-total-claim').val();
             maxUser = $('#maximum-claimer').val();
-            maxUserAmount = $('#max-user-amount').val();
+//            maxUserAmount = $('#max-user-amount').val();
             maxTargetUserAmount = $('#max-target-user-amount').val();
-            if(maxUserAmount.length === 0){
-                maxUserAmount = null
-            }
+//            if(maxUserAmount.length === 0){
+//                maxUserAmount = null
+//            }
             if(maxTargetUserAmount.length === 0){
                 maxTargetUserAmount = null
             }
@@ -757,7 +757,7 @@ $(document).ready(function() {
                 "max_total_times": maxTotalTimes,
                 "max_associated_accounts": maxAssociatedAccounts,
                 "max_user": maxUser,
-                "max_user_amount": maxUserAmount,
+//                "max_user_amount": maxUserAmount,
                 "max_target_user_amount": maxTargetUserAmount,
                 "delivery_method": $("input[name='delivery']").val(),
                 "status": 1,                    // create -> active
