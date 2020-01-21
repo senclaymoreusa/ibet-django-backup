@@ -521,13 +521,25 @@ def getBetDetail(request):
         if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
             while(redis.check_onebook_bet_details(onebook_run)): #loop while the key is existed in redis
-                r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
-                    "vendor_id": ONEBOOK_VENDORID,
-                    "version_key": version_key,
-                })
-                rdata = r.json()
+                try:
+                    r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
+                        "vendor_id": ONEBOOK_VENDORID,
+                        "version_key": version_key,
+                    })
+                    rdata = r.json()
+                except requests.RequestException:
+                    logger.error("Connectivity error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'Connectivity error for onebook GetBetDetail API.'})
+                except ValueError:
+                    logger.error("JSON parsing error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'JSON parsing error for onebook GetBetDetail API.'})
+                except (IndexError, KeyError):
+                    logger.error("JSON format error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'JSON format error for onebook GetBetDetail API.'})
                 if r.status_code == 200:
-                    logger.info(rdata)
                     
                     version_key = rdata["Data"]["last_version_key"]        
                     
