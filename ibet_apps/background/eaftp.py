@@ -23,7 +23,7 @@ logger = logging.getLogger('django')
 
 class GetEaBetHistory(View):
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         logger.info("connecting ea ftp")
         try:
             ftp_connection = ftpClient.ftpConnect()
