@@ -451,6 +451,7 @@ $(document).ready(function() {
 
     $('#bonus-requirements').chosen({width: "242px"}).change(function(){
         wagerRequirements = $(this).chosen().val();
+        console.log(wagerRequirements)
     });
 
     $('#group-unassigned').chosen({width: "242px"}).change(function(){
