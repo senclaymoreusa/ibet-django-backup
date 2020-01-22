@@ -33,6 +33,7 @@ import logging
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
 import games.ftp.ftp_client as ftpClient
+import pytz
 
 logger = logging.getLogger('django')
 AG_SUCCESS = 0
@@ -83,7 +84,7 @@ def agftp(request):
             
             if last_added_file is not None:
                 last_added_file = last_added_file.decode("utf-8")
-                
+                last_added_file = last_added_file.replace(".xml", "")
                 last_folder = last_added_file[:8]            #get last added folder 
             else:
                 last_added_file = 0
@@ -105,7 +106,7 @@ def agftp(request):
                     for file in files:
                         
                         last_file = file.replace(".xml", "")
-                        last_added_file = last_added_file.replace(".xml", "")
+                        
                         if int(last_file) > int(last_added_file):
                             
                             # if redis.check_ag_added_file(file) is False:   #if the file does not exist in redis
@@ -161,11 +162,16 @@ def agftp(request):
 
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                                    SceneStartTime = datetime.strptime(SceneStartTime, '%Y-%m-%d %H:%M:%S')
+                                    SceneStartTime = datetime.datetime.strptime(SceneStartTime, '%Y-%m-%d %H:%M:%S')
                                     SceneStartTime = SceneStartTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
 
-                                    SceneEndTime = datetime.strptime(SceneEndTime, '%Y-%m-%d %H:%M:%S')
+                                    SceneEndTime = datetime.datetime.strptime(SceneEndTime, '%Y-%m-%d %H:%M:%S')
                                     SceneEndTime = SceneEndTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
+                                    if float(netAmount) > 0:
+                                        outcome = 0
+                                    else:
+                                        outcome = 1
 
                                     GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
@@ -177,6 +183,7 @@ def agftp(request):
                                                             amount_won=transferAmount,
                                                             ref_no=tradeNo,
                                                             market=ibetCN,
+                                                            outcome=outcome,
                                                             bet_time=SceneStartTime,
                                                             resolved_time=SceneEndTime,
                                                             other_data={
@@ -223,6 +230,14 @@ def agftp(request):
                                         logger.error("This user does not exist in AG ftp.")
                                         return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
+                                    if float(netAmount) > 0:
+                                        outcome = 0
+                                    else:
+                                        outcome = 1
+                                    
+                                    betTime = datetime.datetime.strptime(betTime, '%Y-%m-%d %H:%M:%S')
+                                    betTime = betTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+                                    
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                                     GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
@@ -235,11 +250,12 @@ def agftp(request):
                                                             amount_won=netAmount,
                                                             ref_no=billNo,
                                                             market=ibetCN,
-                                                            resolved_time=timezone.now(),
+                                                            resolved_time=betTime,
+                                                            outcome=outcome,
                                                             other_data={
-                                                                    "agentCode": child.attrib['agentCode'],
+                                                                    "agentCode": agentCode,
                                                                     "gameCode": gameCode,
-                                                                    "betTime": betTime,
+                                                                    "betTime": child.attrib['betTime'],
                                                                     "gameType": gameType,
                                                                     "flag": flag,
                                                                     "playType": playType,
@@ -248,7 +264,7 @@ def agftp(request):
                                                                     "platformType": platformType,
                                                                     "round": aground,
                                                                     "beforeCredit": beforeCredit,
-                                                                    "deviceType": deviceType,
+                                                                    "deviceType": deviceType
                                                                 }
                                                             )
 
@@ -280,6 +296,14 @@ def agftp(request):
 
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
+                                    if float(netAmount) > 0:
+                                        outcome = 0
+                                    else:
+                                        outcome = 1
+                                    
+                                    betTime = datetime.datetime.strptime(betTime, '%Y-%m-%d %H:%M:%S')
+                                    betTime = betTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
                                     GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
                                                             user=user,
@@ -290,7 +314,8 @@ def agftp(request):
                                                             amount_won=netAmount,
                                                             ref_no=billNo,
                                                             market=ibetCN,
-                                                            resolved_time=timezone.now(),
+                                                            outcome=outcome,
+                                                            resolved_time=betTime,
                                                             other_data={
                                                                     "gameType": gameType,
                                                                     "result": result,
