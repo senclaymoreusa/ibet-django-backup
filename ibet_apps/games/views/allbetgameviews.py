@@ -330,6 +330,15 @@ def settleBet(client, transaction_id, amount, settle_details):
     This method supports batch settling of bets.
     """
 
+    # Batch settlement is not allowed.
+    if len(settle_details) > 1:
+        json_to_return = {
+            "error_code": 40000,
+            "message": "Error: Batch settlement is not allowed."
+        }
+        logger.error("AllBet Transfer: batch settlement is not allowed.")
+        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
     # Idempotence - check if transaction_id already used.
     try:
         existing_transactions = GameBet.objects.filter(other_data__transaction_id=transaction_id)
