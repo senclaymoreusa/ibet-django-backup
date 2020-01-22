@@ -1584,8 +1584,10 @@ IMES_KEY = keys["IMES"]["DESKEY"]
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
-KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
-KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
+KY_AES_KEY = keys["KAIYUAN"]["DESKEY"]
+KY_MD5_KEY = keys["KAIYUAN"]["MD5KEY"]
+KY_API_URL = keys["KAIYUAN"]["KY_API_URL"]
+KY_RECORD_URL = keys["KAIYUAN"]["KY_RECORD_URL"]
 
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
