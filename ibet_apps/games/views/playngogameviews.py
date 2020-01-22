@@ -142,7 +142,7 @@ def png_authenticate(data):
                 }
             }
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
             return HttpResponse(res_msg, content_type='text/xml') # Successful response
 
         except Exception as e:
@@ -179,7 +179,7 @@ def png_balance(data):
                 }
             }
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
             return HttpResponse(res_msg, content_type='text/xml')
 
         # Retrieve balance of specified user and set status code based on user account status.
@@ -206,7 +206,7 @@ def png_balance(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
@@ -309,7 +309,7 @@ def png_reserve(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
@@ -405,7 +405,7 @@ def png_cancel_reserve(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
@@ -505,7 +505,7 @@ def png_release(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
