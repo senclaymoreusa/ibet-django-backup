@@ -23,6 +23,7 @@
                         <p>Created Time</p>
                         <p>Provider Ref No.</p>
                         <p>Amount</p>
+                        <p>New Amount</p>
                     </div>
                     <div class="col-md-6 deposit-request-data" id="override-deposit-detail">
                     </div>
@@ -63,11 +64,11 @@
             <div class="row" style="margin-left:10px; margin-top: 10px">
                 <label for="deposit_notes" class="deposit-request-word"
                 style="margin-left: 10px">REASON FOR CHANGING STATUS</label>
-                <textarea id='notes' class="form-control" name="deposit_notes"
+                <textarea id='override-notes' class="form-control" name="deposit_notes"
                 style="width: 70%; height: 100px; margin-bottom: 15px;" placeholder="Please provide a brief explanation" required></textarea>
                 
-                <button type="submit" class="btn btn-danger" id="override-result">Change status</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-success" id="override-result">Request status change to Successful</button>
+                <button type="button" class="btn btn-primary" id="cancel-override" data-dismiss="modal">Cancel</button>
             </div>
         </form>
     </div>
