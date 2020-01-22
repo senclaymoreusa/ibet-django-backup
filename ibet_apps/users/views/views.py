@@ -413,8 +413,10 @@ class LoginView(GenericAPIView):
            
 
             # print(self.user.username)
-            # r = RedisClient().connect()
+            r = RedisClient().connect()
             redis = RedisHelper()
+
+            redis.set_user_by_device(self.user.username, device)
             redis.set_device_by_user(self.user.username, device)
 
             
