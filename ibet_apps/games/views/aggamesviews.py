@@ -256,6 +256,7 @@ def agftp(request):
                                                             amount_won=decimal.Decimal(netAmount),
                                                             ref_no=billNo,
                                                             market=ibetCN,
+                                                            bet_time=betTime,
                                                             resolved_time=betTime,
                                                             outcome=outcome,
                                                             other_data={
@@ -323,6 +324,7 @@ def agftp(request):
                                                             ref_no=billNo,
                                                             market=ibetCN,
                                                             outcome=outcome,
+                                                            bet_time=betTime,
                                                             resolved_time=betTime,
                                                             other_data={
                                                                     "gameType": gameType,
