@@ -16,6 +16,7 @@ from django.utils import timezone
 
 import os
 import json
+import math
 import uuid
 import logging
 import requests
@@ -64,8 +65,11 @@ class VerifySession(APIView):
                     qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
                     
                     status_code = 200
+                    n_float = int(user.main_wallet * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
+                        'balance': round(bal),
                         # TODO: needs to handle if user.currency is bitcoin
                         'currency': CURRENCY_CHOICES[user.currency][1],
                     }
@@ -110,9 +114,11 @@ class GetBalance(APIView):
             try:
                 user = CustomUser.objects.get(username=username)
                 status_code = 200
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
                 response = {
-                    'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
-                    # TODO: needs to handle if user.currency is bitcoin
+                    'balance': round(bal),
                     'currency': CURRENCY_CHOICES[user.currency][1],
                 }
                 return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
@@ -359,8 +365,11 @@ class ProcessTransactions(APIView):
                         bet.save()
                         user.save()
                         
+                    n_float = int(bal * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        "balance": str(bal),
+                        'balance': round(bal),
                         "referenceId": trans_id
                     }
                     
@@ -409,8 +418,11 @@ class ProcessTransactions(APIView):
                     bet.save()
                     user.save()
                     
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
                 response = {
-                    "balance": str(user.main_wallet),
+                    'balance': round(bal),   
                     "referenceId": trans_id
                 }
                 
@@ -531,6 +543,9 @@ class ProcessRollback(APIView):
         user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         
+        n_float = int(user.main_wallet * 100) / 100.0
+        bal = Decimal(n_float)
+        
         try:
             #
             # try to find the original QT txnId for rollback
@@ -544,15 +559,16 @@ class ProcessRollback(APIView):
                                            ref_no=orig_txnId
                                            )
             
+            
             response = {
-                "balance": str(user.main_wallet),
+                'balance': round(bal),
                 "referenceId": trans_id
             }
             
         except:
             logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
             response = {
-                "balance": str(user.main_wallet)
+                "balance": round(bal)
             }
             
         #

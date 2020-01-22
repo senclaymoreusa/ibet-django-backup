@@ -34,6 +34,7 @@ from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
 import games.ftp.ftp_client as ftpClient
 import pytz
+import simplejson as json
 
 logger = logging.getLogger('django')
 AG_SUCCESS = 0
@@ -404,6 +405,49 @@ def getBalance(request):
         logger.critical("The user does not exist in AG getBalance api.")
         return Response({"error":"The user does not exist in AG getBalance api."}) 
 
+def getBalance(user):
+    password = AG_CAGENT + user.username
+
+    if user.currency == CURRENCY_CNY:
+        cur = "CNY"
+    elif user.currency == CURRENCY_USD:
+        cur = "USD"
+    elif user.currency == CURRENCY_THB:
+        cur = "THB"
+    elif user.currency == CURRENCY_EUR:
+        cur = "EUR"
+    elif user.currency == CURRENCY_IDR:
+        cur = "IDR"
+    elif user.currency == CURRENCY_VND:
+        cur = "VND"
+    else:
+        cur = "CNY"
+    
+    s = "cagent=" + AG_CAGENT + "/\\\\/loginname=" + user.username + "/\\\\/method=gb/\\\\/actype=1/\\\\/password=" + password + "/\\\\/oddtype=A/\\\\/cur=" + cur  
+        
+    param = des_encrypt(s,AG_DES).decode("utf-8") 
+
+    key = MD5(param + AG_MD5)
+    r = requests.get(AG_URL ,  params={
+            "params": param,
+            "key": key,  
+        })
+    rdata = r.text
+    if r.status_code == 200:
+        tree = ET.fromstring(rdata)
+        info = tree.get('info')
+        msg =  tree.get('msg')
+        return json.dumps({'balance': info})
+    else:
+        return json.dumps({"error":"The request is failed for AG get balance"}) 
+    
+
+class test(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(username="angela02")
+        response = getBalance(user)
+        return HttpResponse(response)
 
 def prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno):    
 
@@ -497,6 +541,7 @@ def queryOrderStatus(actype,cur,billno):
 def forwardGame(request):
     username =  request.POST['username']
     password = AG_CAGENT + username
+    
     actype = request.POST['actype']  #actype=1 代表真钱账号,0 代表试玩账号
     billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
     gameType = request.POST['gameType']
@@ -585,7 +630,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
             cur = "VND"
         else:
             cur = "CNY"
-
+       
         # agtype = request.POST['agtype']
         gameCategory = ""
         # credit = request.POST['credit']
@@ -599,8 +644,9 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS: #check or create game account
             while success:
                 if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == AG_SUCCESS: #get balance
+
                     if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == AG_SUCCESS:
-                        # print("prepare")
+                        #print("prepare")
                         
                         while confirm:
                             flag = '1'
@@ -629,7 +675,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         channel=None,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
-                                # print("confirm")
+                                #print("confirm")
                                 success = False
                                 confirm = False
                                 return CODE_SUCCESS
@@ -698,13 +744,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
             logger.error("Cannot check or create AG game account agFundTransfer.")
             return Response({"error": "Cannot check or create AG game account agFundTransfer."})
 
-class test(APIView):
-    permission_classes = (AllowAny, )
-    def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela03")
-        response = fundTransfer(user, "main", "300.00",  "IN")
-        
-        return HttpResponse(response)
+
 
 def agService(request):
     if request.method == "GET":
