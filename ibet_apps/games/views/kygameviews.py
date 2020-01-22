@@ -553,6 +553,5 @@ class KaiyuanAPI(View):
             else:
                 return HttpResponse("404 Not Found")
         except Exception as e:
-            print(repr(e))
             logger.error("Bad Request for Kaiyuan Gaming: {}".format(repr(e)))
             return HttpResponse(status=400)
