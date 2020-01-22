@@ -365,7 +365,10 @@ class WalletSettleAPIURL(APIView):
                         TicketResult = 3 #兑现
                     elif TicketResult == 'R':
                         TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
-                    with transaction.atomic():    
+
+                    
+                    with transaction.atomic():  
+                        
                         GameBet.objects.create(
                             provider=PROVIDER,
                             category=cate,
@@ -377,15 +380,15 @@ class WalletSettleAPIURL(APIView):
                             ref_no=BetID,
                             amount_wagered=decimal.Decimal(RealBetAmt/100),
                             bet_type=bet_type,
-                            amount_won=decimal.Decimal(RefundBetAmt/100),
+                            amount_won=decimal.Decimal(WLAmt/100), 
                             outcome=TicketResult,
                             resolved_time=timezone.now(),
                             other_data=data,
                         )
                         
-                        if RefundBetAmt != '0' :
-                            user.main_wallet += decimal.Decimal(RefundBetAmt/100)
-                            user.save()
+                        
+                        user.main_wallet += decimal.Decimal(WLAmt/100)
+                        user.save()
                     error      =  'No_Error'
                     error_code =  0
                     success    =  1
