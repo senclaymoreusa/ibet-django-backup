@@ -135,13 +135,14 @@ def agftp(request):
                                 dataType = child.attrib['dataType']
                                 
                                 if dataType == 'HSR': #捕鱼王場景的下注记录
+                                    ID = child.attrib['ID']
                                     playerName = child.attrib['playerName']
                                     tradeNo = child.attrib['tradeNo']
                                     transferAmount = child.attrib['transferAmount']
                                     flag = child.attrib['flag']
                                     SceneStartTime = child.attrib['SceneStartTime']
                                     SceneEndTime = child.attrib['SceneEndTime']
-                                    netAmount = child.attrib['netAmount']
+                                    Jackpotcomm=child.attrib['Jackpotcomm']
                                     gameType = child.attrib['gameType']
                                     sceneId = child.attrib['sceneId']
                                     agtype = child.attrib['type']
@@ -169,8 +170,10 @@ def agftp(request):
                                     SceneEndTime = datetime.datetime.strptime(SceneEndTime, '%Y-%m-%d %H:%M:%S')
                                     SceneEndTime = SceneEndTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
 
-                                    if float(netAmount) > 0:
+                                    if float(transferAmount) > 0:
                                         outcome = 0
+                                    elif float(transferAmount) == 0:
+                                        outcome = 2
                                     else:
                                         outcome = 1
 
@@ -179,15 +182,15 @@ def agftp(request):
                                                             user=user,
                                                             user_name=user.username,
                                                             transaction_id=trans_id,
-                                                            amount_wagered=transferAmount,
+                                                            amount_wagered=abs(decimal.Decimal(transferAmount)),
                                                             currency=user.currency,
-                                                            amount_won=transferAmount,
                                                             ref_no=tradeNo,
+                                                            amount_won=decimal.Decimal(transferAmount),
                                                             market=ibetCN,
-                                                            outcome=outcome,
                                                             bet_time=SceneStartTime,
                                                             resolved_time=SceneEndTime,
                                                             other_data={
+                                                                    "ID": ID,
                                                                     "sceneId": sceneId,
                                                                     "type": agtype,
                                                                     "Roomid": Roomid,
@@ -198,8 +201,7 @@ def agftp(request):
                                                                     "creationTime": creationTime,
                                                                     "deviceType": deviceType,
                                                                     "gameCode": gameCode,
-                                                                    "flag": flag,
-                                                                    'netAmount': netAmount
+                                                                    "flag": flag
                                                                 }
                                                             )
                                 
@@ -231,8 +233,10 @@ def agftp(request):
                                         logger.error("This user does not exist in AG ftp.")
                                         return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
 
-                                    if float(netAmount) > 0:
+                                    if float(netAmount) > float(betAmount):
                                         outcome = 0
+                                    elif float(netAmount) == float(betAmount):
+                                        outcome = 2
                                     else:
                                         outcome = 1
                                     
@@ -246,9 +250,9 @@ def agftp(request):
                                                             user=user,
                                                             user_name=user.username,
                                                             transaction_id=trans_id,
-                                                            amount_wagered=betAmount,
+                                                            amount_wagered=decimal.Decimal(betAmount),
                                                             currency=user.currency,
-                                                            amount_won=netAmount,
+                                                            amount_won=decimal.Decimal(netAmount),
                                                             ref_no=billNo,
                                                             market=ibetCN,
                                                             resolved_time=betTime,
@@ -297,8 +301,10 @@ def agftp(request):
 
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                                    if float(netAmount) > 0:
+                                    if float(netAmount) > float(betAmount):
                                         outcome = 0
+                                    elif float(netAmount) == float(betAmount):
+                                        outcome = 2
                                     else:
                                         outcome = 1
                                     
@@ -310,9 +316,9 @@ def agftp(request):
                                                             user=user,
                                                             user_name=user.username,
                                                             transaction_id=trans_id,
-                                                            amount_wagered=betAmount,
+                                                            amount_wagered=decimal.Decimal(betAmount),
                                                             currency=user.currency,
-                                                            amount_won=netAmount,
+                                                            amount_won=decimal.Decimal(netAmount),
                                                             ref_no=billNo,
                                                             market=ibetCN,
                                                             outcome=outcome,
@@ -366,12 +372,12 @@ def agftp(request):
                                                             user=user,
                                                             user_name=user.username,
                                                             transaction_id=trans_id,
-                                                            amount_wagered=abs(transferAmount),
+                                                            amount_wagered=abs(decimal.Decimal(transferAmount)),
                                                             currency=user.currency,
                                                             ref_no=tradeNo,
                                                             market=ibetCN,
                                                             bet_type=TIP,
-                                                            resolved_time=creationTime,
+                                                            bet_time=creationTime,
                                                             other_data={
                                                                     "agentCode": agentCode,
                                                                     "gameCode": gameCode,
@@ -383,8 +389,7 @@ def agftp(request):
                                                                     "currentAmount": currentAmount,
                                                                     "previousAmount": previousAmount,
                                                                     "transferAmount":transferAmount,
-                                                                    "platformType": platformType,
-                                                                    "betAmountBase": betAmountBase
+                                                                    "platformType": platformType
                                                                 }
                                                             )
                         else:
