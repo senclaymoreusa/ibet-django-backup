@@ -271,7 +271,6 @@ def agftp(request):
                                                                     "flag": flag,
                                                                     "playType": playType,
                                                                     "tableCode": tableCode,
-                                                                    "recalcuTime": recalcuTime,
                                                                     "platformType": platformType,
                                                                     "round": aground,
                                                                     "beforeCredit": beforeCredit,
