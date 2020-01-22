@@ -189,6 +189,7 @@ def agftp(request):
                                                             market=ibetCN,
                                                             bet_time=SceneStartTime,
                                                             resolved_time=SceneEndTime,
+                                                            outcome=outcome,
                                                             other_data={
                                                                     "ID": ID,
                                                                     "sceneId": sceneId,
