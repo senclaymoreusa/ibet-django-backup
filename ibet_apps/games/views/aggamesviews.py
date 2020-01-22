@@ -351,7 +351,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                 if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == AG_SUCCESS: #get balance
 
                     if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == AG_SUCCESS:
-                        print("prepare")
+                        #print("prepare")
                         
                         while confirm:
                             flag = '1'
@@ -380,7 +380,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         channel=None,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
-                                print("confirm")
+                                #print("confirm")
                                 success = False
                                 confirm = False
                                 return CODE_SUCCESS
