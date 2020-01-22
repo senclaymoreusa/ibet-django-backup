@@ -330,7 +330,63 @@ def agftp(request):
                                                                     "betAmountBase": betAmountBase
                                                                 }
                                                             )
-                            
+                                elif dataType == 'TR': #TIP
+                                    agentCode = child.attrib['agentCode'] 
+                                    ID = child.attrib['ID'] 
+                                    transferId = child.attrib['transferId'] 
+                                    tradeNo = child.attrib['tradeNo']  
+                                    platformType = child.attrib['platformType']  
+                                    playerName = child.attrib['playerName']  
+                                    transferType = child.attrib['transferType'] 
+                                    transferAmount = child.attrib['transferAmount']  
+                                    previousAmount = child.attrib['previousAmount']  
+                                    currentAmount = child.attrib['currentAmount']  
+                                    currency = child.attrib['currency']   
+                                    exchangeRate = child.attrib['exchangeRate']  
+                                    IP = child.attrib['IP']  
+                                    flag = child.attrib['flag']  
+                                    creationTime = child.attrib['creationTime']  
+                                    gameCode = child.attrib['gameCode'] 
+                                    if transferType == 'DONATEFEE':  #tip
+
+                                        try:
+                                            user = CustomUser.objects.get(username=playerName)
+                                            
+                                        except ObjectDoesNotExist:
+                                            logger.error("This user does not exist in AG ftp.")
+                                            return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+
+                                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                                        creationTime = datetime.datetime.strptime(creationTime, '%Y-%m-%d %H:%M:%S')
+                                        creationTime = creationTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
+                                        GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                            category=Category.objects.get(name='Live Casino'),
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            transaction_id=trans_id,
+                                                            amount_wagered=abs(transferAmount),
+                                                            currency=user.currency,
+                                                            ref_no=tradeNo,
+                                                            market=ibetCN,
+                                                            bet_type=TIP,
+                                                            resolved_time=creationTime,
+                                                            other_data={
+                                                                    "agentCode": agentCode,
+                                                                    "gameCode": gameCode,
+                                                                    "flag": flag,
+                                                                    "IP":IP,
+                                                                    "ID":ID,
+                                                                    "transferId": transferId,
+                                                                    "exchangeRate": exchangeRate,
+                                                                    "currentAmount": currentAmount,
+                                                                    "previousAmount": previousAmount,
+                                                                    "transferAmount":transferAmount,
+                                                                    "platformType": platformType,
+                                                                    "betAmountBase": betAmountBase
+                                                                }
+                                                            )
                         else:
                             continue
                     
