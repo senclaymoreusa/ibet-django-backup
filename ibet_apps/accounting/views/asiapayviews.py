@@ -201,7 +201,7 @@ class submitDeposit(generics.GenericAPIView):
                     channel=ASIAPAY,
                     status=TRAN_CREATE_TYPE,
                     method=bankidConversion[BankID],
-                    request_time=timezone.now(),
+                    request_time=timezone.now()
                     
                 )
                 if PayWay == ASIAPAY_QRPAYWAY or PayWay == '30':
