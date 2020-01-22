@@ -87,17 +87,11 @@ def png_authenticate(data):
             user_obj = existing_ticket.user_obj
             # print("user_obj.username: " + user_obj.username)
 
-            user_country = user_obj.country
-
-            # Use provider's country code
-            if user_country == "USA":
-                user_country = "US"
-
             external_id = user_obj.username
             status_code = PNG_STATUS_OK 
             status_message = "ok"
             user_currency = CURRENCY_CHOICES[user_obj.currency][1]
-            country = user_country
+            country = user_obj.country
             birthdate = user_obj.date_of_birth
             registration = user_obj.time_of_registration
             res_language = user_obj.language
