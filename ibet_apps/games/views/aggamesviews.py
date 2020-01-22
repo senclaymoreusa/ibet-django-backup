@@ -244,6 +244,9 @@ def agftp(request):
                                     betTime = datetime.datetime.strptime(betTime, '%Y-%m-%d %H:%M:%S')
                                     betTime = betTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
                                     
+                                    recalcuTime = datetime.datetime.strptime(recalcuTime, '%Y-%m-%d %H:%M:%S')
+                                    recalcuTime = recalcuTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+                                    
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                                     GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
@@ -257,12 +260,13 @@ def agftp(request):
                                                             ref_no=billNo,
                                                             market=ibetCN,
                                                             bet_time=betTime,
-                                                            resolved_time=betTime,
+                                                            resolved_time=recalcuTime,
                                                             outcome=outcome,
                                                             other_data={
                                                                     "agentCode": agentCode,
                                                                     "gameCode": gameCode,
                                                                     "betTime": child.attrib['betTime'],
+                                                                    "recalcuTime": child.attrib['recalcuTime'],
                                                                     "gameType": gameType,
                                                                     "flag": flag,
                                                                     "playType": playType,
@@ -293,6 +297,7 @@ def agftp(request):
                                     netAmountBase = child.attrib['netAmountBase']
                                     betAmountBonus = child.attrib['betAmountBonus']
                                     betAmountBase = child.attrib['betAmountBase']
+                                    recalcuTime = child.attrib['recalcuTime']
 
                                     try:
                                         user = CustomUser.objects.get(username=playerName)
@@ -313,6 +318,9 @@ def agftp(request):
                                     betTime = datetime.datetime.strptime(betTime, '%Y-%m-%d %H:%M:%S')
                                     betTime = betTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
 
+                                    recalcuTime = datetime.datetime.strptime(recalcuTime, '%Y-%m-%d %H:%M:%S')
+                                    recalcuTime = recalcuTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+                                    
                                     GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
                                                             user=user,
@@ -325,7 +333,7 @@ def agftp(request):
                                                             market=ibetCN,
                                                             outcome=outcome,
                                                             bet_time=betTime,
-                                                            resolved_time=betTime,
+                                                            resolved_time=recalcuTime,
                                                             other_data={
                                                                     "gameType": gameType,
                                                                     "result": result,
