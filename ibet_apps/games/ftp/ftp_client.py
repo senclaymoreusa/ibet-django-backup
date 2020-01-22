@@ -28,12 +28,20 @@ class EaFTP():
 
 class AgFTP():
     _instance = None
+    last_connection_time = None
 
     def __init__(self):
-        logger.info('start connect to EA FTP server...')
-        self.ftp_session = FTP()
-        # self.ftp_session.connect(EA_FTP_ADDR) 
-        # self.ftp_session.login(EA_FTP_USERNAME, EA_FTP_PASSWORD)
+        for x in range(3):
+            try:
+                logger.info('start connect to EA FTP server...')
+                self.ftp_session = FTP()
+                self.ftp_session.connect(AG_FTP)
+                self.ftp_session.login(AG_FTP_USERNAME, AG_FTP_PASSWORD)
+                break
+            except Exception as e:
+                logger.critical("(FATAL__ERROR) Connecting AG FTP error", e)
+                sleep(3)
+       
 
 def ftpConnect():
     current_time = datetime.datetime.now().timestamp()
@@ -41,3 +49,10 @@ def ftpConnect():
         EaFTP._instance = EaFTP()
         EaFTP.last_connection_time = current_time
     return EaFTP._instance
+
+def agFtpConnect():
+    current_time = datetime.datetime.now().timestamp()
+    if AgFTP._instance is None or current_time - AgFTP.last_connection_time > 3600:      # refresh the connection
+        AgFTP._instance = AgFTP()
+        AgFTP.last_connection_time = current_time
+    return AgFTP._instance

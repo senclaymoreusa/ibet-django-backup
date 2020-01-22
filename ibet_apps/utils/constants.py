@@ -1644,12 +1644,15 @@ QT_STATUS_CODE = (
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
 
 #AG
-AG_URL = "https://gi.claymoreasia.com/doBusiness.do"
-AG_FORWARD_URL = "https://gci.claymoreasia.com/forwardGame.do"
-AG_CAGENT = "EV3_AGIN"
-AG_MD5 = "2YgQUaUZfDDt"
-AG_DES = "MJp7ScbZ"
-AG_DM = "http://ibet.com"
+AG_URL = keys["AG"]["URL"]
+AG_FORWARD_URL = keys["AG"]["FORWARD_URL"]
+AG_CAGENT = keys["AG"]["CAGENT"]
+AG_MD5 = keys["AG"]["MD5"]
+AG_DES = keys["AG"]["DES"]
+AG_DM = keys["AG"]["DM"]
+AG_FTP_USERNAME = keys["AG"]["FTP_USERNAME"]
+AG_FTP_PASSWORD = keys["AG"]["FTP_PASSWORD"]
+AG_FTP = keys["AG"]["FTP"]
 #IMES
 IMES_PROVIDER = "IMES"
 

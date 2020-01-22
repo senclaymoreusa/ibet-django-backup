@@ -32,6 +32,8 @@ import boto3
 import logging
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+import games.ftp.ftp_client as ftpClient
+import pytz
 import simplejson as json
 
 logger = logging.getLogger('django')
@@ -51,6 +53,370 @@ def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
 
+@api_view(['POST'])
+@permission_classes((AllowAny,))        
+def agftp(request): 
+
+    try:
+        ftp = ftpClient.agFtpConnect()
+        
+        try:
+            r = RedisClient().connect()
+            redis = RedisHelper()
+        except:
+            logger.critical("(FATAL_ERROR)There is something wrong with AG redis connection.")
+            return HttpResponse({'status': 'There is something wrong with AG redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            folders = ftp.ftp_session.nlst()
+            
+        except ftplib.error_perm as resp:
+            if str(resp) == "550 No files found":
+                logger.error("No files in this directory of AG folders")
+                return HttpResponse(ERROR_CODE_NOT_FOUND, status=status.HTTP_404_NOT_FOUND) 
+            else:
+                raise
+        for folder in folders:
+            ftp.ftp_session.cwd(folder) 
+
+            small_folders = ftp.ftp_session.nlst()
+            last_added_file = redis.get_ag_added_file()  #get last added file in redis
+            
+            if last_added_file is not None:
+                last_added_file = last_added_file.decode("utf-8")
+                last_added_file = last_added_file.replace(".xml", "")
+                last_folder = last_added_file[:8]            #get last added folder 
+            else:
+                last_added_file = 0
+                last_folder = 0
+            for sf in small_folders:
+                if int(sf.replace("/", "")) >= int(last_folder):     #only edit the folders more recently then the one we get
+                    ftp.ftp_session.cwd(sf) 
+                    try:
+                        files = ftp.ftp_session.nlst()
+                    except ftplib.error_perm as resp:
+                        if str(resp) == "550 No files found":
+                            logger.error("No files in this directory of AG small folders")
+                            return HttpResponse(ERROR_CODE_NOT_FOUND, status=status.HTTP_404_NOT_FOUND) 
+                        else:
+                            raise
+                    
+                    # latest_time = None
+                    # latest_name = None
+                    for file in files:
+                        
+                        last_file = file.replace(".xml", "")
+                        
+                        if int(last_file) > int(last_added_file):
+                            
+                            # if redis.check_ag_added_file(file) is False:   #if the file does not exist in redis
+                            #     redis.set_ag_added_file(file)              #then add the file into redis
+                            # else:
+                            #     continue                                   #if it is already existed then go to next index
+                        
+
+                            # time = ftp.ftp_session.voidcmd("MDTM " + file)
+                            # if (latest_time is None) or (time > latest_time):
+                            #     latest_name = file
+                            #     latest_time = time
+
+                    
+                            r = BytesIO()
+                            read = ftp.ftp_session.retrbinary('RETR ' + file, r.write)
+                            rdata = r.getvalue().decode("utf-8")
+                            xml = '<root>'+rdata+'</root>'
+
+                            writeToS3(rdata, AWS_BET_S3_BUCKET, 'AG-game-history/{}'.format(file))
+                            redis.set_ag_added_file(file)
+                            logger.info('finished writting AG last file {} to s3'.format(file))
+                            root = ET.fromstring(xml)
+                            for child in root:
+                                dataType = child.attrib['dataType']
+                                
+                                if dataType == 'HSR': #捕鱼王場景的下注记录
+                                    ID = child.attrib['ID']
+                                    playerName = child.attrib['playerName']
+                                    tradeNo = child.attrib['tradeNo']
+                                    transferAmount = child.attrib['transferAmount']
+                                    flag = child.attrib['flag']
+                                    SceneStartTime = child.attrib['SceneStartTime']
+                                    SceneEndTime = child.attrib['SceneEndTime']
+                                    Jackpotcomm=child.attrib['Jackpotcomm']
+                                    gameType = child.attrib['gameType']
+                                    sceneId = child.attrib['sceneId']
+                                    agtype = child.attrib['type']
+                                    Roomid =child.attrib['Roomid']
+                                    Roombet =child.attrib['Roombet']
+                                    Cost =child.attrib['Cost']
+                                    Earn =child.attrib['Earn']
+                                    exchangeRate =child.attrib['exchangeRate']
+                                    creationTime = child.attrib['creationTime']
+                                    deviceType = child.attrib['deviceType']
+                                    gameCode = child.attrib['gameCode']
+
+                                    try:
+                                        user = CustomUser.objects.get(username=playerName)
+                                        
+                                    except ObjectDoesNotExist:
+                                        logger.error("This user does not exist in AG ftp.")
+                                        return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+
+                                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                                    SceneStartTime = datetime.datetime.strptime(SceneStartTime, '%Y-%m-%d %H:%M:%S')
+                                    SceneStartTime = SceneStartTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
+                                    SceneEndTime = datetime.datetime.strptime(SceneEndTime, '%Y-%m-%d %H:%M:%S')
+                                    SceneEndTime = SceneEndTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
+                                    if float(transferAmount) > 0:
+                                        outcome = 0
+                                    elif float(transferAmount) == 0:
+                                        outcome = 2
+                                    else:
+                                        outcome = 1
+
+                                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                            category=Category.objects.get(name='Live Casino'),
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            transaction_id=trans_id,
+                                                            amount_wagered=abs(decimal.Decimal(transferAmount)),
+                                                            currency=user.currency,
+                                                            ref_no=tradeNo,
+                                                            amount_won=decimal.Decimal(transferAmount),
+                                                            market=ibetCN,
+                                                            bet_time=SceneStartTime,
+                                                            resolved_time=SceneEndTime,
+                                                            outcome=outcome,
+                                                            other_data={
+                                                                    "ID": ID,
+                                                                    "sceneId": sceneId,
+                                                                    "type": agtype,
+                                                                    "Roomid": Roomid,
+                                                                    "Roombet": Roombet,
+                                                                    "Cost": Cost,
+                                                                    "Earn": Earn,
+                                                                    "exchangeRate": exchangeRate,
+                                                                    "creationTime": creationTime,
+                                                                    "deviceType": deviceType,
+                                                                    "gameCode": gameCode,
+                                                                    "flag": flag
+                                                                }
+                                                            )
+                                
+
+                                
+                                elif dataType == 'BR': #下注记录详情
+                                    playerName = child.attrib['playerName']
+                                    billNo = child.attrib['billNo']
+                                    betAmount = child.attrib['betAmount']
+                                    flag = child.attrib['flag']
+                                    betTime = child.attrib['betTime']
+                                    gameCode = child.attrib['gameCode']
+                                    netAmount = child.attrib['netAmount']
+                                    gameType = child.attrib['gameType']
+                                    result = child.attrib['result']
+                                    agentCode = child.attrib['agentCode']
+                                    playType = child.attrib['playType']
+                                    tableCode = child.attrib['tableCode']
+                                    recalcuTime = child.attrib['recalcuTime']
+                                    platformType = child.attrib['platformType']
+                                    aground = child.attrib['round']
+                                    beforeCredit = child.attrib['beforeCredit']
+                                    deviceType = child.attrib['deviceType']
+
+                                    try:
+                                        user = CustomUser.objects.get(username=playerName)
+                                        
+                                    except ObjectDoesNotExist:
+                                        logger.error("This user does not exist in AG ftp.")
+                                        return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+
+                                    if float(netAmount) > float(betAmount):
+                                        outcome = 0
+                                    elif float(netAmount) == float(betAmount):
+                                        outcome = 2
+                                    else:
+                                        outcome = 1
+                                    
+                                    betTime = datetime.datetime.strptime(betTime, '%Y-%m-%d %H:%M:%S')
+                                    betTime = betTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+                                    
+                                    recalcuTime = datetime.datetime.strptime(recalcuTime, '%Y-%m-%d %H:%M:%S')
+                                    recalcuTime = recalcuTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+                                    
+                                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                            category=Category.objects.get(name='Live Casino'),
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            transaction_id=trans_id,
+                                                            amount_wagered=decimal.Decimal(betAmount),
+                                                            currency=user.currency,
+                                                            amount_won=decimal.Decimal(netAmount),
+                                                            ref_no=billNo,
+                                                            market=ibetCN,
+                                                            bet_time=betTime,
+                                                            resolved_time=recalcuTime,
+                                                            outcome=outcome,
+                                                            other_data={
+                                                                    "agentCode": agentCode,
+                                                                    "gameCode": gameCode,
+                                                                    "betTime": child.attrib['betTime'],
+                                                                    "recalcuTime": child.attrib['recalcuTime'],
+                                                                    "gameType": gameType,
+                                                                    "flag": flag,
+                                                                    "playType": playType,
+                                                                    "tableCode": tableCode,
+                                                                    "platformType": platformType,
+                                                                    "round": aground,
+                                                                    "beforeCredit": beforeCredit,
+                                                                    "deviceType": deviceType
+                                                                }
+                                                            )
+
+                                elif dataType == 'EBR': #电子游戏的下注记录
+                                    playerName = child.attrib['playerName']
+                                    billNo = child.attrib['billNo']
+                                    betAmount = child.attrib['betAmount']
+                                    flag = child.attrib['flag']
+                                    betTime = child.attrib['betTime']
+                                    gameCode = child.attrib['gameCode']
+                                    netAmount = child.attrib['netAmount']
+                                    gameType = child.attrib['gameType']
+                                    result = child.attrib['result']
+                                    slottype = child.attrib['slottype']
+                                    mainbillno = child.attrib['mainbillno']
+                                    subbillno = child.attrib['subbillno']
+                                    gameCategory = child.attrib['gameCategory']
+                                    netAmountBonus = child.attrib['netAmountBonus']
+                                    netAmountBase = child.attrib['netAmountBase']
+                                    betAmountBonus = child.attrib['betAmountBonus']
+                                    betAmountBase = child.attrib['betAmountBase']
+                                    recalcuTime = child.attrib['recalcuTime']
+
+                                    try:
+                                        user = CustomUser.objects.get(username=playerName)
+                                        
+                                    except ObjectDoesNotExist:
+                                        logger.error("This user does not exist in AG ftp.")
+                                        return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+
+                                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                                    if float(netAmount) > float(betAmount):
+                                        outcome = 0
+                                    elif float(netAmount) == float(betAmount):
+                                        outcome = 2
+                                    else:
+                                        outcome = 1
+                                    
+                                    betTime = datetime.datetime.strptime(betTime, '%Y-%m-%d %H:%M:%S')
+                                    betTime = betTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
+                                    recalcuTime = datetime.datetime.strptime(recalcuTime, '%Y-%m-%d %H:%M:%S')
+                                    recalcuTime = recalcuTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+                                    
+                                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                            category=Category.objects.get(name='Live Casino'),
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            transaction_id=trans_id,
+                                                            amount_wagered=decimal.Decimal(betAmount),
+                                                            currency=user.currency,
+                                                            amount_won=decimal.Decimal(netAmount),
+                                                            ref_no=billNo,
+                                                            market=ibetCN,
+                                                            outcome=outcome,
+                                                            bet_time=betTime,
+                                                            resolved_time=recalcuTime,
+                                                            other_data={
+                                                                    "gameType": gameType,
+                                                                    "result": result,
+                                                                    "slottype": slottype,
+                                                                    "mainbillno":mainbillno,
+                                                                    "subbillno": subbillno,
+                                                                    "gameCategory": gameCategory,
+                                                                    "netAmountBonus": netAmountBonus,
+                                                                    "netAmountBase":netAmountBase,
+                                                                    "betAmountBonus": betAmountBonus,
+                                                                    "betAmountBase": betAmountBase
+                                                                }
+                                                            )
+                                elif dataType == 'TR': #TIP
+                                    agentCode = child.attrib['agentCode'] 
+                                    ID = child.attrib['ID'] 
+                                    transferId = child.attrib['transferId'] 
+                                    tradeNo = child.attrib['tradeNo']  
+                                    platformType = child.attrib['platformType']  
+                                    playerName = child.attrib['playerName']  
+                                    transferType = child.attrib['transferType'] 
+                                    transferAmount = child.attrib['transferAmount']  
+                                    previousAmount = child.attrib['previousAmount']  
+                                    currentAmount = child.attrib['currentAmount']  
+                                    currency = child.attrib['currency']   
+                                    exchangeRate = child.attrib['exchangeRate']  
+                                    IP = child.attrib['IP']  
+                                    flag = child.attrib['flag']  
+                                    creationTime = child.attrib['creationTime']  
+                                    gameCode = child.attrib['gameCode'] 
+                                    if transferType == 'DONATEFEE':  #tip
+
+                                        try:
+                                            user = CustomUser.objects.get(username=playerName)
+                                            
+                                        except ObjectDoesNotExist:
+                                            logger.error("This user does not exist in AG ftp.")
+                                            return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+
+                                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                                        creationTime = datetime.datetime.strptime(creationTime, '%Y-%m-%d %H:%M:%S')
+                                        creationTime = creationTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
+
+                                        GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                                            category=Category.objects.get(name='Live Casino'),
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            transaction_id=trans_id,
+                                                            amount_wagered=abs(decimal.Decimal(transferAmount)),
+                                                            currency=user.currency,
+                                                            ref_no=tradeNo,
+                                                            market=ibetCN,
+                                                            bet_type=TIP,
+                                                            bet_time=creationTime,
+                                                            other_data={
+                                                                    "agentCode": agentCode,
+                                                                    "gameCode": gameCode,
+                                                                    "flag": flag,
+                                                                    "IP":IP,
+                                                                    "ID":ID,
+                                                                    "transferId": transferId,
+                                                                    "exchangeRate": exchangeRate,
+                                                                    "currentAmount": currentAmount,
+                                                                    "previousAmount": previousAmount,
+                                                                    "transferAmount":transferAmount,
+                                                                    "platformType": platformType
+                                                                }
+                                                            )
+                        else:
+                            continue
+                    
+                    ftp.ftp_session.cwd('..')
+                        
+                else:
+                    continue
+
+                
+            ftp.ftp_session.cwd('..')
+        ftp.ftp_session.quit()
+        return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
+    except ftplib.error_temp:
+        logger.critical("(FATAL_ERROR)Cannot connect with AG ftp.")
+        return HttpResponse(ERROR_CODE_FAIL, status=status.HTTP_400_BAD_REQUEST)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
@@ -107,8 +473,8 @@ def getBalance(request):
         else:
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        logger.critical("The user is not existed in AG getBalance api.")
-        return Response({"error":"The user is not existed in AG getBalance api."}) 
+        logger.critical("The user does not exist in AG getBalance api.")
+        return Response({"error":"The user does not exist in AG getBalance api."}) 
 
 def getBalance(user):
     password = AG_CAGENT + user.username
@@ -309,8 +675,8 @@ def forwardGame(request):
         
         
     except ObjectDoesNotExist:
-        logger.error("The user is not existed in AG forwardGame.")
-        return Response({"error":"The  user is not existed in AG forwardGame."}) 
+        logger.error("The user does not exist in AG forwardGame.")
+        return Response({"error":"The  user does not exist in AG forwardGame."}) 
 
 
 def agFundTransfer(user, fund_wallet, credit, agtype): 
@@ -466,6 +832,6 @@ def agService(request):
                 logger.error("error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")
         except:
-            logger.error("this user is not existed in AG agService.")
-            return HttpResponse("error, this user is not existed in AG agService.")
+            logger.error("this user does not exist in AG agService.")
+            return HttpResponse("error, this user does not exist in AG agService.")
 
