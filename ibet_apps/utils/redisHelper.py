@@ -23,6 +23,7 @@ def getOnebookBetDetailsRedisKey():
 
 def getAGFileHistoryRedisKey():
     return REDIS_KEY_PREFIX_AG_FILES
+
 def getEABetHistroyRedisKey():
     return REDIS_KEY_PREFIX_EA_BET_HISTORY
 
@@ -80,11 +81,12 @@ class RedisHelper():
 
     def set_ag_added_file(self, ftp_file):
         ag_file = getAGFileHistoryRedisKey()
-        return self.r.sadd(ag_file, ftp_file)
+        return self.r.set(ag_file, ftp_file)
     
-    def check_ag_added_file(self, ftp_file):
+    def get_ag_added_file(self):
         ag_file = getAGFileHistoryRedisKey()
-        return self.r.sismember(ag_file, ftp_file)
+        return self.r.get(ag_file)
+
     def set_ea_last_file(self, file_name):
         ea_bet_history = getEABetHistroyRedisKey()
         return self.r.set(ea_bet_history, file_name)
