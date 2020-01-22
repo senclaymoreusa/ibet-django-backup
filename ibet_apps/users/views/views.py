@@ -71,6 +71,7 @@ from operation.views import send_sms
 from itertools import islice
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+import utils.helpers as helpers
 from rest_framework.authtoken.models import Token
 
 import datetime
@@ -265,7 +266,7 @@ class RegisterView(CreateAPIView):
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=self.request.META['REMOTE_ADDR'],
+                    ip_addr=helpers.get_client_ip(request),
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
@@ -298,6 +299,7 @@ class RegisterView(CreateAPIView):
 
         return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
@@ -349,7 +351,7 @@ class LoginView(GenericAPIView):
         return response_serializer
 
     def login(self):
-        
+
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
@@ -403,6 +405,10 @@ class LoginView(GenericAPIView):
                 ipLocation = self.iovationData['details']['realIp']['ipLocation'] 
             else:
                 ipLocation = None
+            if 'details' in self.iovationData and 'realIp' in self.iovationData['details'] and 'address' in self.iovationData['details']['realIp']:
+                realIp = self.iovationData['details']['realIp']['address'] 
+            else:
+                realIp = helpers.get_client_ip(request)
             otherData = self.iovationData
            
 
@@ -417,7 +423,7 @@ class LoginView(GenericAPIView):
             with transaction.atomic():
                 action = UserAction(
                     user= customUser.first(),
-                    ip_addr=statedIp,
+                    ip_addr=realIp,
                     result=result,
                     device=device,
                     browser=str(browser),
@@ -509,8 +515,8 @@ class LogoutView(APIView):
             pass
 
         action = UserAction(
-            user= CustomUser.objects.filter(username=self.user).first(),
-            ip_addr=self.request.META['REMOTE_ADDR'],
+            user= CustomUser.objects.get(username=self.user),
+            ip_addr=helpers.get_client_ip(request),
             event_type=1,
             created_time=timezone.now()
         )
@@ -639,6 +645,8 @@ class LanguageView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         languageCode = serializer.validated_data['languageCode']
+        if languageCode == 'zh':
+            languageCode = "zh-hans"
         request.session[LANGUAGE_SESSION_KEY] = languageCode
         request.session.modified = True
         # Make current response also shows translated result
@@ -908,6 +916,7 @@ class FacebookRegister(CreateAPIView):
                         status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
@@ -1246,7 +1255,8 @@ class GenerateActivationCode(APIView):
                         action = UserAction(
                             user=user[0],
                             event_type=EVENT_CHOICES_SMS_CODE,
-                            created_time=timezone.now()
+                            created_time=timezone.now(),
+                            ip_addr=helpers.get_client_ip(request)
                         )
                         action.save()
 
@@ -1278,7 +1288,8 @@ class GenerateActivationCode(APIView):
                     action = UserAction(
                         user=user[0],
                         event_type=EVENT_CHOICES_SMS_CODE,
-                        created_time=timezone.now()
+                        created_time=timezone.now(),
+                        ip_addr=helpers.get_client_ip(request)
                     )
                     action.save()
 
@@ -2083,7 +2094,7 @@ class SetWithdrawPassword(View):
             userId = data['userId'] 
             withdrawPassword = data['withdrawPassword']
             customUser = CustomUser.objects.get(pk=userId)
-            print(customUser)
+            # print(customUser)
             if checkUserBlock(customUser):
                 errorMessage = _('The current user is blocked!')
                 data = {

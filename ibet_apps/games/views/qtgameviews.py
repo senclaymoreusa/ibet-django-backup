@@ -16,6 +16,7 @@ from django.utils import timezone
 
 import os
 import json
+import math
 import uuid
 import logging
 import requests
@@ -64,8 +65,11 @@ class VerifySession(APIView):
                     qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
                     
                     status_code = 200
+                    n_float = int(user.main_wallet * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
+                        'balance': round(bal),
                         # TODO: needs to handle if user.currency is bitcoin
                         'currency': CURRENCY_CHOICES[user.currency][1],
                     }
@@ -110,9 +114,11 @@ class GetBalance(APIView):
             try:
                 user = CustomUser.objects.get(username=username)
                 status_code = 200
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
                 response = {
-                    'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
-                    # TODO: needs to handle if user.currency is bitcoin
+                    'balance': round(bal),
                     'currency': CURRENCY_CHOICES[user.currency][1],
                 }
                 return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
@@ -263,16 +269,21 @@ class ProcessTransactions(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            roundId = request.GET['roundId']
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            roundId = body['roundId']
+            transType = body["txnType"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
         except:
             status_code = 400
@@ -351,16 +362,19 @@ class ProcessTransactions(APIView):
                                 'txnType': transType,
                                 'completed': completed, 
                                 'roundId': roundId, 
-                                'category': request.GET['category'],
-                                'device': request.GET['device']
+                                'category': body['category'],
+                                'device': body['device']
                             }
                         )
                         user.main_wallet = bal
                         bet.save()
                         user.save()
                         
+                    n_float = int(bal * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        "balance": str(bal),
+                        'balance': round(bal),
                         "referenceId": trans_id
                     }
                     
@@ -402,15 +416,18 @@ class ProcessTransactions(APIView):
                             'txnType': transType,
                             'completed': completed, 
                             'roundId': roundId, 
-                            'category': request.GET['category'],
-                            'device': request.GET['device']
+                            'category': body['category'],
+                            'device': body['device']
                         }
                     )
                     bet.save()
                     user.save()
                     
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
                 response = {
-                    "balance": str(user.main_wallet),
+                    'balance': round(bal),   
                     "referenceId": trans_id
                 }
                 
@@ -462,17 +479,22 @@ class ProcessRollback(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            transType = body["txnType"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
-            orig_txnId = request.GET['betId']
+            orig_txnId = body['betId']
             
         except:
             status_code = 400
@@ -531,6 +553,9 @@ class ProcessRollback(APIView):
         user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         
+        n_float = int(user.main_wallet * 100) / 100.0
+        bal = Decimal(n_float)
+        
         try:
             #
             # try to find the original QT txnId for rollback
@@ -544,15 +569,16 @@ class ProcessRollback(APIView):
                                            ref_no=orig_txnId
                                            )
             
+            
             response = {
-                "balance": str(user.main_wallet),
+                'balance': round(bal),
                 "referenceId": trans_id
             }
             
         except:
             logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
             response = {
-                "balance": str(user.main_wallet)
+                "balance": round(bal)
             }
             
         #
@@ -569,15 +595,16 @@ class ProcessRollback(APIView):
                     amount_wagered=0.00,
                     amount_won=amount,
                     transaction_id=trans_id,
-                    outcome=7,
+                    outcome=3,
+                    resolved_time=timezone.now(),
                     currency=user.currency,
                     market=ibetCN,
                     other_data={
                         'transactionType': "RollBack",
                         'rollBackFrom': orig_txnId,
                         'completed': completed, 
-                        'category': request.GET['category'],
-                        'device': request.GET['device']
+                        'category': body['category'],
+                        'device': body['device']
                     }
                 )
                 bet.save()

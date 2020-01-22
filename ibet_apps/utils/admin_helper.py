@@ -11,7 +11,7 @@ from users.models import CustomUser, UserAction, SystemCommissionLevel, Personal
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
-from games.models import GameBet
+from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
@@ -30,9 +30,19 @@ this_month = today.replace(day=1)
 last_month = this_month - relativedelta(months=1)
 month_before_last = this_month - relativedelta(months=2)
 
+# Create System User
+try:
+    system_user = CustomUser.objects.get(username='System')
+except ObjectDoesNotExist as e:
+    system_user = CustomUser.objects.create_superuser(
+        username='System',
+        email='system@claymoreusa.com',
+        phone=0
+    )
+    logger.info("Create A System User")
+
 
 # transaction filter
-
 def getCommissionTrans():
     commission_tran = Transaction.objects.filter(
         Q(transaction_type=TRANSACTION_COMMISSION) & Q(channel=None))
@@ -372,11 +382,11 @@ def bonusValueToKey(bonuses):
     if bonuses['start_time']:
         bonuses['start_time'] = datetime.datetime.strptime(bonuses['start_time'], '%Y-%m-%dT%H:%M:%SZ')
         bonuses['start_time'] = utcToLocalDatetime(bonuses['start_time'])
-        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %m %Y')
+        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %d %Y')
     if bonuses['end_time']:
         bonuses['end_time'] = datetime.datetime.strptime(bonuses['end_time'], '%Y-%m-%dT%H:%M:%SZ')
         bonuses['end_time'] = utcToLocalDatetime(bonuses['end_time'])
-        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %m %Y')
+        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %d %Y')
     return bonuses
 
 
@@ -386,11 +396,11 @@ def ubeValueToKey(ube):
         ube['delivery_time'] = datetime.datetime.strptime(ube['delivery_time'],
                                                           '%Y-%m-%dT%H:%M:%S.%fZ')  # for auto add field
         ube['delivery_time'] = utcToLocalDatetime(ube['delivery_time'])
-        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %m %Y')
+        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %d %Y')
     if ube['completion_time']:
-        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%SZ')
+        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%S.%fZ')
         ube['completion_time'] = utcToLocalDatetime(ube['completion_time'])
-        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %m %Y')
+        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %d %Y')
     return ube
 
 
@@ -407,6 +417,7 @@ BONUS_DELIVERY_VALUE_DICT = {
 }
 
 # hard code for deposit tiered amount setting
+# deposit amount upper bound, bonus rate, max bonus amount, turnover multiple
 DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
                           [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
 

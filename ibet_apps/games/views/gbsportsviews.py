@@ -360,12 +360,15 @@ class WalletSettleAPIURL(APIView):
                     elif TicketResult == '2':
                         TicketResult = 2 #tie
                     elif TicketResult == '4':
-                        TicketResult = 8 #cancel
+                        TicketResult = 3 #cancel
                     elif TicketResult == '5':
-                        TicketResult = 9 #兑现
+                        TicketResult = 3 #兑现
                     elif TicketResult == 'R':
-                        TicketResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
-                    with transaction.atomic():    
+                        TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+
+                    
+                    with transaction.atomic():  
+                        
                         GameBet.objects.create(
                             provider=PROVIDER,
                             category=cate,
@@ -377,15 +380,15 @@ class WalletSettleAPIURL(APIView):
                             ref_no=BetID,
                             amount_wagered=decimal.Decimal(RealBetAmt/100),
                             bet_type=bet_type,
-                            amount_won=decimal.Decimal(RefundBetAmt/100),
+                            amount_won=decimal.Decimal(WLAmt/100), 
                             outcome=TicketResult,
                             resolved_time=timezone.now(),
                             other_data=data,
                         )
                         
-                        if RefundBetAmt != '0' :
-                            user.main_wallet += decimal.Decimal(RefundBetAmt/100)
-                            user.save()
+                        
+                        user.main_wallet += decimal.Decimal(WLAmt/100)
+                        user.save()
                     error      =  'No_Error'
                     error_code =  0
                     success    =  1
@@ -465,11 +468,11 @@ class WalletSettleAPIURL(APIView):
                         elif TicketResult == '2':
                             TicketResult = 2 #tie
                         elif TicketResult == '4':
-                            TicketResult = 8 #cancel
+                            TicketResult = 3 #cancel
                         elif TicketResult == '5':
-                            TicketResult = 9 #兑现
+                            TicketResult = 3 #兑现
                         elif TicketResult == 'R':
-                            TicketResult = 7 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
+                            TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
                         with transaction.atomic():
                             GameBet.objects.create(
                                 provider=PROVIDER,
@@ -532,7 +535,7 @@ class GenerateGameURL(APIView):
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, *args, **kwargs):
-
+        
         game = self.request.GET['game']
         language = langConversion[self.request.user.language]
         
@@ -544,7 +547,7 @@ class GenerateGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": "kvZES8",
+            "AuthKey": GB_GENERALKEY,
             "Params": {
                 "MemberID": self.request.user.username,
                 "TPUniqueID": str(TPUniqueID) 
@@ -558,21 +561,24 @@ class GenerateGameURL(APIView):
         if 'Error' in dic['GB']['Result']['ReturnSet']:
 
             #temp = '-'.join([self.request.user.date_of_birth.split('/')[2], self.request.user.date_of_birth.split('/')[0], self.request.user.date_of_birth.split('/')[1]])
-            
-            dob_fields = self.request.user.date_of_birth.split('/') 
+            if self.request.user.date_of_birth:
 
-            temp = '-'.join([
-                dob_fields[2],
-                dob_fields[0],
-                dob_fields[1]
-            ])
+                dob_fields = self.request.user.date_of_birth.split('/') 
+
+                temp = '-'.join([
+                    dob_fields[2],
+                    dob_fields[0],
+                    dob_fields[1]
+                ])
+            else:
+                temp = '1990-01-01'
             
             create_user_data = requests.post(GB_URL, json = {
             
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": "kvZES8",
+                "AuthKey": GB_GENERALKEY,
                 "Params": {
                     "MemberID": self.request.user.username,
                     "FirstName": self.request.user.first_name,
@@ -597,8 +603,9 @@ class GenerateGameURL(APIView):
 
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
+        
         res = res[2:-2]
-
+        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto' }
         
         if game == 'GB Sports':
@@ -607,7 +614,7 @@ class GenerateGameURL(APIView):
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
-
+        
         return Response({'game_url': url})
 
 class GenerateFakeUserGameURL(APIView):
@@ -625,7 +632,7 @@ class GenerateFakeUserGameURL(APIView):
         "GB": {
             "Method": "UpdateTPUniqueID",
             "TPCode": "011",
-            "AuthKey": "kvZES8",
+            "AuthKey": GB_GENERALKEY,
             "Params": {
                 "MemberID": 'Fakeuser',
                 "TPUniqueID": str(TPUniqueID) 
@@ -642,7 +649,7 @@ class GenerateFakeUserGameURL(APIView):
             "GB": {
                 "Method": "CreateMember",
                 "TPCode": "011",
-                "AuthKey": "kvZES8",
+                "AuthKey": GB_GENERALKEY,
                 "Params": {
                     "MemberID": 'Fakeuser',
                     "FirstName": 'Fake',
@@ -664,11 +671,13 @@ class GenerateFakeUserGameURL(APIView):
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
-
+       
+    
         res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
         res = res.content.decode('utf-8')
+      
         res = res[2:-2]
-       
+        
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 
         if game == 'GB Sports':
@@ -679,5 +688,8 @@ class GenerateFakeUserGameURL(APIView):
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
         return Response({'game_url': url})
+
+
+
 
 

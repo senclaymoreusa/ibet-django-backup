@@ -787,34 +787,37 @@ class AgentDetailView(CommAdminView):
             send = request.POST.get('send')
             subject = request.POST.get('subject')
             text = request.POST.get('text')
-            new_adjustment = Transaction.objects.create(
-                user_id=affiliate_id,
-                amount=amount,
-                status=TRAN_SUCCESS_TYPE,
-                transaction_type=TRANSACTION_ADJUSTMENT,
-                remark=remark,
-                release_by=admin_user,
-            )
-            new_adjustment.save()
-            affiliate_id.main_wallet += amount
-            affiliate_id.save()
-            logger.info(admin_user.username + " creates a new adjustment for affiliate " +
-                        affiliate_id.username + " with the amount " + str(amount))
+
+            with transaction.atomic():
+                new_adjustment = Transaction.objects.create(
+                    user_id=affiliate_id,
+                    amount=amount,
+                    status=TRAN_SUCCESS_TYPE,
+                    transaction_type=TRANSACTION_ADJUSTMENT,
+                    remark=remark,
+                    release_by=admin_user,
+                )
+                new_adjustment.save()
+                affiliate_id.main_wallet += amount
+                affiliate_id.save()
+                logger.info(admin_user.username + " creates a new adjustment for affiliate " +
+                            affiliate_id.username + " with the amount " + str(amount))
             if send == "true":
-                # create a message
-                new_notication = Notification.objects.create(
-                    subject=subject,
-                    content_text=text,
-                    creator=admin_user,
-                )
-                new_notication.save()
-                # send it to affilite
-                new_log = NotificationToUsers.objects.create(
-                    notification_id=new_notication.pk,
-                    notifier_id=affiliate_id,
-                )
-                logger.info(admin_user.username + " send a message to affiliate " +
-                            affiliate_id.username + " with the subject " + subject)
+                with transaction.atomic():
+                    # create a message
+                    new_notication = Notification.objects.create(
+                        subject=subject,
+                        content_text=text,
+                        creator=admin_user,
+                    )
+                    new_notication.save()
+                    # send it to affilite
+                    new_log = NotificationToUsers.objects.create(
+                        notification_id=new_notication.pk,
+                        notifier_id=affiliate_id,
+                    )
+                    logger.info(admin_user.username + " send a message to affiliate " +
+                                affiliate_id.username + " with the subject " + subject)
             return HttpResponse(status=200)
 
         elif post_type == 'remove_refer_link':

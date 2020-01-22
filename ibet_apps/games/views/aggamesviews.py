@@ -20,7 +20,21 @@ from time import sleep
 from  accounting.models import *
 from pyDes import des, ECB, PAD_PKCS5
 import base64, hashlib
+import ftplib
+from io import BytesIO
+import re
+import xmltodict
+import datetime
+from datetime import date
+from utils.aws_helper import writeToS3
+from utils.admin_helper import *
+import boto3
+import logging
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
+import simplejson as json
 
+logger = logging.getLogger('django')
 AG_SUCCESS = 0
 AG_FAIL = 1
 AG_INVALID = 2
@@ -36,6 +50,7 @@ def des_encrypt(s, encrypt_key):
 def MD5(code):
     res = hashlib.md5(code.encode()).hexdigest()
     return res
+
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
@@ -92,8 +107,52 @@ def getBalance(request):
         else:
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        return Response({"error":"The user is not existed."}) 
+        logger.critical("The user is not existed in AG getBalance api.")
+        return Response({"error":"The user is not existed in AG getBalance api."}) 
 
+def getBalance(user):
+    password = AG_CAGENT + user.username
+
+    if user.currency == CURRENCY_CNY:
+        cur = "CNY"
+    elif user.currency == CURRENCY_USD:
+        cur = "USD"
+    elif user.currency == CURRENCY_THB:
+        cur = "THB"
+    elif user.currency == CURRENCY_EUR:
+        cur = "EUR"
+    elif user.currency == CURRENCY_IDR:
+        cur = "IDR"
+    elif user.currency == CURRENCY_VND:
+        cur = "VND"
+    else:
+        cur = "CNY"
+    
+    s = "cagent=" + AG_CAGENT + "/\\\\/loginname=" + user.username + "/\\\\/method=gb/\\\\/actype=1/\\\\/password=" + password + "/\\\\/oddtype=A/\\\\/cur=" + cur  
+        
+    param = des_encrypt(s,AG_DES).decode("utf-8") 
+
+    key = MD5(param + AG_MD5)
+    r = requests.get(AG_URL ,  params={
+            "params": param,
+            "key": key,  
+        })
+    rdata = r.text
+    if r.status_code == 200:
+        tree = ET.fromstring(rdata)
+        info = tree.get('info')
+        msg =  tree.get('msg')
+        return json.dumps({'balance': info})
+    else:
+        return json.dumps({"error":"The request is failed for AG get balance"}) 
+    
+
+class test(APIView):
+    permission_classes = (AllowAny, )
+    def get(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(username="angela02")
+        response = getBalance(user)
+        return HttpResponse(response)
 
 def prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno):    
 
@@ -187,6 +246,7 @@ def queryOrderStatus(actype,cur,billno):
 def forwardGame(request):
     username =  request.POST['username']
     password = AG_CAGENT + username
+    
     actype = request.POST['actype']  #actype=1 代表真钱账号,0 代表试玩账号
     billno = AG_CAGENT + strftime("%Y%m%d%H%M%S", gmtime())
     gameType = request.POST['gameType']
@@ -218,7 +278,17 @@ def forwardGame(request):
             lang = '6'
         elif user.language == 'Vietnamese':
             lang = '8'
-
+        elif user.language == 'en':
+            lang = '3'
+        elif user.language == 'zh':
+            lang = '1'
+        elif user.language == 'Th':
+            lang = '6'
+        elif user.language == 'Vi':
+            lang = '8'   
+        else:
+            lang = '1'
+            
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
             
@@ -234,16 +304,18 @@ def forwardGame(request):
             # rdata = r.text
             return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key})
         else:
-            return Response({"error": "Cannot check or create AG game account."})
+            logger.error("Cannot check or create AG game account in AG forwardGame.")
+            return Response({"error": "Cannot check or create AG game account in AG forwardGame."})
         
         
     except ObjectDoesNotExist:
-        return Response({"error":"The  user is not existed."}) 
+        logger.error("The user is not existed in AG forwardGame.")
+        return Response({"error":"The  user is not existed in AG forwardGame."}) 
 
 
 def agFundTransfer(user, fund_wallet, credit, agtype): 
         username =  user.username
-        trans_id = username + strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         password = AG_CAGENT + username
            
         oddtype = 'A'
@@ -263,7 +335,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
             cur = "VND"
         else:
             cur = "CNY"
-
+       
         # agtype = request.POST['agtype']
         gameCategory = ""
         # credit = request.POST['credit']
@@ -277,8 +349,9 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS: #check or create game account
             while success:
                 if checkCreateGameAccoutOrGetBalance(user, password, gb_method, oddtype, actype, cur) == AG_SUCCESS: #get balance
+
                     if prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno) == AG_SUCCESS:
-                        # print("prepare")
+                        #print("prepare")
                         
                         while confirm:
                             flag = '1'
@@ -307,7 +380,7 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
                                         channel=None,
                                         transaction_type=TRANSACTION_TRANSFER,
                                         status=TRAN_SUCCESS_TYPE)
-                                # print("confirm")
+                                #print("confirm")
                                 success = False
                                 confirm = False
                                 return CODE_SUCCESS
@@ -364,22 +437,19 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
 
                     else:
                         success = False
-                        return Response({"error": "Cannot prepare transfer credit for AG game account."})
+                        logger.error("Cannot prepare transfer credit for AG game account agFundTransfer.")
+                        return Response({"error": "Cannot prepare transfer credit for AG game account agFundTransfer."})
                         break
                 else:
                     success = False
-                    return Response({"error": "Cannot get balance for AG game account."})
+                    logger.error("Cannot get balance for AG game account agFundTransfer.")
+                    return Response({"error": "Cannot get balance for AG game account agFundTransfer."})
                     break
         else:
-            return Response({"error": "Cannot check or create AG game account."})
+            logger.error("Cannot check or create AG game account agFundTransfer.")
+            return Response({"error": "Cannot check or create AG game account agFundTransfer."})
 
-class test(APIView):
-    permission_classes = (AllowAny, )
-    def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela03")
-        response = fundTransfer(user, "main", "300.00",  "IN")
-        
-        return HttpResponse(response)
+
 
 def agService(request):
     if request.method == "GET":
@@ -393,7 +463,9 @@ def agService(request):
             if feature == MD5(username + ag_type + stamp + AG_MD5):
                 return HttpResponse("Success")
             else:
+                logger.error("error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")
         except:
-            logger.error("this user is not existed.")
+            logger.error("this user is not existed in AG agService.")
+            return HttpResponse("error, this user is not existed in AG agService.")
 
