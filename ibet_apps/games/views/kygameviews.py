@@ -83,6 +83,19 @@ def generateUrl(param, is_api):
     return url
 
 
+def kyBalance(user):
+    param = "s=1&account=" + str(user.username)
+    url = generateUrl(param, True)
+    
+    res = requests.get(url)
+    if res.status_code == 200:
+        res_data = res.json()
+        balance = float(res_data["d"]["money"])
+        return balance
+    else:
+        return 0
+
+
 class KyBets(View):
     def post(self, request, *args, **kwargs):
         try:
@@ -132,6 +145,7 @@ class KyBets(View):
                     cell_score = record_list['CellScore']
                     profit = record_list['Profit']
                     revenue = record_list['Revenue']
+                    start_time = record_list['GameStartTime']
                     end_time = record_list['GameEndTime']
 
                     for i in range(0, count):
@@ -140,8 +154,13 @@ class KyBets(View):
 
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
+                        bet_time = datetime.strptime(start_time[i], '%Y-%m-%d %H:%M:%S')
+                        bet_time = bet_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        bet_time = bet_time.astimezone(pytz.utc)
+
                         resolved_time = datetime.strptime(end_time[i], '%Y-%m-%d %H:%M:%S')
-                        resolved_time = resolved_time.astimezone(pytz.timezone(provider.timezone))
+                        resolved_time = resolved_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        resolved_time = resolved_time.astimezone(pytz.utc)
 
                         if int(cell_score[i] == 0):
                             outcome = 2 # Tie Game
@@ -161,6 +180,7 @@ class KyBets(View):
                             transaction_id=trans_id,
                             market=ibetCN,
                             ref_no=game_id[i],
+                            bet_time=bet_time,
                             resolved_time=resolved_time,
                             other_data={}
                         )
