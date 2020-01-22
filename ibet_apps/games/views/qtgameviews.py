@@ -269,16 +269,21 @@ class ProcessTransactions(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            roundId = request.GET['roundId']
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            roundId = body['roundId']
+            transType = body["txnType"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
         except:
             status_code = 400
@@ -357,8 +362,8 @@ class ProcessTransactions(APIView):
                                 'txnType': transType,
                                 'completed': completed, 
                                 'roundId': roundId, 
-                                'category': request.GET['category'],
-                                'device': request.GET['device']
+                                'category': body['category'],
+                                'device': body['device']
                             }
                         )
                         user.main_wallet = bal
@@ -411,8 +416,8 @@ class ProcessTransactions(APIView):
                             'txnType': transType,
                             'completed': completed, 
                             'roundId': roundId, 
-                            'category': request.GET['category'],
-                            'device': request.GET['device']
+                            'category': body['category'],
+                            'device': body['device']
                         }
                     )
                     bet.save()
@@ -474,17 +479,22 @@ class ProcessRollback(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            transType = body["txnType"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
-            orig_txnId = request.GET['betId']
+            orig_txnId = body['betId']
             
         except:
             status_code = 400
@@ -593,8 +603,8 @@ class ProcessRollback(APIView):
                         'transactionType': "RollBack",
                         'rollBackFrom': orig_txnId,
                         'completed': completed, 
-                        'category': request.GET['category'],
-                        'device': request.GET['device']
+                        'category': body['category'],
+                        'device': body['device']
                     }
                 )
                 bet.save()
