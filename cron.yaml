@@ -23,5 +23,5 @@ cron:
    
  - name: "game_ag_agftp"
    url: "/games/api/ag/ftp"
-   schedule: "0 */5 * * *"
+   schedule: "*/5 * * * *"
    
