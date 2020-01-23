@@ -468,12 +468,14 @@ def getBalance(request):
             tree = ET.fromstring(rdata)
             info = tree.get('info')
             msg =  tree.get('msg')
+
             return Response({'info': info, 'msg': msg})
         else:
+            logger.error("AG::The request is failed for AG getBalance api.")
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        logger.critical("The user does not exist in AG getBalance api.")
-        return Response({"error":"The user does not exist in AG getBalance api."}) 
+        logger.error("The user is not existed in AG getBalance api.")
+        return Response({"error":"The user is not existed in AG getBalance api."}) 
 
 def getBalance(user):
     password = AG_CAGENT + user.username
@@ -509,6 +511,7 @@ def getBalance(user):
         msg =  tree.get('msg')
         return json.dumps({'balance': info})
     else:
+        logger.critical("AG::The request is failed for AG get balance api.")
         return json.dumps({"error":"The request is failed for AG get balance"}) 
     
 
@@ -669,7 +672,7 @@ def forwardGame(request):
             # rdata = r.text
             return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key})
         else:
-            logger.error("Cannot check or create AG game account in AG forwardGame.")
+            logger.critical("AG::Cannot check or create AG game account in AG forwardGame.")
             return Response({"error": "Cannot check or create AG game account in AG forwardGame."})
         
         
@@ -802,17 +805,17 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
 
                     else:
                         success = False
-                        logger.error("Cannot prepare transfer credit for AG game account agFundTransfer.")
+                        logger.critical("AG::Cannot prepare transfer credit for AG game account agFundTransfer.")
                         return Response({"error": "Cannot prepare transfer credit for AG game account agFundTransfer."})
                         break
                 else:
                     success = False
-                    logger.error("Cannot get balance for AG game account agFundTransfer.")
+                    logger.critical("AG::Cannot get balance for AG game account agFundTransfer.")
                     return Response({"error": "Cannot get balance for AG game account agFundTransfer."})
                     break
         else:
-            logger.error("Cannot check or create AG game account agFundTransfer.")
-            return Response({"error": "Cannot check or create AG game account agFundTransfer."})
+            logger.critical("AG::Cannot check or create AG game account for agFundTransfer.")
+            return Response({"error": "Cannot check or create AG game account for agFundTransfer."})
 
 
 
@@ -828,7 +831,7 @@ def agService(request):
             if feature == MD5(username + ag_type + stamp + AG_MD5):
                 return HttpResponse("Success")
             else:
-                logger.error("error, invalid invoking agService api")
+                logger.error("AG::error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")
         except:
             logger.error("this user does not exist in AG agService.")
