@@ -403,11 +403,13 @@ def agftp(request):
                                                                 }
                                                             )
                         else:
+                            logger.info("AG:: No new file from ftp.")
                             continue
                     
                     ftp.ftp_session.cwd('..')
                         
                 else:
+                    logger.info("AG:: No new folder from ftp.")
                     continue
 
                 
