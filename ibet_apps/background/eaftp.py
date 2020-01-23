@@ -26,10 +26,10 @@ class GetEaBetHistory(View):
     def post(self, request, *args, **kwargs):
         logger.info("connecting ea ftp")
         try:
-            ftp_connection = ftpClient.ftpConnect()
+            ftp_connection = ftpClient.EaFTP()
         except Exception as e:
             logger.critical("(FATAL_ERROR) There is something wrong with ftp connection. {}".format(str(e)))
-            return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), status=400, content_type='application/json')
+            return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), content_type='application/json')
 
 
         try:
@@ -38,7 +38,7 @@ class GetEaBetHistory(View):
             logger.info("connecting redis")
         except Exception as e:
             logger.critical("(FATAL_ERROR) There is something wrong with redis connection. {}".format(str(e)))
-            return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), status=400, content_type='application/json')
+            return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
 
         file_list = []
 
