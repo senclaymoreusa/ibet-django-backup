@@ -411,7 +411,7 @@ else:
         }, 
         'handlers': {
             'file': {
-                'level': 'ERROR',
+                'level': 'INFO',
                 'class': 'logging.FileHandler',
                 'filename': '/opt/python/log/django-logger.log',
                 'formatter': 'verbose',
@@ -420,7 +420,7 @@ else:
         'loggers': {
             'django': {
                 'handlers': ['file'],
-                'level': 'ERROR',
+                'level': 'INFO',
                 'propagate': True,
             },
         }
