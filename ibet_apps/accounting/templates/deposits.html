@@ -234,62 +234,6 @@
 
 
 <script>
-    // fill in user data into transaction detail modal
-    function addMemberDetails(data) {
-        let userDetails = $("#member-details");
-        userDetails.empty();
-        let content = "";
-        content += "<p>" + data[0].id + "</p>";
-        content += "<p>" + data[0].username + "</p>";
-        content += "<p>" + data[0].first_name + "</p>";
-        content += "<p>" + data[0].last_name + "</p>";
-        userDetails.append(content);
-
-        let riskDetails = $("#risk-details");
-        riskDetails.empty();
-        content = "";
-        content += "<p>.....</p>";
-        content += "<p>" + data[0].risk_level + "</p>";
-        content += "<p>" + data[0].balance + "</p>";
-        riskDetails.append(content);
-    }
-    // fill in latest deposit section of txn detail modal
-    function addDepositRecord(data, trans_pk) {
-        let depositArea = $("#latest_deposits");
-        depositArea.empty();
-        let content = "";
-        for (let i = 0; i < data[0].length; i++) {
-            content += '<tr>';
-            // content += '<td>' + (i + 1) + '</td>';
-            content += '<td>' + data[0][i].payment + '</td>';
-            content += '<td>' + data[0][i].tran_no + '</td>';
-            content += '<td>' + data[0][i].time_app + '' + '</td>';
-            content += '<td>' + (data[0][i].bank || '') + '</td>';
-            content += '<td>' + (data[0][i].branch || '') + '</td>';
-            content += '<td>' + (data[0][i].city || '') + '</td>';
-            content += '<td>' + (data[0][i].name || '') + '</td>';
-            content += '<td>' + (data[0][i].account || '') + '</td>';
-            content += '<td>' + data[0][i].order_id + '</td>';
-            content += '<td>' + data[0][i].amount + '</td>';
-            content += '<td>' + data[0][i].status + '</td>';
-            content += '</tr>'
-        }
-        depositArea.append(content);
-        $("#dep_trans_no").val(trans_pk);
-        // $("#dep_row_index").val(dep_row_index);
-    }
-    // fill in deposit details of modal
-    function showDepositDetail (data, id) {
-        let txnDetails = $(id);
-        txnDetails.empty();
-        let content = "";
-        content += "<p>...</p>";  // placeholder for deposit slip upload
-        content += "<p>" + data[7] + "</p>";  // transaction no.
-        content += "<p>" + data[9] + "</p>";  // created time
-        content += "<p>" + data[8] + "</p>";  // ref no.
-        content += "<p>" + data[12] + "</p>";  // amount
-        txnDetails.append(content);
-    }
     // fill in bank details of modal
     function showBankDetail (data) {
         let bankDetails = $("#bank_detail");
@@ -444,6 +388,66 @@
         initSearchParams();
         initEventHandlers();
 
+        // fill in user data into transaction detail modal
+        function addMemberDetails(data) {
+            let userDetails = $("#member-details");
+            userDetails.empty();
+            let content = "";
+            content += "<p>" + data[0].id + "</p>";
+            content += "<p>" + data[0].username + "</p>";
+            content += "<p>" + data[0].first_name + "</p>";
+            content += "<p>" + data[0].last_name + "</p>";
+            userDetails.append(content);
+
+            let riskDetails = $("#risk-details");
+            riskDetails.empty();
+            content = "";
+            content += "<p>.....</p>";
+            content += "<p>" + data[0].risk_level + "</p>";
+            content += "<p>" + data[0].balance + "</p>";
+            riskDetails.append(content);
+        }
+        // fill in latest deposit section of txn detail modal
+        function addDepositRecord(data, trans_pk) {
+            let depositArea = $("#latest_deposits");
+            depositArea.empty();
+            let content = "";
+            for (let i = 0; i < data[0].length; i++) {
+                content += '<tr>';
+                // content += '<td>' + (i + 1) + '</td>';
+                content += '<td>' + data[0][i].payment + '</td>';
+                content += '<td>' + data[0][i].tran_no + '</td>';
+                content += '<td>' + data[0][i].time_app + '' + '</td>';
+                content += '<td>' + (data[0][i].bank || '') + '</td>';
+                content += '<td>' + (data[0][i].branch || '') + '</td>';
+                content += '<td>' + (data[0][i].city || '') + '</td>';
+                content += '<td>' + (data[0][i].name || '') + '</td>';
+                content += '<td>' + (data[0][i].account || '') + '</td>';
+                content += '<td>' + data[0][i].order_id + '</td>';
+                content += '<td>' + data[0][i].amount + '</td>';
+                content += '<td>' + data[0][i].status + '</td>';
+                content += '</tr>'
+            }
+            depositArea.append(content);
+            $("#dep_trans_no").val(trans_pk);
+            // $("#dep_row_index").val(dep_row_index);
+        }
+        // fill in deposit details of modal
+        function showDepositDetail (data, id) {
+            console.log("deposit data:");
+            console.log(data);
+            let txnDetails = $(id);
+            txnDetails.empty();
+            let content = "";
+            content += "<p>...</p>";  // placeholder for deposit slip upload
+            content += "<p>" + data[7] + "</p>";  // transaction no.
+            content += "<p>" + data[9] + "</p>";  // created time
+            content += "<p>" + data[8] + "</p>";  // ref no.
+            content += "<p>" + data[12] + "</p>";  // amount
+            txnDetails.append(content);
+        }
+
+        
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
 
         // open modal and populate details data
@@ -457,7 +461,7 @@
             showDepositDetail(data, id);
 
             // showBankDetail(data); 
-            let txn_pk = data[15];
+            let txn_pk = data[data.length - 1];
             let user_id = data[0];
             $.when(
                 $.ajax({
@@ -512,24 +516,27 @@
             $('#override-notes').prop('disabled', true);
             $(this).attr('id', 'override-result-confirm');
             $(this).html('Click to request change');
-            $('#override-result-confirm').click(function () {
+            $('#override-result-confirm').click(function (event) {
                 console.log('hi');
                 // TODO: Finish filling out override backend API function
                 
-                // let thisTransNo = $("#dep_trans_no").val();
-                
-                // $.ajax({
-                //     method: 'POST',
-                //     url: "{% url 'xadmin:override_result' %}",
-                //     data: {
-                //         'type': 'updateTransaction',
-                //         'dep_trans_no': thisTransNo,
-                //         'result': 'reject',
-                //     }
-                // })
-                // .done(function() {
-                //     location.reload();
-                // })
+                let thisTransNo = $("#dep_trans_no").val();
+                console.log(thisTransNo)
+                console.log($("#dep_trans_no").val())
+                $.ajax({
+                    method: 'POST',
+                    url: "{% url 'xadmin:override_result' %}",
+                    data: {
+                        'type': 'override_result',
+                        'txn_id': thisTransNo,
+                        'reason': $("#override-notes").val(),
+                        'new_amount': $("#new-amount").val()
+                    }
+                })
+                .done(function() {
+                    alert("Override successful");
+                    location.reload();
+                })
             });
         });
         

@@ -3,7 +3,7 @@
         Override Transaction
     </div>
     <div class="modal-body">
-        <form action="/" method="POST">
+        <form action="{% url 'xadmin:override_result' %}" method="POST">
             {% csrf_token %}
             <input type="hidden" name="type" value="audit_deposit">
             <input type="hidden" id="dep_trans_no" name="dep_trans_no">
@@ -23,12 +23,16 @@
                         <p>Created Time</p>
                         <p>Provider Ref No.</p>
                         <p>Amount</p>
-                        <p>New Amount</p>
                     </div>
                     <div class="col-md-6 deposit-request-data" id="override-deposit-detail">
                     </div>
                 </div>
-
+                <div style="padding-top: 10px;">
+                    <span style="font-weight: bold; display: inline">
+                        New Amount
+                        <input class="override" id="new-amount" type="text">
+                    </span>
+                </div>
                 <!-- <div class="col-md-4 deposit-request-details">
                     <div class="col-md-6 deposit-request-title">
                         <p>Bank</p>

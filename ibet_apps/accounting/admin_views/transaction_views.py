@@ -162,7 +162,9 @@ class RiskReview(CommAdminView):
 # modify success to failure or vice-versa (and modify amount?)
 class OverrideTransaction(CommAdminView):
     def post(self, request):
-        pass
+        # print(request)
+        print(request.POST)
+        return HttpResponse("hello")
 
 # get user details for modal
 class UserInfo(CommAdminView):
