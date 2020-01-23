@@ -28,7 +28,7 @@ class GetEaBetHistory(View):
         try:
             ftp_connection = ftpClient.EaFTP()
         except Exception as e:
-            logger.critical("(FATAL_ERROR) There is something wrong with ftp connection. {}".format(str(e)))
+            logger.warning("(FATAL_ERROR) There is something wrong with ftp connection. {}".format(str(e)))
             return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), content_type='application/json')
 
 
@@ -37,14 +37,18 @@ class GetEaBetHistory(View):
             redis = RedisHelper()
             logger.info("connecting redis")
         except Exception as e:
-            logger.critical("(FATAL_ERROR) There is something wrong with redis connection. {}".format(str(e)))
+            logger.warning("(FATAL_ERROR) There is something wrong with redis connection. {}".format(str(e)))
             return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
 
         file_list = []
 
         try:
             ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', file_list.append)
+        except:
+            logger.warning("(FATAL_ERROR) Getting gameinfolist.txt fail. {}".format(str(e)))
+            return HttpResponse(json.dumps({'status': 'Getting gameinfolist.txt fail: ' + str(e)}), content_type='application/json')
 
+        try: 
             last_file = redis.get_ea_last_file()
             last_file = last_file.decode("utf-8")
             processed = True

@@ -64,7 +64,7 @@ def agftp(request):
             r = RedisClient().connect()
             redis = RedisHelper()
         except:
-            logger.critical("(FATAL_ERROR)There is something wrong with AG redis connection.")
+            logger.warning("(FATAL_ERROR)There is something wrong with AG redis connection.")
             return HttpResponse({'status': 'There is something wrong with AG redis connection.'})
 
 
@@ -73,7 +73,7 @@ def agftp(request):
             
         except ftplib.error_perm as resp:
             if str(resp) == "550 No files found":
-                logger.error("No files in this directory of AG folders")
+                logger.warning("No files in this directory of AG folders")
                 return HttpResponse(ERROR_CODE_NOT_FOUND) 
             else:
                 raise
@@ -414,7 +414,11 @@ def agftp(request):
             ftp.ftp_session.cwd('..')
         return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
     except ftplib.error_temp:
-        logger.critical("(FATAL_ERROR)Cannot connect with AG ftp.")
+        logger.warning("(FATAL_ERROR)Cannot connect with AG ftp.")
+        return HttpResponse(ERROR_CODE_FAIL)
+
+    except Exception as e:
+        logger.critical("(FATAL_ERROR) Getting AG bet histroy error. {}".format(str(e)))
         return HttpResponse(ERROR_CODE_FAIL)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
