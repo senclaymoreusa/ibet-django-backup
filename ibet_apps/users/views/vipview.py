@@ -76,7 +76,7 @@ class VIPView(CommAdminView):
                     }
 
                 except Exception as e:
-                    logger.error("Error getting request from vip admin frontend: ", e)
+                    logger.error("Error getting request from vip admin frontend: {}".format(str(e)))
 
             result['data'] = getVIPData(queryset, min_date, max_date, "list")
 

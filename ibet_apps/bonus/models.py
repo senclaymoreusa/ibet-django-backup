@@ -84,7 +84,7 @@ class Requirement(models.Model):
     turnover_multiplier = models.IntegerField(null=True, blank=True)
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'), null=True)
     amount_threshold = models.FloatField(default=0)
-    must_have = models.SmallIntegerField(choices=BONUS_MUST_HAVE, default=0, null=True)  # (bonus 2.0)
+    must_have = models.SmallIntegerField(choices=BONUS_MUST_HAVE, null=True)  # (bonus 2.0)
 
 
 # Mapping between Requirements and Categories
