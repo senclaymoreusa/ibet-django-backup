@@ -84,7 +84,7 @@ class Transfer(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            logger.error("Request transfer error: ", e)
+            logger.error("Request transfer error: {}".format(str(e)))
             return HttpResponse(status=400)
 
 
@@ -140,7 +140,7 @@ class EachWalletAmount(View):
 
         
         except Exception as e:
-            logger.error("Get amount of each wallet by a user error: ", e)
+            logger.error("Get amount of each wallet by a user error: {}".format(str(e)))
             return HttpResponse(status=400)
 
 

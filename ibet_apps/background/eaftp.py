@@ -26,10 +26,10 @@ class GetEaBetHistory(View):
     def post(self, request, *args, **kwargs):
         logger.info("connecting ea ftp")
         try:
-            ftp_connection = ftpClient.ftpConnect()
+            ftp_connection = ftpClient.EaFTP()
         except Exception as e:
-            logger.critical("(FATAL_ERROR) There is something wrong with ftp connection.", e)
-            return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), status=400, content_type='application/json')
+            logger.warning("There is something wrong with ftp connection. {}".format(str(e)))
+            return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), content_type='application/json')
 
 
         try:
@@ -37,14 +37,18 @@ class GetEaBetHistory(View):
             redis = RedisHelper()
             logger.info("connecting redis")
         except Exception as e:
-            logger.critical("(FATAL_ERROR) There is something wrong with redis connection.", e)
-            return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), status=400, content_type='application/json')
+            logger.critical("There is something wrong with redis connection. {}".format(str(e)))
+            return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
 
         file_list = []
 
         try:
             ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', file_list.append)
+        except:
+            logger.warning("Getting gameinfolist.txt fail. {}".format(str(e)))
+            return HttpResponse(json.dumps({'status': 'Getting gameinfolist.txt fail: ' + str(e)}), content_type='application/json')
 
+        try: 
             last_file = redis.get_ea_last_file()
             last_file = last_file.decode("utf-8")
             processed = True
@@ -108,9 +112,8 @@ class GetEaBetHistory(View):
             }
             return HttpResponse(json.dumps(response), content_type="application/json")
         except Exception as e:
-            logger.critical("There is something wrong with get ea bet detail.", e)
-            return HttpResponse(json.dumps({'status': 'There is something wrong with get ea bet detail.' + str(e)}), status=400, content_type='application/json')
-
+            logger.critical("There is something wrong with get ea bet detai {}".format(str(e)))
+            return HttpResponse(json.dumps({'status':  'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
 
 def gameHistoryToDatabase(bet_detail, game_code):
 
@@ -118,7 +121,7 @@ def gameHistoryToDatabase(bet_detail, game_code):
         provider = GameProvider.objects.get(provider_name=EA_PROVIDER)
         category = Category.objects.get(name='Live Casino')
     except Exception as e:
-        logger.critical("(FATAL__ERROR) There is missing EA provider or category", e)
+        logger.critical("(FATAL__ERROR) There is missing EA provider or category. {}".format(str(e)))
 
     for i in bet_detail:
         game_code_id = i['@code']
