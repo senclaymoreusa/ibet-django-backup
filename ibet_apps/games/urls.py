@@ -90,12 +90,15 @@ urlpatterns = [
    
     # gpi gaming
     # path('api/gpi/login/', csrf_exempt(gameplayintviews.LoginAPI.as_view()), name="gpi_login"),
+    path('api/gpi/createuser/', csrf_exempt(gameplayintviews.CreateUserAPI.as_view()), name="gpi_createuser"),
     path('api/gpi/validation/', gameplayintviews.ValidateUserAPI.as_view(), name="gpi_validation"),
     path('api/gpi/getbalance/', gameplayintviews.GetBalanceAPI.as_view(), name="gpi_getbalance"),
     path('api/gpi/debit/', gameplayintviews.DebitAPI.as_view(), name="gpi_debit"),
     path('api/gpi/credit/', gameplayintviews.CreditAPI.as_view(), name="gpi_credit"),
     path('api/gpi/check/', gameplayintviews.CheckTransactionAPI.as_view(), name="gpi_check"),
     path('api/gpi/online_user/', gameplayintviews.GetOnlineUserAPI.as_view(), name="online_user"),
+    path('api/gpi/livecasino_createuser/', csrf_exempt(gameplayintviews.LiveCasinoCreateUserAPI.as_view()), name="gpi_livecasino_createuser"),
+    path('api/gpi/get_bet_detail/', gameplayintviews.GetNewBetDetailAPI.as_view(), name="gpi_get_bet_detail"),
     # playtech
 
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),

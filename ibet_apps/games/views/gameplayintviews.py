@@ -158,13 +158,16 @@ class ValidateUserAPI(View):
             resp["error_code"] = -2
             resp["err_message"] = "user does not exist"
 
+            logger.warning("GPI ValidateUserAPI token: {} does not exist".format(token))
+
         except Exception as e:
-            print(repr(e))
             resp = {}
             res["resp"] = resp
 
             resp["error_code"] = -1
             resp["err_message"] = "Unknown Error"
+
+            logger.critical("GPI ValidateUserAPI Error -- {}".format(repr(e)))
 
         res = xmltodict.unparse(res, pretty=True)
         return HttpResponse(res, content_type="application/xml", status=200)
@@ -172,10 +175,11 @@ class ValidateUserAPI(View):
 
 # System will auto create user on the fly when “Authentication Success” & when “1st Debit request for user Success
 class CreateUserAPI(View):
-    def get(self, request, *kw, **args):
-        username = request.GET.get("username")
-
+    def post(self, request, *kw, **args):
         try:
+            data = json.loads(request.body)
+            username = data['username']
+
             user = CustomUser.objects.get(username=username)
 
             req_param = {}
@@ -187,7 +191,9 @@ class CreateUserAPI(View):
             req = urllib.parse.urlencode(req_param)
     
             url = GPI_URL + 'createuser' + '?' + req
+            # url = GPI_LIVE_CASINO_URL + 'createuser.html' + '?' + req
 
+            print(url)
             res = requests.get(url)
 
             res = xmltodict.parse(res.text)
@@ -197,7 +203,9 @@ class CreateUserAPI(View):
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            print(repr(e))
+            logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
+            return HttpResponse(repr(e))
 
 
 class GetBalanceAPI(View):
@@ -420,6 +428,7 @@ class GetOnlineUserAPI(View):
 
             return HttpResponse(res)
         except Exception as e:
+            logger.warning("GPI GetOnlineUserAPI warning -- {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
@@ -438,6 +447,77 @@ class GetOpenBetsAPI(View):
 
             return HttpResponse(res)
         except Exception as e:
-            print(repr(e))
+            logger.warning("GPI GetOnlineUserAPI warning -- {}".format(repr(e)))
             return HttpResponse(status=400)
-        return HttpResponse(200)
+
+
+class LiveCasinoCreateUserAPI(View):
+    def post(self, request, *kw, **args):
+        try:
+            data = json.loads(request.body)
+            username = data['username']
+
+            user = CustomUser.objects.get(username=username)
+
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            req_param["cust_id"] = user.username
+            req_param["cust_name"] = user.username
+            req_param["currency"] = transCurrency(user)
+
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_LIVE_CASINO_URL + 'createUser.html' + '?' + req
+
+            print(url)
+            res = requests.get(url)
+
+            res = xmltodict.parse(res.text)
+
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+
+        except ObjectDoesNotExist:
+            logger.error("Error: can not find user -- {}".format(str(username)))
+        except Exception as e:
+            print(repr(e))
+            logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
+            return HttpResponse(repr(e))
+
+
+class GetNewBetDetailAPI(View):
+    def get(self, request, *kw, **args):
+        try:
+            # data = json.loads(request.body)
+            # username = data['username']
+
+            date_from = request.GET.get("date_from") # yyyy-MM-dd HH:mm:ss
+            date_to = request.GET.get("date_to")
+
+            print(date_from)
+            print(date_to)
+
+            req_param = {}
+            req_param["merch_id"] = MERCH_ID
+            req_param["merch_pwd"] = MERCH_PWD
+            # req_param["cust_id"] = user.username
+            # req_param["cust_name"] = user.username
+            # req_param["currency"] = transCurrency(user)
+
+            req = urllib.parse.urlencode(req_param)
+    
+            url = GPI_LIVE_CASINO_URL + 'newBetDetail.html' + '?' + req
+
+            print(url)
+            res = requests.get(url)
+
+            res = xmltodict.parse(res.text)
+
+            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+
+        except ObjectDoesNotExist:
+            logger.error("Error: can not find user -- {}".format(str(username)))
+        except Exception as e:
+            print(repr(e))
+            logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
+            return HttpResponse(repr(e))
