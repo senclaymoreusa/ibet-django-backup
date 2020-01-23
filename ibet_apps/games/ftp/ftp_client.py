@@ -33,7 +33,7 @@ class AgFTP():
     def __init__(self):
         for x in range(3):
             try:
-                logger.info('start connect to EA FTP server...')
+                logger.info('start connect to AG FTP server...')
                 self.ftp_session = FTP()
                 self.ftp_session.connect(AG_FTP)
                 self.ftp_session.login(AG_FTP_USERNAME, AG_FTP_PASSWORD)
