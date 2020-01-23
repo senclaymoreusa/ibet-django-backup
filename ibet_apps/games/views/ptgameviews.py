@@ -15,13 +15,15 @@ import requests,json
 import logging
 import random
 from utils.constants import *
-import datetime
 from datetime import date
 from django.utils import timezone
-import time
+import time, datetime
+from time import mktime
+import pytz
 import utils.aws_helper
 import os
 import tempfile
+
 
 logger = logging.getLogger("django")
    
@@ -320,11 +322,19 @@ def ptTransfer(user, amount, wallet, method):
     except Exception as e:
         return False
 
+def getGMTtime() :
+    gmt_time = time.gmtime()
+    gmt_time_to_dt = datetime.datetime.fromtimestamp(mktime(gmt_time), tz=pytz.timezone('GMT'))
+    # print(gmt_time_to_dt)
+    gmt_plus = gmt_time_to_dt + datetime.timedelta(minutes = -5)
+    # print(gmt_plus.strftime('%Y-%m-%d%%20%H:%M:%S'))
+    return gmt_plus.strftime('%Y-%m-%d%%20%H:%M:%S'),gmt_time_to_dt.strftime('%Y-%m-%d%%20%H:%M:%S')
+
       
 
 class GetBetHistory(APIView):
 
-    # other work still needed....
+   
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
         headers = {
@@ -342,10 +352,10 @@ class GetBetHistory(APIView):
             pt_pem = tempfile.NamedTemporaryFile(delete=False)
             pt_pem.write(PTPEM)
             pt_pem.flush()
-            startdate = "2020-01-23%2006:19:19"
-            enddate = "2020-01-23%2006:39:19"
+            startdate = getGMTtime()[0] 
+            enddate = getGMTtime()[1]
             rr = requests.post(PT_BASE_URL + "/game/flow/startdate/" + startdate + "/enddate/" + enddate, headers=headers, cert=(pt_pem.name, pt_key.name))
-            # Just check status code here, other error will return to rrdata if 200 and be checked in other func.
+           
             if rr.status_code == 200 :  
                 rrdata = rr.json()
                 try: 
