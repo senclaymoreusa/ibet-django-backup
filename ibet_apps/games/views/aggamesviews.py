@@ -64,7 +64,7 @@ def agftp(request):
             r = RedisClient().connect()
             redis = RedisHelper()
         except:
-            logger.warning("(FATAL_ERROR)There is something wrong with AG redis connection.")
+            logger.warning("There is something wrong with AG redis connection.")
             return HttpResponse({'status': 'There is something wrong with AG redis connection.'})
 
 
@@ -97,7 +97,7 @@ def agftp(request):
                         files = ftp.ftp_session.nlst()
                     except ftplib.error_perm as resp:
                         if str(resp) == "550 No files found":
-                            logger.error("No files in this directory of AG small folders")
+                            logger.warning("No files in this directory of AG small folders")
                             return HttpResponse(ERROR_CODE_NOT_FOUND) 
                         else:
                             raise
@@ -414,7 +414,7 @@ def agftp(request):
             ftp.ftp_session.cwd('..')
         return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
     except ftplib.error_temp:
-        logger.warning("(FATAL_ERROR)Cannot connect with AG ftp.")
+        logger.warning("Cannot connect with AG ftp.")
         return HttpResponse(ERROR_CODE_FAIL)
 
     except Exception as e:

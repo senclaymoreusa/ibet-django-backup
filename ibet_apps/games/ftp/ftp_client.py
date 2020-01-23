@@ -19,7 +19,8 @@ class EaFTP():
                 self.ftp_session.login(EA_FTP_USERNAME, EA_FTP_PASSWORD)
                 break
             except Exception as e:
-                logger.warning("(FATAL__ERROR) Connecting EA FTP error {}".format(str(e)))
+                logger.warning("Connecting EA FTP error {}".format(str(e)))
+                logger.warning("Connecting EA FTP retry " + x)
                 sleep(3)
                 i += 1
 
@@ -33,7 +34,8 @@ class AgFTP():
                 self.ftp_session.login(AG_FTP_USERNAME, AG_FTP_PASSWORD)
                 break
             except Exception as e:
-                logger.warning("(FATAL__ERROR) Connecting AG FTP error {}".format(str(e)))
+                logger.warning("Connecting AG FTP error {}".format(str(e)))
+                logger.warning("Connecting AG FTP retry " + x)
                 sleep(3)
        
 
