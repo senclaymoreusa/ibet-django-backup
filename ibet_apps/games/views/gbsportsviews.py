@@ -44,7 +44,7 @@ class WalletGeneralAPI(APIView):
         except ObjectDoesNotExist:
             error      = 'Member_Not_Found'
             error_code = -2
-            logger.error("Member_Not_Found")
+            logger.error("GB::Member_Not_Found for WalletGeneralAPI")
 
         return Response({
             "ThirdParty": {
@@ -79,7 +79,7 @@ class WalletBetAPIURL(APIView):
             PROVIDER = GameProvider.objects.create(provider_name=GB_PROVIDER,
                                         type=GAME_TYPE_SPORTS,
                                         market='letouCN, letouTH, letouVN')
-            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            logger.error("GB::PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST FOR WalletBetAPIURL.")
         game_list = ["KenoList", "LottoList", "SscList", "PkxList", "KsList", "SportList"]
         if any(game in data['GB']['Result']['ReturnSet']['BettingList'] for game in game_list):
             game_type = 'dict'
@@ -135,7 +135,7 @@ class WalletBetAPIURL(APIView):
                             try:
                                 cate = Category.objects.get(name=category)
                             except:
-                                logger.error("missing category.")
+                                logger.error("GB::missing category for WalletBetAPIURL")
 
                             GameBet.objects.create(
                                 provider=PROVIDER,
@@ -158,11 +158,12 @@ class WalletBetAPIURL(APIView):
                     
 
                 except:
+                    logger.error("GB::Member_Not_Found FOR WalletBetAPIURL.")
                     error = 'Member_Not_Found'
                     error_code = -2
                 
             except:
-                
+                logger.critical("GB:: Unable to receive WalletBetAPIURL")
                 pass
 
 
@@ -251,11 +252,12 @@ class WalletBetAPIURL(APIView):
                         error_code =  -4
             
                 except ObjectDoesNotExist:
+                    logger.error("GB:: Member_Not_Found for WalletSettleAPIURL")
                     error = 'Member_Not_Found'
                     error_code = -2
                 
             except:
-                
+                logger.critical("GB:: Unable to receive WalletBetAPIURL")
                 pass
 
         return Response({
@@ -365,7 +367,10 @@ class WalletSettleAPIURL(APIView):
                         TicketResult = 3 #兑现
                     elif TicketResult == 'R':
                         TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
-                    with transaction.atomic():    
+
+                    
+                    with transaction.atomic():  
+                        
                         GameBet.objects.create(
                             provider=PROVIDER,
                             category=cate,
@@ -377,25 +382,27 @@ class WalletSettleAPIURL(APIView):
                             ref_no=BetID,
                             amount_wagered=decimal.Decimal(RealBetAmt/100),
                             bet_type=bet_type,
-                            amount_won=decimal.Decimal(RefundBetAmt/100),
+                            amount_won=decimal.Decimal(WLAmt/100), 
                             outcome=TicketResult,
                             resolved_time=timezone.now(),
                             other_data=data,
                         )
                         
-                        if RefundBetAmt != '0' :
-                            user.main_wallet += decimal.Decimal(RefundBetAmt/100)
-                            user.save()
+                        
+                        user.main_wallet += decimal.Decimal(WLAmt/100)
+                        user.save()
                     error      =  'No_Error'
                     error_code =  0
                     success    =  1
                     TransData  = user.main_wallet
 
                 except: 
+                    logger.error("GB:: Member_Not_Found for WalletSettleAPIURL")
                     error = 'Member_Not_Found'
                     error_code = -2
 
             except:
+                logger.critical("GB:: Unable to receive WalletSettleAPIURL")
                 pass
 
         elif game_type == 'list':
@@ -499,10 +506,12 @@ class WalletSettleAPIURL(APIView):
 
                     
                 except ObjectDoesNotExist: 
+                    logger.error("GB:: Member_Not_Found for WalletSettleAPIURL")
                     error = 'Member_Not_Found'
                     error_code = -2
 
             except:
+                logger.critical("GB:: Unable to receive WalletSettleAPIURL")
                 pass
 
 
@@ -538,22 +547,24 @@ class GenerateGameURL(APIView):
         
 
         TPUniqueID = uuid.uuid4()
-
-        data = requests.post(GB_URL, json = {
-            
-        "GB": {
-            "Method": "UpdateTPUniqueID",
-            "TPCode": "011",
-            "AuthKey": GB_GENERALKEY,
-            "Params": {
-                "MemberID": self.request.user.username,
-                "TPUniqueID": str(TPUniqueID) 
+        try:
+            data = requests.post(GB_URL, json = {
+                
+            "GB": {
+                "Method": "UpdateTPUniqueID",
+                "TPCode": "011",
+                "AuthKey": GB_GENERALKEY,
+                "Params": {
+                    "MemberID": self.request.user.username,
+                    "TPUniqueID": str(TPUniqueID) 
+                    }
                 }
-            }
-        })
+            })
 
-        dic = data.json()
-
+            dic = data.json()
+        except Exception as e:
+            logger.critical("GB:: Unable to request GenerateGameURL api")
+            return Response({'error': 'GB:: Unable to request GenerateGameURL api'})
         
         if 'Error' in dic['GB']['Result']['ReturnSet']:
 
@@ -597,11 +608,14 @@ class GenerateGameURL(APIView):
 
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
-
-        res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
-        res = res.content.decode('utf-8')
-        
-        res = res[2:-2]
+        try:
+            res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
+            res = res.content.decode('utf-8')
+            
+            res = res[2:-2]
+        except:
+            logger.error("GB:: Unable to get token.")
+            return Response({"error":"GB:: Unable to get token."})
         
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto' }
         
@@ -623,21 +637,24 @@ class GenerateFakeUserGameURL(APIView):
         game = self.request.GET['game']
         language = self.request.GET['language']
         TPUniqueID = uuid.uuid4()
-
-        data = requests.post(GB_URL, json = {
-            
-        "GB": {
-            "Method": "UpdateTPUniqueID",
-            "TPCode": "011",
-            "AuthKey": GB_GENERALKEY,
-            "Params": {
-                "MemberID": 'Fakeuser',
-                "TPUniqueID": str(TPUniqueID) 
+        try: 
+            data = requests.post(GB_URL, json = {
+          
+            "GB": {
+                "Method": "UpdateTPUniqueID",
+                "TPCode": "011",
+                "AuthKey": GB_GENERALKEY,
+                "Params": {
+                    "MemberID": 'Fakeuser',
+                    "TPUniqueID": str(TPUniqueID) 
+                    }
                 }
-            }
-        })
+            })
 
-        dic = data.json()
+            dic = data.json()
+        except Exception as e:
+            logger.critical("GB:: Unable to request GenerateFakeUserGameURL api")
+            return Response({'error': 'GB:: Unable to request GenerateFakeUserGameURL api'})
 
         if 'Error' in dic['GB']['Result']['ReturnSet']:
              
@@ -669,11 +686,14 @@ class GenerateFakeUserGameURL(APIView):
         else:
             GBSN = dic['GB']['Result']['ReturnSet']['GBSN']
        
-    
-        res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
-        res = res.content.decode('utf-8')
-      
-        res = res[2:-2]
+        try:
+            res = requests.get(GB_API_URL + '?gbsn={}&TPUniqueID={}'.format(GBSN, TPUniqueID))
+            res = res.content.decode('utf-8')
+        
+            res = res[2:-2]
+        except:
+            logger.error("GB:: Unable to get token.")
+            return Response({"error":"GB:: Unable to get token."})
         
         dic = {'SSC': 'ssc', 'K3': 'k3', 'PK10': 'pk10', 'Keno': 'keno', 'Lotto': 'lotto'}
 

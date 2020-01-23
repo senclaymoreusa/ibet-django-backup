@@ -1584,8 +1584,10 @@ IMES_KEY = keys["IMES"]["DESKEY"]
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
-KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
-KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
+KY_AES_KEY = keys["KAIYUAN"]["DESKEY"]
+KY_MD5_KEY = keys["KAIYUAN"]["MD5KEY"]
+KY_API_URL = keys["KAIYUAN"]["KY_API_URL"]
+KY_RECORD_URL = keys["KAIYUAN"]["KY_RECORD_URL"]
 
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
@@ -1642,12 +1644,15 @@ QT_STATUS_CODE = (
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
 
 #AG
-AG_URL = "https://gi.claymoreasia.com/doBusiness.do"
-AG_FORWARD_URL = "https://gci.claymoreasia.com/forwardGame.do"
-AG_CAGENT = "EV3_AGIN"
-AG_MD5 = "2YgQUaUZfDDt"
-AG_DES = "MJp7ScbZ"
-AG_DM = "http://ibet.com"
+AG_URL = keys["AG"]["URL"]
+AG_FORWARD_URL = keys["AG"]["FORWARD_URL"]
+AG_CAGENT = keys["AG"]["CAGENT"]
+AG_MD5 = keys["AG"]["MD5"]
+AG_DES = keys["AG"]["DES"]
+AG_DM = keys["AG"]["DM"]
+AG_FTP_USERNAME = keys["AG"]["FTP_USERNAME"]
+AG_FTP_PASSWORD = keys["AG"]["FTP_PASSWORD"]
+AG_FTP = keys["AG"]["FTP"]
 #IMES
 IMES_PROVIDER = "IMES"
 

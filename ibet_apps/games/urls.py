@@ -107,6 +107,7 @@ urlpatterns = [
     path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
     
+    
     # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
     path('api/bti/reserve', csrf_exempt(bti.Reserve.as_view()), name="bti_reserve_bet"),
@@ -156,8 +157,10 @@ urlpatterns = [
     #AG
     path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
     path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
+    path('api/ag/ftp', csrf_exempt(aggamesviews.agftp), name="ag_ftp"),
     path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test"),
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)

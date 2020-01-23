@@ -32,15 +32,6 @@
         });
 
         // DOWNLINE LIST TABLE
-        var downlineListTable = $('#downline_list_table, #channel_report_table, #platform_winloss_table').DataTable({
-            responsive: true,
-            dom: '<<t>Bpil>',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 1],
-            }],
         var downlineListTable = $('#downline-list-table').DataTable({
             "serverSide": true,
             "language": {
@@ -105,27 +96,20 @@
             return data;
         }
 
-        var affiliateCommissionTable = $('#affiliate-monthly-commission-table').DataTable({
-            responsive: true,
-            dom: 'B',
-            buttons: [
-                'csv'
-            ],
-            "columnDefs": [{
-                "searchable": false, "targets": [0, 1],
-            }],
-            "language": {
-                "info": " _START_ - _END_ of _TOTAL_",
-                "infoEmpty": " 0 - 0 of 0",
-                "infoFiltered": "",
-                "paginate": {
-                    "next": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;">></button>',
-                    "previous": '<button type="button" class="btn default" style="border:solid 1px #bdbdbd;"><</button>'
-                },
-                "lengthMenu": "_MENU_",
-            },
-        })
-        $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
+        // AFFILIATE COMMISSION HISTORY EXPORT
+        var commissionTableHead = [];
+        $('#export-commission-history').on('click', function(){
+            GetCellValues("affiliate-monthly-commission-table");
+            commissionTableHead = JSON.stringify(commissionTableHead);
+            document.location = document.location.href + '?tableHead=' + commissionTableHead;
+        });
+
+        function GetCellValues(tableId) {
+            var table = document.getElementById(tableId);
+            for (var i = 0, m = table.rows[0].cells.length; i < m; i++) {
+                commissionTableHead.push(table.rows[0].cells[i].innerHTML);
+            }
+        }
 
         // ACTIVITY
         $('#activity-type').change(function () {
@@ -225,10 +209,10 @@
             if (checkCommissionLevelEmpty() == false) {
                 var delete_btn = $('#delete_commission_level')
                 delete_btn.remove();
-                var new_commission_level = $('#commission_level_details').clone();
+                var new_commission_level = $('.commission_level_details').clone();
                 $(new_commission_level).find('input').val('');
-                var level = $('.commission_levels #commission_level_details').last().find('#commission_level_label').text();
-                $(new_commission_level).find('#commission_level_label').text(+level + 1);
+                var level = $('.commission_levels .commission_level_details').last().find('.commission_level_label').text();
+                $(new_commission_level).find('.commission_level_label').text(+level + 1);
                 $(new_commission_level).append(delete_btn);
                 $('.commission_levels').append(new_commission_level)
             }
@@ -265,13 +249,13 @@
         });
 
         $(document).on("click", "#delete_commission_level_btn", function () {
-            var current_level = $(this).parent().parent().find('#commission_level_label').html();
+            var current_level = $(this).parent().parent().find('.commission_level_label').html();
             if (current_level === '1') {
                 $('#add_level_errorMessage').text("You can't delete level 1");
                 $('#add_level_errorMessage').css('color', 'red');
             } else {
                 var delete_btn = $('#delete_commission_level');
-                var commission_id = $(this).parent().parent().find('#commission_id').val();
+                var commission_id = $(this).parent().parent().find('.commission_id').val();
                 var commission_row = $(this).prev().closest('.row');
                 var commission_row_prev = commission_row.prev('.row')
                 commission_row.remove();
@@ -284,12 +268,13 @@
                 level_details = [];
                 $(".commission_levels .row").each(function () {
                     level_detail = {};
-                    level_detail['pk'] = $(this).find('#commission_id').val();
-                    level_detail['level'] = $(this).find('#commission_level_label').text();
-                    level_detail['rate'] = $(this).find('#commission_rate').val();
-                    level_detail['downline_rate'] = $(this).find('#downline_commission_rate').val();
-                    level_detail['active_downline'] = $(this).find('#active_downline').val();
-                    level_detail['downline_ftd'] = $(this).find('#downline_monthly_ftd').val();
+                    level_detail['pk'] = $(this).find('.commission_id').val();
+                    level_detail['level'] = $(this).find('.commission_level_label').text();
+                    level_detail['rate'] = $(this).find('.commission_rate').val();
+                    level_detail['downline_rate'] = $(this).find('.downline_commission_rate').val();
+                    level_detail['active_downline'] = $(this).find('.active_downline').val();
+                    level_detail['downline_ftd'] = $(this).find('.downline_monthly_ftd').val();
+                    level_detail['downline_ngr'] = $(this).find('.downline_net_profit').val();
                     level_details.push(level_detail);
                 });
                 var manager = $('#manager_assign_chosen a span').html()

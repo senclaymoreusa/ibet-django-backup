@@ -308,7 +308,8 @@ class SubmitPayout(View):
             checksum = MD5(secretMsg)
        
             if check_password(withdraw_password, user.withdraw_password):
-                try:    
+                try:
+                    db_currency_code = 7 if currency == 8 else 2
                     withdraw_request = Transaction(
                         transaction_id=trans_id,
                         amount=amount,
@@ -399,4 +400,3 @@ def depositStatus(request):
 
         
     
-
