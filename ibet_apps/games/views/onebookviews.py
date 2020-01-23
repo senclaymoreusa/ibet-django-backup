@@ -273,7 +273,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             status=TRAN_SUCCESS_TYPE)
                     return CODE_SUCCESS
                 except Exception as e:
-                    logger.error("request transfer to Onebook: ", e)
+                    logger.error("request transfer to Onebook: {}".format(str(e)))
                     #print("request transfer to Onebook: ", e)
                     return ERROR_CODE_FAIL
             elif direction == '0':                                                            
@@ -294,7 +294,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             status=TRAN_SUCCESS_TYPE)
                     return CODE_SUCCESS
                 except Exception as e:
-                    logger.error("request transfer from Onebook: ", e)
+                    logger.error("request transfer from Onebook: {}".format(str(e)))
                     #print("request transfer from Onebook: ", e)
                     return ERROR_CODE_FAIL
             # user.save()
@@ -334,7 +334,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             status=TRAN_SUCCESS_TYPE)
                                     return CODE_SUCCESS
                                 except Exception as e:
-                                    logger.error("request transfer to Onebook: ", e)
+                                    logger.error("request transfer to Onebook: {}".format(str(e)))
                                     #print("request transfer to Onebook: ", e)
                                     return ERROR_CODE_FAIL
                             elif direction == '0':
@@ -355,7 +355,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                     return CODE_SUCCESS
                             # user.save() 
                                 except Exception as e:
-                                    logger.error("request transfer from Onebook: ", e)
+                                    logger.error("request transfer from Onebook: {}".format(str(e)))
                                     #print("request transfer from Onebook: ", e)
                                     return ERROR_CODE_FAIL      
                             

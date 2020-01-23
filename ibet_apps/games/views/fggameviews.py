@@ -32,7 +32,7 @@ class GetAllGame(APIView):
             })
 
         except Exception as e:
-            logger.error("Error: provider does not exist", e)
+            logger.error("Error: provider does not exist {}".format(str(e)))
             return JsonResponse({
             'game': None
             })
@@ -67,7 +67,7 @@ class GetSessionKey(APIView):
             data = {
                 "sessionKey" : None
             }
-            logger.error("Error: fggame cannot check sessionKey", e)
+            logger.error("Error: fggame cannot check sessionKey {}".format(str(e)))
         return HttpResponse(json.dumps(data),content_type='application/json',status=200)
 
 class FGLogin(APIView):
@@ -205,7 +205,7 @@ class GetAccountDetail(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.critical("FATAL__ERROR: fg cannot find user", e)
+            logger.critical("FATAL__ERROR: fg cannot find user {}".format(str(e)))
 
         
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
@@ -244,7 +244,7 @@ class GetBalance(APIView):
                 "errorcode" : "PLAYER_NOT_FOUND",
                 "message" : "no user found"
             }
-            logger.critical("FATAL__ERROR: cannot find user", e)
+            logger.critical("FATAL__ERROR: cannot find user {}".format(str(e)))
 
         return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',status=200)
 

@@ -28,7 +28,7 @@ class GetEaBetHistory(View):
         try:
             ftp_connection = ftpClient.ftpConnect()
         except Exception as e:
-            logger.critical("(FATAL_ERROR) There is something wrong with ftp connection.", e)
+            logger.critical("(FATAL_ERROR) There is something wrong with ftp connection. {}".format(str(e)))
             return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), status=400, content_type='application/json')
 
 
@@ -37,7 +37,7 @@ class GetEaBetHistory(View):
             redis = RedisHelper()
             logger.info("connecting redis")
         except Exception as e:
-            logger.critical("(FATAL_ERROR) There is something wrong with redis connection.", e)
+            logger.critical("(FATAL_ERROR) There is something wrong with redis connection. {}".format(str(e)))
             return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), status=400, content_type='application/json')
 
         file_list = []
@@ -108,9 +108,8 @@ class GetEaBetHistory(View):
             }
             return HttpResponse(json.dumps(response), content_type="application/json")
         except Exception as e:
-            logger.critical("There is something wrong with get ea bet detail.", e)
-            return HttpResponse(json.dumps({'status': 'There is something wrong with get ea bet detail.' + str(e)}), status=400, content_type='application/json')
-
+            logger.critical("There is something wrong with get ea bet detai {}".format(str(e)))
+            return HttpResponse(json.dumps({'status':  'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
 
 def gameHistoryToDatabase(bet_detail, game_code):
 
@@ -118,7 +117,7 @@ def gameHistoryToDatabase(bet_detail, game_code):
         provider = GameProvider.objects.get(provider_name=EA_PROVIDER)
         category = Category.objects.get(name='Live Casino')
     except Exception as e:
-        logger.critical("(FATAL__ERROR) There is missing EA provider or category", e)
+        logger.critical("(FATAL__ERROR) There is missing EA provider or category. {}".format(str(e)))
 
     for i in bet_detail:
         game_code_id = i['@code']
