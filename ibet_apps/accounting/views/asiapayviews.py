@@ -535,6 +535,7 @@ def depositArrive(request):
                     trans.arrive_time = arrive_time
                     trans.remark = 'Transaction success'
                     trans.qrcode = ''
+                    trans.current_balance += amount
                     trans.save()
 
                     # check if user has valid first deposit bonus and update the status
@@ -678,6 +679,7 @@ def payoutArrive(request):
                 trans.status = 0
                 trans.arrive_time = timezone.now()
                 trans.remark = 'Transaction success'
+                trans.current_balance -= amount
                 trans.save()
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:

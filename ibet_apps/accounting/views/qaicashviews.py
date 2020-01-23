@@ -409,7 +409,7 @@ class submitDeposit(generics.GenericAPIView):
                 method= rdata["depositTransaction"]["depositMethod"],
                 currency= curr,
                 transaction_type=0,
-                channel=3,
+                channel=QAICASH,
                 request_time=rdata["depositTransaction"]["dateCreated"],
             )
             return Response(rdata)
@@ -519,7 +519,7 @@ class submitPayout(generics.GenericAPIView):
                 method= rdata["payoutTransaction"]["payoutMethod"],
                 currency= cur_val,
                 transaction_type=1,
-                channel=3,
+                channel=QAICASH,
                 request_time=rdata['payoutTransaction']['dateCreated'],
             )
             
@@ -641,6 +641,7 @@ class approvePayout(generics.GenericAPIView):
             update_data.review_status = REVIEW_APP
             update_data.remark = notes
             update_data.release_by = user
+            update_data.current_balance -= update_data.amount
             update_data.save()
 
             logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
@@ -814,9 +815,20 @@ def transactionConfirm(request):
         )
 
         if cur_status == 0:
-            update = order_id.update(
-                arrive_time=timezone.now(),
-                remark = 'Transaction success!')
+            if transaction_type == TRANSACTION_DEPOSIT:
+                    
+                update = order_id.update(
+                    arrive_time=timezone.now(),
+                    current_balance=update.current_balance + update.amount,
+                    remark = 'Transaction success!')
+
+            elif transaction_type == TRANSACTION_WITHDRAWAL:
+
+                update = order_id.update(
+                    arrive_time=timezone.now(),
+                    current_balance=update.current_balance - update.amount,
+                    remark = 'Transaction success!')
+
             
         else :
             
