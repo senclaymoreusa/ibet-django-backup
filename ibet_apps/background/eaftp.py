@@ -29,107 +29,87 @@ class GetEaBetHistory(View):
             ftp_connection = ftpClient.ftpConnect()
         except Exception as e:
             logger.critical("(FATAL_ERROR) There is something wrong with ftp connection.", e)
-            return HttpResponse({'status': 'There is something wrong with ftp connection.' + str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse(json.dumps({'status': 'There is something wrong with ftp connection.' + str(e)}), status=400, content_type='application/json')
 
-        file_list = []
-        ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', file_list.append)
+
         try:
             r = RedisClient().connect()
             redis = RedisHelper()
             logger.info("connecting redis")
         except Exception as e:
             logger.critical("(FATAL_ERROR) There is something wrong with redis connection.", e)
-            return HttpResponse({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+            return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), status=400, content_type='application/json')
 
-        last_file = redis.get_ea_last_file()
-        last_file = last_file.decode("utf-8")
-        processed = True
-        if last_file is None:
-            processed = False
+        file_list = []
 
-        for f in file_list:
+        try:
+            ftp_connection.ftp_session.retrlines('RETR gameinfolist.txt', file_list.append)
 
-            local_file_name = f.split('/')[-1]
-            if last_file == local_file_name:
+            last_file = redis.get_ea_last_file()
+            last_file = last_file.decode("utf-8")
+            processed = True
+            if last_file is None:
                 processed = False
-            if last_file == local_file_name or processed:
-                continue
 
-            logger.info('writing file to local: ' + local_file_name)
-            localFile = open(local_file_name, 'wb')
-            ftp_connection.ftp_session.retrbinary('RETR ' + f, localFile.write)
-            localFile.close()
+            for f in file_list:
 
-            s3client = boto3.client("s3")
-            try:
-                s3client.upload_file(local_file_name, AWS_BET_S3_BUCKET, 'EA-game-history/{}'.format(local_file_name))
-            except Exception as e:
-                logger.warning("Uploading to S3 error", e)
-            
-            logger.info('Uploading to S3 to bucket ' + AWS_BET_S3_BUCKET + ' with file name ' + local_file_name)
+                local_file_name = f.split('/')[-1]
+                if last_file == local_file_name:
+                    processed = False
+                if last_file == local_file_name or processed:
+                    continue
 
-            with open(local_file_name, 'r') as f:
-                data = xmltodict.parse(f.read())
-                # print(data)
-                if 'gameinfo' in data and data['gameinfo'] and 'game' in data['gameinfo']:
-                    all_game_types = data['gameinfo']
-                    #multiple type of games playing in this time range
-                    if isinstance(all_game_types['game'], list):
-                        for each_game_type in all_game_types['game']:
-                            # print(each_game_type)
-                            game_code = each_game_type['@code']
-                            bet_detail = each_game_type['deal']
-                            gameHistoryToDatabase(bet_detail, game_code)
-                    # only one type of game playing in this time range
-                    else:
-                        game_code = all_game_types['game']['@code']
-                        bet_detail = all_game_types['game']['deal']
-                        gameHistoryToDatabase(bet_detail, game_code)
-                    logger.info('store EA bet history to database')
-                else:
-                    logger.info('There is no bet history between this time range')
+                logger.info('writing file to local: ' + local_file_name)
+                localFile = open(local_file_name, 'wb')
+                ftp_connection.ftp_session.retrbinary('RETR ' + f, localFile.write)
+                localFile.close()
 
+                s3client = boto3.client("s3")
+                try:
+                    s3client.upload_file(local_file_name, AWS_BET_S3_BUCKET, 'EA-game-history/{}'.format(local_file_name))
+                except Exception as e:
+                    logger.warning("Uploading to S3 error", e)
                 
-            os.remove(local_file_name)
+                logger.info('Uploading to S3 to bucket ' + AWS_BET_S3_BUCKET + ' with file name ' + local_file_name)
 
+                with open(local_file_name, 'r') as f:
+                    data = xmltodict.parse(f.read())
+                    # print(data)
+                    if 'gameinfo' in data and data['gameinfo'] and 'game' in data['gameinfo']:
+                        all_game_types = data['gameinfo']
+                        #multiple type of games playing in this time range
+                        if isinstance(all_game_types['game'], list):
+                            for each_game_type in all_game_types['game']:
+                                # print(each_game_type)
+                                game_code = each_game_type['@code']
+                                bet_detail = each_game_type['deal']
+                                gameHistoryToDatabase(bet_detail, game_code)
+                        # only one type of game playing in this time range
+                        else:
+                            game_code = all_game_types['game']['@code']
+                            bet_detail = all_game_types['game']['deal']
+                            gameHistoryToDatabase(bet_detail, game_code)
+                        logger.info('store EA bet history to database')
+                    else:
+                        logger.info('There is no bet history between this time range')
 
-        last_file = file_list[-1]
-        last_file_name = last_file.split('/')[-1]
-        redis.set_ea_last_file(last_file_name)
-        logger.info('finished writting last file {} to s3'.format(last_file))
-
-
-        # test with one file will delete before merge
-        
-        # last_file = '123'
-        # localFileName = "gameinfo202001040034 (1).xml"
-        # with open(localFileName, 'r') as f:
-        #     data = xmltodict.parse(f.read())
-        #     # data = json.dumps(doc)
-        #     # all_game_types = data['gameinfo']
-        #     # print(all_game_types)
-        #     # print(data)
-        #     if 'gameinfo' in data:
-        #         all_game_types = data['gameinfo']
-        #         #multiple type of games playing in this time range
-        #         if 'game' in all_game_types and isinstance(all_game_types['game'], list):
-        #             for each_game_type in all_game_types['game']:
-        #                 # print(each_game_type)
-        #                 game_code = each_game_type['@code']
-        #                 bet_detail = each_game_type['deal']
-        #                 gameHistoryToDatabase(bet_detail, game_code)
-        #         # only one type of game playing in this time range
-        #         else:
-        #             game_code = all_game_types['game']['@code']
-        #             bet_detail = all_game_types['game']['deal']
-        #             gameHistoryToDatabase(bet_detail, game_code)
                     
-        logger.info('finished processing the ea bet history and end file is {}'.format(last_file))
-        response = {
-            "success": True,
-            "message": 'finished processing the ea bet history and end file is {}'.format(last_file)
-        }
-        return HttpResponse(json.dumps(response), content_type="application/json")
+                os.remove(local_file_name)
+
+
+            last_file = file_list[-1]
+            last_file_name = last_file.split('/')[-1]
+            redis.set_ea_last_file(last_file_name)
+            logger.info('finished writting last file {} to redis'.format(last_file))
+            logger.info('finished processing the ea bet history and end file is {}'.format(last_file))
+            response = {
+                "success": True,
+                "message": 'finished processing the ea bet history and end file is {}'.format(last_file)
+            }
+            return HttpResponse(json.dumps(response), content_type="application/json")
+        except Exception as e:
+            logger.critical("There is something wrong with get ea bet detail.", e)
+            return HttpResponse(json.dumps({'status': 'There is something wrong with get ea bet detail.' + str(e)}), status=400, content_type='application/json')
 
 
 def gameHistoryToDatabase(bet_detail, game_code):
