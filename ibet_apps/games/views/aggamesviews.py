@@ -412,7 +412,6 @@ def agftp(request):
 
                 
             ftp.ftp_session.cwd('..')
-        ftp.ftp_session.quit()
         return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
     except ftplib.error_temp:
         logger.critical("(FATAL_ERROR)Cannot connect with AG ftp.")
