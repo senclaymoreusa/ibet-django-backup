@@ -50,7 +50,7 @@ class EncryptionView(View):
 
     # These values may change based on the test so they should not be put under utils/constants.
     agent_name = "ftrwaa"
-    endpoint = AB_URL + "query_agent_handicaps"
+    endpoint = AB_URL + "forward_game"
 
 
     def threeDES(self, query_string):
@@ -95,7 +95,7 @@ class EncryptionView(View):
         """
         try:
             secure_random_number = secrets.randbits(32) # 32-bit random integer
-            query_string = "agent=" + self.agent_name + "&random=" + str(secure_random_number)
+            query_string = "random=" + str(secure_random_number) + "&client=test" + "&password=test"
 
             data_string = self.threeDES(query_string)
             sign_string = self.md5(data_string)
