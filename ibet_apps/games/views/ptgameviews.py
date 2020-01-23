@@ -333,14 +333,71 @@ class GetBetHistory(APIView):
             'X_ENTITY_KEY': ENTITY_KEY
 
         }
-        # rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
-        
-        
-        if rr.status_code == 200 :    
-               
-            rrdata = rr.json()
-            data = {
-                "test" : None
-            }
+        try:
+            # with tempfile.NamedTemporaryFile(delete=False) as temp:
+            pt_key = tempfile.NamedTemporaryFile(delete=False)
+            pt_key.write(PTKEY)
+            pt_key.flush()    # ensure all data written
+            # to get the path/file 
+            pt_pem = tempfile.NamedTemporaryFile(delete=False)
+            pt_pem.write(PTPEM)
+            pt_pem.flush()
+            startdate = "2020-01-23%2006:19:19"
+            enddate = "2020-01-23%2006:39:19"
+            rr = requests.post(PT_BASE_URL + "/game/flow/startdate/" + startdate + "/enddate/" + enddate, headers=headers, cert=(pt_pem.name, pt_key.name))
+            # Just check status code here, other error will return to rrdata if 200 and be checked in other func.
+            if rr.status_code == 200 :  
+                rrdata = rr.json()
+                try: 
+                    records = rrdata['result']
+                    # print(records)
+                    provider = GameProvider.objects.get(provider_name=PT_PROVIDER)
+                    category = Category.objects.get(name='Games')
+                    for record in records:
+                        # get user here
+                        try:
+                            playername = record['PLAYERNAME']
+                            user = CustomUser.objects.get(username__iexact=playername.split('_')[1])
+                            
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                            if (float(record['BET']) - float(record['WIN']) > 0) :
+                                outcome = 1 # lose
+                            elif (float(record['BET']) - float(record['WIN']) == 0) :
+                                outcome = 2 # Tie/Push
+                            else:
+                                outcome = 0 # win
+                            
+                            GameBet.objects.create(
+                                    provider=provider,
+                                    category=category,
+                                    user=user,
+                                    user_name=user.username,
+                                    amount_wagered=float(record['BET']),
+                                    amount_won=float(record['WIN']),
+                                    outcome=outcome,
+                                    transaction_id=trans_id,
+                                    market=ibetCN,
+                                    ref_no=record['GAMEID'],
+                                    resolved_time=record['GAMEDATE'],
+                                    other_data={}
+                                )
+
+                         
+                        except Exception as e:
+                            logger.error("PT cannot get customuser in get record.")
+                            return HttpResponse("PT cannot get customuser in bet records.", status=200)  
+                    return HttpResponse("PT get {} bet records successfully".format(len(records)), status=200)  
+                except Exception as e:
+                    logger.error("PT cannot get bet records")
+                    return HttpResponse("PT cannot get bet records.", status=200)  
+
+
+            else:
+                logger.critical("FATAL__ERROR: PT get bet record status code.")
+                return HttpResponse("PT get bad bet record status code.", status=200)
+        finally:
+            # delete the file.
+            os.unlink(pt_key.name)
+            os.unlink(pt_pem.name)
            
-        return HttpResponse(json.dumps(rrdata),content_type='application/json',status=200)
+        
