@@ -482,10 +482,13 @@ class GetNewBetDetailAPI(View):
 
             date_from = request.GET.get("date_from") # yyyy-MM-dd HH:mm:ss
             date_to = request.GET.get("date_to")
+            # date_from = datetime.datetime.now()
+            # date_to = datetime.datetime.now()
 
             req_param = {}
             req_param["merch_id"] = GPI_MERCH_ID
             req_param["merch_pwd"] = GPI_MERCH_PWD
+            req_param["date_from"] = date_from
             # req_param["cust_id"] = user.username
             # req_param["cust_name"] = user.username
             # req_param["currency"] = transCurrency(user)
