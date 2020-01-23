@@ -36,12 +36,6 @@ from datetime import date
 
 logger = logging.getLogger('django')
 
-MERCH_ID = "IBETP"
-MERCH_PWD = "2C19AA9A-E3C6-4202-B29D-051E756736DA"
-GPI_URL = "http://club8api.bet8uat.com/op/"
-GPI_LIVE_CASINO_URL = "http://casino.bet8uat.com/csnbo/api/"
-
-
 def transCurrency(user):
     try:
         currency = user.currency
@@ -91,7 +85,7 @@ def transLang(user):
         return language
     except Exception as e:
         logger.warning("GPI transLang Function Error: {}".format(repr(e)))
-        return "en-us"
+        return "en-us" # default
 
 
 # class LoginAPI(View):
@@ -183,17 +177,15 @@ class CreateUserAPI(View):
             user = CustomUser.objects.get(username=username)
 
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["cust_id"] = user.username
             req_param["currency"] = transCurrency(user)
 
             req = urllib.parse.urlencode(req_param)
     
             url = GPI_URL + 'createuser' + '?' + req
-            # url = GPI_LIVE_CASINO_URL + 'createuser.html' + '?' + req
 
-            print(url)
             res = requests.get(url)
 
             res = xmltodict.parse(res.text)
@@ -203,9 +195,8 @@ class CreateUserAPI(View):
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            print(repr(e))
             logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
-            return HttpResponse(repr(e))
+            return HttpResponse(status=400)
 
 
 class GetBalanceAPI(View):
@@ -215,8 +206,8 @@ class GetBalanceAPI(View):
             user = CustomUser.objects.get(username=username)
 
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["cust_id"] = user.username
             req_param["currency"] = transCurrency(user)
 
@@ -254,8 +245,8 @@ class DebitAPI(View):
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["cust_id"] = username
             req_param["currency"] = currency
             req_param["amount"] = amount
@@ -330,8 +321,8 @@ class CreditAPI(View):
             trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["cust_id"] = username
             req_param["currency"] = currency
             req_param["amount"] = amount
@@ -395,8 +386,8 @@ class CheckTransactionAPI(View):
         trx_id = request.GET.get("trx_id")
         try:
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["trx_id"] = "Test11"
 
             req = urllib.parse.urlencode(req_param)
@@ -417,8 +408,8 @@ class GetOnlineUserAPI(View):
     def get(self, request, *args, **kwargs):
         try:
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
 
             req = urllib.parse.urlencode(req_param)
 
@@ -436,8 +427,8 @@ class GetOpenBetsAPI(View):
     def get(self, request, *args, **kwargs):
         try:
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
 
             req = urllib.parse.urlencode(req_param)
 
@@ -460,8 +451,8 @@ class LiveCasinoCreateUserAPI(View):
             user = CustomUser.objects.get(username=username)
 
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["cust_id"] = user.username
             req_param["cust_name"] = user.username
             req_param["currency"] = transCurrency(user)
@@ -470,7 +461,6 @@ class LiveCasinoCreateUserAPI(View):
     
             url = GPI_LIVE_CASINO_URL + 'createUser.html' + '?' + req
 
-            print(url)
             res = requests.get(url)
 
             res = xmltodict.parse(res.text)
@@ -480,7 +470,6 @@ class LiveCasinoCreateUserAPI(View):
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            print(repr(e))
             logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
             return HttpResponse(repr(e))
 
@@ -494,12 +483,9 @@ class GetNewBetDetailAPI(View):
             date_from = request.GET.get("date_from") # yyyy-MM-dd HH:mm:ss
             date_to = request.GET.get("date_to")
 
-            print(date_from)
-            print(date_to)
-
             req_param = {}
-            req_param["merch_id"] = MERCH_ID
-            req_param["merch_pwd"] = MERCH_PWD
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
             # req_param["cust_id"] = user.username
             # req_param["cust_name"] = user.username
             # req_param["currency"] = transCurrency(user)
@@ -508,7 +494,6 @@ class GetNewBetDetailAPI(View):
     
             url = GPI_LIVE_CASINO_URL + 'newBetDetail.html' + '?' + req
 
-            print(url)
             res = requests.get(url)
 
             res = xmltodict.parse(res.text)
@@ -518,6 +503,5 @@ class GetNewBetDetailAPI(View):
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            print(repr(e))
             logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
             return HttpResponse(repr(e))

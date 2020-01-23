@@ -1535,6 +1535,12 @@ KY_LINE_CODE_1 = "iBet01"
 KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
 KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
 
+# Game Play Int
+GPI_MERCH_ID = keys["GPI"]["MERCH_ID"]
+GPI_MERCH_PWD = keys["GPI"]["MERCH_PWD"]
+GPI_URL = keys["GPI"]["GPI_URL"]
+GPI_LIVE_CASINO_URL = keys["GPI"]["GPI_LIVE_CASINO_URL"]
+
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
 ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
