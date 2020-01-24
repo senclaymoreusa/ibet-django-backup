@@ -105,123 +105,124 @@ class KyBets(View):
             start_time = redis.get_ky_bets_timestamp
 
             if start_time is None:
-                start_time = get_timestamp() - 300000 # five minutes before now
-            
-            # Query Bet Order
-            end_time = get_timestamp() - 60000 # one minute before now
-
-            timestamp = get_timestamp()
-
-            param = "s=6" + "&startTime=" + str(start_time) + "&endTime=" + str(end_time)
-
-            param = aes_encode(KY_AES_KEY, param)
-            param = base64.b64encode(param)
-            param = str(param, "utf-8")
-
-            key = KY_AGENT + str(timestamp) + KY_MD5_KEY
-            key = hashlib.md5(key.encode())
-            key = key.hexdigest()
-
-            url = KY_RECORD_URL
-
-            req_param = {}
-            req_param["agent"] = KY_AGENT
-            req_param["timestamp"] = str(timestamp)
-            req_param["param"] = param
-            req_param["key"] = key
-
-            req = urllib.parse.urlencode(req_param)
-            url = url + '?' + req
-            res = requests.get(url)
-
-            if res.status_code == 200:
-                data = res.json()
-
-                if data['d']['code'] == 0:
-                    count = int(data['d']['count'])
-                    record_list = data['d']['list']
-
-                    provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
-                    category = Category.objects.filter(name='Table Games')
-
-                    game_id = record_list['GameID']
-                    accounts = record_list['Accounts']
-                    # server_id = record_list['ServerID']
-                    # kind_id = record_list['KindID']
-                    # table_id = record_list['TableID']
-                    cell_score = record_list['CellScore']
-                    profit = record_list['Profit']
-                    revenue = record_list['Revenue']
-                    start_time = record_list['GameStartTime']
-                    end_time = record_list['GameEndTime']
-
-                    gamebets_list = []
-
-                    for i in range(0, count):
-                        username = accounts[i][6:]
-                        user = CustomUser.objects.get(username=username)
-
-                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-
-                        bet_time = datetime.strptime(start_time[i], '%Y-%m-%d %H:%M:%S')
-                        bet_time = bet_time.replace(tzinfo=pytz.timezone(provider.timezone))
-                        bet_time = bet_time.astimezone(pytz.utc)
-
-                        resolved_time = datetime.strptime(end_time[i], '%Y-%m-%d %H:%M:%S')
-                        resolved_time = resolved_time.replace(tzinfo=pytz.timezone(provider.timezone))
-                        resolved_time = resolved_time.astimezone(pytz.utc)
-
-                        if int(cell_score[i] == 0):
-                            outcome = 2 # Tie Game
-                        if win_amount > 0:
-                            outcome = 0 # Won
-                        else:
-                            outcome = 1 # Lose
-
-                        gamebet = GameBet(provider=provider,
-                            category=category[0],
-                            user=user,
-                            user_name=user.username,
-                            amount_wagered=decimal.Decimal(cell_score[i]),
-                            amount_won=decimal.Decimal(win_amount),
-                            outcome=outcome,
-                            transaction_id=trans_id,
-                            market=ibetCN,
-                            ref_no=game_id[i],
-                            bet_time=bet_time,
-                            resolved_time=resolved_time,
-                            other_data={}
-                        )
-
-                        # GameBet.objects.create(
-                        #     provider=provider,
-                        #     category=category[0],
-                        #     user=user,
-                        #     user_name=user.username,
-                        #     amount_wagered=decimal.Decimal(cell_score[i]),
-                        #     amount_won=decimal.Decimal(win_amount),
-                        #     outcome=outcome,
-                        #     transaction_id=trans_id,
-                        #     market=ibetCN,
-                        #     ref_no=game_id[i],
-                        #     bet_time=bet_time,
-                        #     resolved_time=resolved_time,
-                        #     other_data={}
-                        # )
-
-                        gamebets_list.append(gamebet)
-
-                    # bulk_create
-                    GameBet.objects.bulk_create(gamebets_list)
-                    # Set Redis
-                    redis.set_ky_bets_timestamp(end_time)
-
-                    return HttpResponse("You have add {} records".format(count), status=200)
-                else:
-                    return HttpResponse("No record at this time", status=200)
+                redis.set_ky_bets_timestamp(start_time)
+                return HttpResponse(status=200)
             else:
-                logger.warning("Kaiyuan GetRecord Failed: {}".format(repr(res)))
-                return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
+                timestamp = get_timestamp()
+                # Query Bet Order
+                start_time = start_time.decode("utf-8")
+                end_time = timestamp - 60000 # one minute before now
+
+                param = "s=6" + "&startTime=" + str(start_time) + "&endTime=" + str(end_time)
+
+                param = aes_encode(KY_AES_KEY, param)
+                param = base64.b64encode(param)
+                param = str(param, "utf-8")
+
+                key = KY_AGENT + str(timestamp) + KY_MD5_KEY
+                key = hashlib.md5(key.encode())
+                key = key.hexdigest()
+
+                url = KY_RECORD_URL
+
+                req_param = {}
+                req_param["agent"] = KY_AGENT
+                req_param["timestamp"] = str(timestamp)
+                req_param["param"] = param
+                req_param["key"] = key
+
+                req = urllib.parse.urlencode(req_param)
+                url = url + '?' + req
+                res = requests.get(url)
+
+                if res.status_code == 200:
+                    data = res.json()
+
+                    if data['d']['code'] == 0:
+                        count = int(data['d']['count'])
+                        record_list = data['d']['list']
+
+                        provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                        category = Category.objects.filter(name='Table Games')
+
+                        game_id = record_list['GameID']
+                        accounts = record_list['Accounts']
+                        # server_id = record_list['ServerID']
+                        # kind_id = record_list['KindID']
+                        # table_id = record_list['TableID']
+                        cell_score = record_list['CellScore']
+                        profit = record_list['Profit']
+                        revenue = record_list['Revenue']
+                        start_time = record_list['GameStartTime']
+                        end_time = record_list['GameEndTime']
+
+                        gamebets_list = []
+
+                        for i in range(0, count):
+                            username = accounts[i][6:]
+                            user = CustomUser.objects.get(username=username)
+
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                            bet_time = datetime.strptime(start_time[i], '%Y-%m-%d %H:%M:%S')
+                            bet_time = bet_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                            bet_time = bet_time.astimezone(pytz.utc)
+
+                            resolved_time = datetime.strptime(end_time[i], '%Y-%m-%d %H:%M:%S')
+                            resolved_time = resolved_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                            resolved_time = resolved_time.astimezone(pytz.utc)
+
+                            if int(cell_score[i] == 0):
+                                outcome = 2 # Tie Game
+                            if win_amount > 0:
+                                outcome = 0 # Won
+                            else:
+                                outcome = 1 # Lose
+
+                            gamebet = GameBet(provider=provider,
+                                category=category[0],
+                                user=user,
+                                user_name=user.username,
+                                amount_wagered=decimal.Decimal(cell_score[i]),
+                                amount_won=decimal.Decimal(win_amount),
+                                outcome=outcome,
+                                transaction_id=trans_id,
+                                market=ibetCN,
+                                ref_no=game_id[i],
+                                bet_time=bet_time,
+                                resolved_time=resolved_time,
+                                other_data={}
+                            )
+
+                            # GameBet.objects.create(
+                            #     provider=provider,
+                            #     category=category[0],
+                            #     user=user,
+                            #     user_name=user.username,
+                            #     amount_wagered=decimal.Decimal(cell_score[i]),
+                            #     amount_won=decimal.Decimal(win_amount),
+                            #     outcome=outcome,
+                            #     transaction_id=trans_id,
+                            #     market=ibetCN,
+                            #     ref_no=game_id[i],
+                            #     bet_time=bet_time,
+                            #     resolved_time=resolved_time,
+                            #     other_data={}
+                            # )
+
+                            gamebets_list.append(gamebet)
+
+                        # bulk_create
+                        GameBet.objects.bulk_create(gamebets_list)
+                        # Set Redis
+                        redis.set_ky_bets_timestamp(end_time)
+
+                        return HttpResponse("You have add {} records".format(count), status=200)
+                    else:
+                        return HttpResponse("No record at this time", status=200)
+                else:
+                    logger.warning("Kaiyuan GetRecord Failed: {}".format(repr(res)))
+                    return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
             return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
