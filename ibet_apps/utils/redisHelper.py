@@ -78,6 +78,12 @@ class RedisHelper():
     def get_latest_timestamp(self, key):
         return self.r.get(key)
 
+    def set_pt_starttime(self, key, timestamp):
+        return self.r.set(key, timestamp)
+
+    def get_pt_starttime(self, key):
+        return self.r.get(key)
+
 
     def set_ag_added_file(self, ftp_file):
         ag_file = getAGFileHistoryRedisKey()

@@ -439,7 +439,7 @@ class LoginView(GenericAPIView):
                 loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
-            logger.error("cannot get users device info in login iovation", e)
+            logger.error("cannot get users device info in login iovation.{}".format(str(e)))
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
