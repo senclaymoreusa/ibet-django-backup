@@ -236,7 +236,7 @@ class KyBets(View):
                 return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
-            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
+            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=200)
 
 
 # @background(schedule=10)
