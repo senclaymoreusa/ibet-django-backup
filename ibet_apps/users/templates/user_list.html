@@ -73,35 +73,40 @@
         <li id="close-accounts"><a data-toggle="tab"  class="tab-label" href="#close-account">CLOSE ACCOUNTS</a></li>
     </ul> -->
 
-    <div class="tab-content">
+    <div class="tab-content wrapper" style="width: 99%">
         <div id="active-account" class="tab-pane fade in active">
             <table class="custom-user">
             <!-- <table style='overflow-x: scroll;'> -->
                 <thead class="thead-dark">
                     <tr>
-                        <th style="width: 3%;">#</th>
-                        <th style="width: 6%;">MEMBER ID</th>
-                        <th style="width: 8%;">USERNAME</th>
-                        <th style="width: 7%;">SOURCE</th>
-                        <th style="width: 11.5%;">REGISTRATION DATE</th>
-                        <th style="width: 11.5%;">FTD DATE</th>
-                        <th >BALANCE($)</th>
-                        <th >4 CODE ADDRESS</th>
-                        <th style="word-break: break-word; width:7%;">DEPOSIT/ TURNOVER</th>
-                        <th style="word-break: break-word; width:7%;">BONUS/ TURNOVER</th>
-                        <th >COUNTRIBUTION ($)</th>
-                        <th >ACTIVE DAYS</th>
-                        <th >IS ADMIN</th>
+                        <th style="width:85px;">PLAYER ID</th>
+                        <th style="width:120px;">USERNAME</th>
+                        <th style="width:126px;">PLAYER SOURCE</th>
+                        <th style="width:126px;">MANAGER</th>
+                        <th style="width:126px;">REGISTRATION DATE</th>
+                        <th style="width:126px;">FTD DATE</th>
+                        <th style="width:126px;">FTD AMOUNT</th>
+                        <th style="width:126px;">BALANCE</th>
+                        <th style="width:300px;">4 CODE ADDRESS</th>
+                        <th style="word-break: break-word; width:399px;">DEPOSIT/ TURNOVER</th>
+                        <th style="word-break: break-word; width:600px;">BONUS/ TURNOVER</th>
+                        <th style="width:126px;">COUNTRIBUTION</th>
+                        <th style="width:126px;">ACTIVE DAYS</th>
+                        <th style="width:126px;">STATUS</th>
+                        <th style="width:126px;">STATUS CHANGED</th>
+                        <th style="width:126px;">CHANGED BY</th>
+                        <th style="width:126px;">CLOSURE REASON</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id='user_list_tbody'>
                     {% for user in user_data %} 
                     <tr>
-                        <td>{{ forloop.counter }}</td>
                         <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.id }}</a></td>
                         <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
                         <!-- <td>{{ trans }}</td> -->
                         <td>{{ user.source }}</td>
+                        <td></td>
                         {% if user.time_of_registration %}
                             <td>{{ user.time_of_registration }}</td>
                         {% else %}
@@ -112,27 +117,56 @@
                         {% else %}
                             <td></td>
                         {% endif %}
+                        <td></td>
                         <td>{{ user.balance|floatformat:2 }}</td>
                         <td>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fa fa-phone" style="margin-left: -3px;"></i>
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fas fa-university" style="margin-left: -3px;"></i>
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fas fa-id-card" style="margin-left: -4px;"></i>
-                            </button>
-                            <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
-                            <i class="fa fa-globe" style="margin-left: -3px;"></i>
-                            </button>
+                            {% if user.phone %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-phone" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>Phone number</div><div>{{ user.phone }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-phone" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
+                            {% if user.address %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Address</div><div>{{ user.address }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-home" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>Address</div><div>{{ user.address }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-home" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
+                            {% if user.id_card %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>User ID</div><div>{{ user.id_card }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fas fa-id-card" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>User ID</div><div>{{ user.id_card }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fas fa-id-card" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
+                            {% if user.last_login_ip.ip_addr %}
+                                <button type="button" class="btn btn-info btn-sm" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-globe" style="margin-left: -3px;"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info btn-sm" style="visibility: hidden;" data-toggle="tooltip" title="<div>Last Login IP</div><div>{{ user.last_login_ip.ip_addr }}</div>" data-placement="top" id="phone-tooltip" data-html="true">
+                                <i class="fa fa-globe" style="margin-left: -3px;"></i>
+                                </button>
+                            {% endif %}
                         </td>
                         <td>{{ user.deposit_turnover }}</td>
                         <td>{{ user.bonus_turnover }}</td>
                         <td>{{ user.contribution }}</td>
                         <td>{{ user.active_days }}</td>
-                        <td>{{ user.is_admin }}</td>
-                        <!-- <td> -->
+                        <td>{{ user.member_status }}</td>
+                        <td>{{ user.status_changed }}</td>
+                        <td>{{ user.changed_by }}</td>
+                        <td>{{ user.closure_reason }}</td>
+                        <td><button id="user_detail_button" type='button' class="btn btn-primary" onclick="viewUserInfo('{{ user.id }}')" style="display: inline-block; float: right;"  data-toggle="modal" data-target="#user_detail_button"><span class="glyphicon glyphicon-search"></span></td>
+                            <!-- <td> -->
                             <!-- <a href="#" class="btn btn-info btn-sm" style="background-color: #5f9ea0; border-color: #5f9ea0;">
                             <span style="margin-left: -3px;">W</span>
                             </a>
@@ -147,13 +181,159 @@
                             </a> -->
                         <!-- </td> -->
                     </tr>
+
+
+                    <div class="modal fade" id="user_detail_button" role="dialog">
+                            <div class="modal-dialog">
+                            
+                                <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header" style="background-color: #ffa313; color:white">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Edit member details</h4>
+                                        <!-- <h6 style="float: right;">Update Time:</h6> -->
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class='row'>
+                                            <form>
+                                                {% csrf_token %}
+                                                <div class='col-md-6'>
+                                                    <div class="form-group">
+                                                        <div for="member_id" class="edit-member-info-label" style="margin-top:0px;">MEMBER ID</div>
+                                                        <input class="form-control" name="member_id" value="" disabled>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="username" class="edit-member-info-label">USERNAME</div>
+                                                        <input class="form-control" name="member_username" value="" disabled>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="id_number" class="edit-member-info-label">ID NUMBER</div>
+                                                        <input class="form-control" name="id_number" value="" disabled>
+                                                    </div>
+                                                    
+                                                    <div class="form-group" style="border-bottom: 0px solid #EEE;">
+                                                        <div for="id_number" class="edit-member-info-label">BIRTHDAY</div>
+                                                        <div class="row">
+                                                            <div class="col-md-4" style="padding-right: 0px"> <input class="form-control" name="member_birthday_day" value="" disabled></div>
+                                                            <div class="col-md-4" style="padding: 0px 6px"> <input class="form-control" name="member_birthday_month" value="" disabled></div>
+                                                            <div class="col-md-4" style="padding-left:1px"> <input class="form-control" name="member_birthday_year" value="" disabled></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="member_status" class="edit-member-info-label" >STATUS</div>
+                                                        <select class="form-control" name="member_status" value=""  disabled>
+                                                            <option value=""></option>
+                                                            <option value="0">Normal</option>
+                                                            <option value="1">Suspicious</option>
+                                                            <option value="2">Restricted</option>
+                                                            <option value="3">Closed</option>
+                                                            <option value="4">Blacklisted</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="member_segment" class="edit-member-info-label">PLAYER SEGMENT</div>
+                                                        <select class="form-control" disabled value="" name="member_segment">
+                                                            <option value=""></option>
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="risk_level" class="edit-member-info-label">RISK LEVEL</div>
+                                                        <select class="form-control" disabled value="" name="risk_level">
+                                                            <option value="">Defined by system</option>
+                                                            <option value="0">Very High</option>
+                                                            <option value="1">High</option>
+                                                            <option value="2">Medium</option>
+                                                            <option value="3">Low</option>
+                                                            <option value="4">Very Low</option>
+                                                            <option value="5">VIP</option>
+                                                            <option value="5">Business</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="manger" class="edit-member-info-label">MANAGER</div>
+                                                        <input class="form-control" name="manger" disabled>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="email" class="edit-member-info-label">EMAIL</div>
+                                                        <input type='email' class="form-control" name="email" disabled>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="phone" class="edit-member-info-label">PHONE</div>
+                                                        <input class="form-control" name="phone" disabled>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <div for="address" class="edit-member-info-label">ADDRESS</div>
+                                                        <input class="form-control" name="address" style="height: 140px;" value="">
+                                                        <div class="row" style="margin-top: 8px;">
+                                                            <div class="col-md-7" style="padding-right: 0px;">
+                                                                <input class="form-control" name="city" value="">
+                                                            </div>
+                                                            <div class="col-md-5" style="padding-left: 5px;">
+                                                                <input class="form-control" name="zipcode" value="">
+                                                            </div>
+                                                        </div>
+                                                        <div style="margin-top: 8px;">
+                                                            <input class="form-control" name="country" value="">
+                                                        </div>
+                                                    </div>
+                                                    <!-- {% if customuser.block == False %}
+                                                    <div>
+                                                        <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
+                                                            <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
+                                                        </button>
+                                                    </div>
+                                                    {% else %}
+                                                    <div>
+                                                        <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
+                                                            Open account
+                                                        </button>
+                                                    </div>
+                                                    {% endif %} -->
+                                                    <!-- <p id='errorMessage'>&nbsp;</p> -->
+                                                    <!-- <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
+                                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button> -->
+                                                </div>
+                                                <div class="col-md-6">
+                                                    {% if userPhotoId %}
+                                                    <img id="user-photo-img" src="{{ userPhotoId }}">
+                                                    {% else %}
+                                                    <img id="user-photo-img" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
+                                                    {% endif %}
+                                                    <div>&nbsp;</div>
+                                                    <div class="row">
+                                                        <div class='col-md-6'>
+                                                            <div>Time of application</div>
+                                                            <div>Time of review</div>
+                                                            <div>Reviewer</div>
+                                                        </div>
+                                                        <div class='col-md-6'>
+                                                            <div class="time_of_application">Time of application</div>
+                                                            <div class="time_of_review">Time of review</div>
+                                                            <div class="time_of_reviewer">Reviewer</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <!-- <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div> -->
+                                </div>
+                                
+                            </div>
+                        </div>
+                    
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-
 <div class="row user-list-control-group">
     <!-- <div class="bottom-align-text"> -->
     <div class='col-md-9' style="margin-right: 70px"></div>
@@ -199,6 +379,51 @@
 
 
 <script>
+
+function viewUserInfo(userId) {
+    $.ajax({
+        type: "GET",
+        url: "{% url 'get_user_info' %}",
+        data:{ 
+            'user_id': userId,
+        },
+        success: function(response)
+        {
+            var month = ''
+                var day = ''
+                var year = ''
+            if (response.birthday) {
+                var list = response.birthday.split('/');
+                month = list[0]
+                day = list[1]
+                year = list[2]
+            }
+            
+            $("input[name*='member_id']").val(response.userId);
+            $("input[name*='member_username']").val(response.username);
+            $("input[name*='member_name']").val(response.name);
+            $("input[name*='id_number']").val(response.idNumber);
+            $("input[name*='member_birthday_day']").val(day);
+            $("input[name*='member_birthday_month']").val(month);
+            $("input[name*='member_birthday_year']").val(year);
+
+            $("input[name*='member_status']").val(response.status);
+            $("input[name*='member_segment']").val(response.playerSegment);
+            $("input[name*='risk_level']").val(response.riskLevel);
+            $("input[name*='manger']").val(response.manger);
+            $("input[name*='email']").val(response.email);
+            $("input[name*='phone']").val(response.phone);
+            $("input[name*='address']").val(response.address);
+            $("input[name*='city']").val(response.city);
+            $("input[name*='country']").val(response.country);
+            $("input[name*='zipcode']").val(response.zipcode);
+            $('.time_of_application').text(response.idApplicationTime);
+            $('.time_of_review').text(response.idReviewTime);
+            $('.time_of_reviewer').text(response.idReviewer);
+        }
+    });
+
+}
 
 $(document).ready(function() {
 

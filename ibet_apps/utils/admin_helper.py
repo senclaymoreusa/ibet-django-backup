@@ -11,7 +11,7 @@ from users.models import CustomUser, UserAction, SystemCommissionLevel, Personal
 from operation.models import Campaign
 from users.models import CustomUser
 from accounting.models import Transaction
-from games.models import GameBet
+from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
 from utils.constants import *
 
@@ -27,12 +27,22 @@ users = CustomUser.objects.all()
 today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
-last_month = this_month + relativedelta(months=-1)
-before_last_month = this_month + relativedelta(months=-2)
+last_month = this_month - relativedelta(months=1)
+month_before_last = this_month - relativedelta(months=2)
+
+# Create System User
+try:
+    system_user = CustomUser.objects.get(username='System')
+except ObjectDoesNotExist as e:
+    system_user = CustomUser.objects.create_superuser(
+        username='System',
+        email='system@claymoreusa.com',
+        phone=0
+    )
+    logger.info("Create A System User")
 
 
 # transaction filter
-
 def getCommissionTrans():
     commission_tran = Transaction.objects.filter(
         Q(transaction_type=TRANSACTION_COMMISSION) & Q(channel=None))
@@ -47,19 +57,21 @@ def getCommissionTrans():
 
 # get player list for affiliate or affiliates
 def getPlayers(affiliates):
-    player_list = None
+    player_list = CustomUser.objects.none()
     if affiliates in [None, '']:
         logger.info("Warning input for getting downline list!")
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
-            player_list |= CustomUser.objects.filter(
-                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
+            if affiliate_referral_path:
+                player_list |= CustomUser.objects.filter(
+                    Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
-        player_list = CustomUser.objects.filter(
-            Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
+        if affiliate_referral_path:
+            player_list = CustomUser.objects.filter(
+                Q(referral_path__contains=affiliate_referral_path) & ~Q(pk=affiliates.pk))
 
     return player_list
 
@@ -72,21 +84,23 @@ def getPlayers(affiliates):
 
 # get downline list for affiliate or affiliates
 def getDownlines(affiliates):
-    downline_list = None
+    downline_list = CustomUser.objects.none()
     if affiliates in [None, '']:
         logger.info("Invalid input for getting affiliates' downline list.")
         return []
     elif isinstance(affiliates, QuerySet):
         for affiliate in affiliates:
             affiliate_referral_path = affiliate.referral_path
-            downline_list |= CustomUser.objects.filter(
-                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
-                    pk=affiliate.pk))
+            if affiliate_referral_path:
+                downline_list |= CustomUser.objects.filter(
+                    Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
+                        pk=affiliate.pk))
     else:
         affiliate_referral_path = affiliates.referral_path
-        downline_list = CustomUser.objects.filter(
-            Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
-                pk=affiliates.pk))
+        if affiliate_referral_path:
+            downline_list = CustomUser.objects.filter(
+                Q(referral_path__contains=affiliate_referral_path) & Q(user_to_affiliate_time__isnull=False) & ~Q(
+                    pk=affiliates.pk))
 
     return downline_list
 
@@ -99,6 +113,8 @@ def getDownlines(affiliates):
 
 def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
     # get bet transaction in this period
+    if not queryset:
+        return GameBet.objects.none()
     active_filter = Q()
     if not free_bets:
         active_filter &= ~Q(other_data__is_free=True)
@@ -128,6 +144,8 @@ def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
 def calculateFTD(queryset, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
+    if not queryset:
+        return 0
     ftd_filter = Q()
     if start_time and end_time:
         ftd_filter &= Q(ftd_time__gte=start_time)
@@ -145,6 +163,8 @@ def calculateFTD(queryset, start_time, end_time):
 def calculateRegistrations(user_group, start_time, end_time):
     # calculate this user_group's(downline list group or user group) within end_date ftd
     # user_group has to be objects group, end_date should be datetime format
+    if not user_group:
+        return 0
     regis_filter = Q()
     if start_time and end_time:
         regis_filter &= Q(time_of_registration__gte=start_time)
@@ -160,6 +180,8 @@ def calculateRegistrations(user_group, start_time, end_time):
 
 # calculate new players referred by the affiliate place first bet during certain time range
 def calculateNewPlayer(user_group, start_time, end_time, free_bets):
+    if not user_group:
+        return 0
     new_player_count = 0
     new_player_filter = Q()
 
@@ -360,11 +382,11 @@ def bonusValueToKey(bonuses):
     if bonuses['start_time']:
         bonuses['start_time'] = datetime.datetime.strptime(bonuses['start_time'], '%Y-%m-%dT%H:%M:%SZ')
         bonuses['start_time'] = utcToLocalDatetime(bonuses['start_time'])
-        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %m %Y')
+        bonuses['start_time'] = datetime.datetime.strftime(bonuses['start_time'], '%b %d %Y')
     if bonuses['end_time']:
         bonuses['end_time'] = datetime.datetime.strptime(bonuses['end_time'], '%Y-%m-%dT%H:%M:%SZ')
         bonuses['end_time'] = utcToLocalDatetime(bonuses['end_time'])
-        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %m %Y')
+        bonuses['end_time'] = datetime.datetime.strftime(bonuses['end_time'], '%b %d %Y')
     return bonuses
 
 
@@ -374,11 +396,11 @@ def ubeValueToKey(ube):
         ube['delivery_time'] = datetime.datetime.strptime(ube['delivery_time'],
                                                           '%Y-%m-%dT%H:%M:%S.%fZ')  # for auto add field
         ube['delivery_time'] = utcToLocalDatetime(ube['delivery_time'])
-        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %m %Y')
+        ube['delivery_time'] = datetime.datetime.strftime(ube['delivery_time'], '%b %d %Y')
     if ube['completion_time']:
-        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%SZ')
+        ube['completion_time'] = datetime.datetime.strptime(ube['completion_time'], '%Y-%m-%dT%H:%M:%S.%fZ')
         ube['completion_time'] = utcToLocalDatetime(ube['completion_time'])
-        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %m %Y')
+        ube['completion_time'] = datetime.datetime.strftime(ube['completion_time'], '%b %d %Y')
     return ube
 
 
@@ -395,6 +417,7 @@ BONUS_DELIVERY_VALUE_DICT = {
 }
 
 # hard code for deposit tiered amount setting
+# deposit amount upper bound, bonus rate, max bonus amount, turnover multiple
 DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
                           [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
 

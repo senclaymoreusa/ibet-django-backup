@@ -144,7 +144,7 @@ class GamesSearchView(View):
             return HttpResponse(json.dumps(data), content_type='application/json')
 
         except Exception as e:
-            logger.error("Getting game list:", e)
+            logger.error("Getting game list: {}".format(str(e)))
             return HttpResponse(status=400)
 
 
@@ -174,7 +174,7 @@ class ProvidersSearchView(View):
             return HttpResponse(json.dumps(res), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error getting GameProvider objects: ", e)
+            logger.error("Error getting GameProvider objects: {}".format(str(e)))
             return HttpResponse(status=400)
 
 

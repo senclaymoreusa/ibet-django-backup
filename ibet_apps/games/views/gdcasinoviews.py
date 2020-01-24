@@ -168,6 +168,7 @@ class LiveDealerSoapService(ServiceBase):
             
         except ObjectDoesNotExist as e:
             # raise ObjectNotFoundError(e)
+            logger.critical("GD:: Unable to get request for GetUserBalance")
             res.StatusCode = -1
             res.UserBalance = 0
             return res
@@ -183,7 +184,7 @@ class LiveDealerSoapService(ServiceBase):
                                         type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
-            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            logger.error("GD::PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
 
         res = Container()
         try:
@@ -202,7 +203,7 @@ class LiveDealerSoapService(ServiceBase):
             try:
                 cate = Category.objects.get(name='Live Casino')
             except:
-                logger.error("missing category.")
+                logger.error("GD::missing category.")
 
             token = Token.objects.get(user=user)
             
@@ -279,6 +280,7 @@ class LiveDealerSoapService(ServiceBase):
                     return res
             
         except ObjectDoesNotExist as e:
+            logger.critical("GD:: Unable to get request for Debit")
             res.StatusCode = -1
             res.UserBalance = 0
             return res
@@ -454,6 +456,7 @@ class LiveDealerSoapService(ServiceBase):
                     return res
                    
         except ObjectDoesNotExist as e:
+            logger.critical("GD:: Unable to get request for Debit")
             res.StatusCode = -1
             res.UserBalance = 0
             return res
@@ -467,7 +470,7 @@ class LiveDealerSoapService(ServiceBase):
                                         type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
-            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            logger.error("GB::PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
  
         res = Container()
         try:
@@ -481,7 +484,7 @@ class LiveDealerSoapService(ServiceBase):
                 try:
                     cate = Category.objects.get(name='Live Casino')
                 except:
-                   logger.error("missing category.")
+                   logger.error("GB::missing category.")
 
                 with transaction.atomic():
                     # if str(token) == request.loginToken:
@@ -509,6 +512,7 @@ class LiveDealerSoapService(ServiceBase):
                 res.UserBalance = user.main_wallet
                 return res 
         except ObjectDoesNotExist as e:
+            logger.critical("GD:: Unable to get request for Tip")
             res.StatusCode = -1
             res.UserBalance = 0
             return res
@@ -522,7 +526,7 @@ class LiveDealerSoapService(ServiceBase):
                                         type=GAME_TYPE_LIVE_CASINO,
                                         market='letouCN, letouTH, letouVN'
                                         )
-            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            logger.error("GD::PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
         res = Container() 
         try:
             user = CustomUser.objects.get(username=request.userId)
@@ -532,7 +536,7 @@ class LiveDealerSoapService(ServiceBase):
             try:
                 cate = Category.objects.get(name='Live Casino')
             except:
-                logger.error("missing category.")
+                logger.error("GD::missing category.")
                 
             with transaction.atomic():
                 GameBet.objects.create(provider=PROVIDER,   
@@ -544,7 +548,8 @@ class LiveDealerSoapService(ServiceBase):
                                         market=ibetCN,
                                         ref_no=request.transactionId,
                                         amount_wagered=decimal.Decimal(request.amount),
-                                        outcome=3
+                                        outcome=3,
+                                        resolved_time=timezone.now(),
                                         )
                 user.main_wallet = userBalance
                 user.save()
@@ -568,6 +573,7 @@ class LiveDealerSoapService(ServiceBase):
             #     return res                    
             
         except ObjectDoesNotExist as e:
+            logger.critical("GD:: Unable to get request for Cancel")
             res.StatusCode = -1
             res.UserBalance = 0
             return res

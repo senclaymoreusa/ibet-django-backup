@@ -21,7 +21,7 @@ class LoginDeviceInfo(APIView):
         try:
             blackbox = request.GET['bb']
         except Exception as e:
-            logger.error("FATAL__ERROR: cannot get blackbox in Login", e)
+            logger.error("FATAL__ERROR: cannot get blackbox in Login {}".format(str(e)))
            
         # print(request.environ['REMOTE_ADDR'])
         ip = request.environ['REMOTE_ADDR']

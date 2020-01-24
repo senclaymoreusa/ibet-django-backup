@@ -318,13 +318,13 @@ class PersonalCommissionLevel(models.Model):
 # System default Commission
 class SystemCommissionLevel(models.Model):
     commission_level = models.IntegerField(unique=True)
-    commission_percentage = models.DecimalField(max_digits=5, decimal_places=4, default=0)
-    downline_commission_percentage = models.DecimalField(max_digits=5, decimal_places=4, default=0)
+    commission_percentage = models.DecimalField(max_digits=7, decimal_places=4, default=0)
+    downline_commission_percentage = models.DecimalField(max_digits=7, decimal_places=4, default=0)
     active_downline_needed = models.IntegerField(default=0)
     monthly_downline_ftd_needed = models.IntegerField(default=0)
     ngr = models.DecimalField(max_digits=20, decimal_places=4, default=0)
-    operation_fee = models.DecimalField(max_digits=5, decimal_places=4, default=0)
-    payment_fee = models.DecimalField(max_digits=5, decimal_places=4, default=0)
+    operation_fee = models.DecimalField(max_digits=7, decimal_places=4, default=0)
+    payment_fee = models.DecimalField(max_digits=7, decimal_places=4, default=0)
 
 
 # one user can have up to 10 referral channels

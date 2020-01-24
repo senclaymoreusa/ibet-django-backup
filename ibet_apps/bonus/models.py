@@ -36,8 +36,8 @@ class Bonus(models.Model):
                                     verbose_name=_('Bonus Type'))  # manual bonus doesn't have type
     campaign = models.ForeignKey(Campaign, null=True, on_delete=models.CASCADE)
     affiliate_limit = models.FloatField(null=True, blank=True)
-    # release_type = models.SmallIntegerField(choices=BONUS_RELEASE_TYPE_CHOICES, default=0,
-    #                                         verbose_name=_('Bonus Release Type'))
+    release_type = models.SmallIntegerField(choices=BONUS_RELEASE_TYPE_CHOICES, default=0,
+                                            verbose_name=_('Bonus Release Type'))
     image_s3 = models.CharField(max_length=500, null=True, blank=True)
     currency = models.SmallIntegerField(choices=CURRENCY_CHOICES, default=0, verbose_name=_('Bonus Currency'))
     # category = models.SmallIntegerField(choices=BONUS_CATEGORY, default=0, null=True)  # manual or triggered (bonus 2.0)
@@ -47,9 +47,9 @@ class Bonus(models.Model):
     max_relevant_times = models.IntegerField(default=1, null=True)  # per associated accounts (bonus 2.0)
     max_users = models.IntegerField(null=True, blank=True)  # the maximum number of times this bonus can be claimed (
     # bonus 2.0)
-    delivery = models.SmallIntegerField(choices=DELIVERY_CHOICES, default=0, null=True)  # release method (bonus 2.0)
+    delivery = models.SmallIntegerField(choices=DELIVERY_CHOICES, default=0)  # release method (bonus 2.0)
 
-    max_user_amount = models.FloatField(null=True, blank=True)  # the maximum amount a player can get reward for this
+    # max_user_amount = models.FloatField(null=True, blank=True)  # the maximum amount a player can get reward for this
     # bonus (bonus 3.0)
     max_amount = models.FloatField(null=True, blank=True)  # maximum amount of bonus could be released (bonus 3.0)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)  # for tiered bonus (bonus 3.0)
@@ -84,7 +84,7 @@ class Requirement(models.Model):
     turnover_multiplier = models.IntegerField(null=True, blank=True)
     bonus = models.ForeignKey(Bonus, on_delete=models.CASCADE, verbose_name=_('Bonus'), null=True)
     amount_threshold = models.FloatField(default=0)
-    must_have = models.SmallIntegerField(choices=BONUS_MUST_HAVE, default=0, null=True)  # (bonus 2.0)
+    must_have = models.SmallIntegerField(choices=BONUS_MUST_HAVE, null=True)  # (bonus 2.0)
 
 
 # Mapping between Requirements and Categories

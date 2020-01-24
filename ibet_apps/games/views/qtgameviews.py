@@ -16,6 +16,8 @@ from django.utils import timezone
 
 import os
 import json
+import math
+import uuid
 import logging
 import requests
 
@@ -50,7 +52,7 @@ class VerifySession(APIView):
             status_code = 401
             code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
             message = "The given pass-key is incorrect."
-            logger.info("Error given pass key from QT wallet!")
+            logger.error("Error given pass key from QT wallet!")
         else:
             try:
                 user = CustomUser.objects.get(username=username)
@@ -61,21 +63,24 @@ class VerifySession(APIView):
                     logger.info("Blocked user {} trying to access QT Game".format(username))
                 else:
                     qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
-
-                    if qt_session.valid:
-                        status_code = 200
-                        response = {
-                            'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
-                            # TODO: needs to handle if user.currency is bitcoin
-                            'currency': CURRENCY_CHOICES[user.currency][1],
-                        }
-                        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
-                                            content_type='application/json', status=status_code)
-                    else:
-                        status_code = 400
-                        code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
-                        message = "Missing, invalid or expired player (wallet) session token."
-
+                    
+                    status_code = 200
+                    n_float = int(user.main_wallet * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
+                    response = {
+                        'balance': round(bal),
+                        # TODO: needs to handle if user.currency is bitcoin
+                        'currency': CURRENCY_CHOICES[user.currency][1],
+                    }
+                    
+                    if not qt_session.valid:
+                        logger.info("Expired session-key is used for the pending transaction!")
+                    
+                    return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
+                                        content_type='application/json', status=status_code)
+                    
+                        
             except Exception as e:
                 logger.error("Error getting user or user session " + str(e))
 
@@ -94,6 +99,7 @@ class GetBalance(APIView):
     """
 
     def get(self, request, *args, **kwargs):
+        http_session = request.META.get('HTTP_WALLET_SESSION')
         pass_key = request.META.get('HTTP_PASS_KEY')
         username = self.kwargs.get('playerId')
         status_code = 500
@@ -106,12 +112,29 @@ class GetBalance(APIView):
             message = "The given pass-key is incorrect."
             logger.info("Error given pass key from QT wallet!")
         else:
+            prov = GameProvider.objects.get(provider_name="QTech")
+            cat = Category.objects.get(name='Games')
+            
+            
             try:
                 user = CustomUser.objects.get(username=username)
+                
+                try: 
+                    qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+                    if not qt_session.valid:
+                        message = 'Expired (wallet) session being used for getting balance!'
+                        logger.info(message) 
+                    
+                except Exception as e:
+                    message = 'Player (wallet) session missing but still used for getting balance!'
+                    logger.info(message) 
+                
+                
                 status_code = 200
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
                 response = {
-                    'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
-                    # TODO: needs to handle if user.currency is bitcoin
+                    'balance': round(bal),
                     'currency': CURRENCY_CHOICES[user.currency][1],
                 }
                 return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
@@ -120,7 +143,7 @@ class GetBalance(APIView):
             except Exception as e:
                 status_code = 400
                 code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
-                message = "General error. If request could not be processed."
+                message = "General error. Request could not be processed."
                 logger.error("Error getting user " + str(e))
 
         response = {
@@ -164,19 +187,40 @@ class GameLaunch(APIView):
                     
                     try: 
                         user = CustomUser.objects.get(username=username)
-                        session = QTSession.objects.get(user=user)
-                    except Exception as e: 
-                        logger.error("Failed in getting user/session " + str(e))
                         
-                    body = {
-                        "playerId": username,
-                        "currency": CURRENCY_CHOICES[user.currency][1],
-                        "walletSessionId": str(session.session_key),
-                        "country": "CN", # user.country
-                        "lang": "zh_CN", # user.language,
-                        "mode": 'real',
-                        "device": "desktop", 
-                    }
+                        newKey = uuid.uuid4()
+                        try:
+                            valSess = QTSession.objects.get(Q(user=user) & Q(valid=True)) 
+                            previousKey = valSess.session_key
+                            valSess.session_key = newKey
+                            valSess.save()
+                            logger.info("Assign a new valid session key for " + username)
+                            
+                            try:
+                                falseSess = QTSession.objects.get(Q(user=user) & Q(valid=False)) 
+                                falseSess.session_key = previousKey
+                                falseSess.save()
+                            except:
+                                QTSession.objects.create(user=user,session_key=previousKey,valid=False)
+                                
+                            logger.info("Update previous session to invalid!")
+                        except:
+                            logger.info("Create a new session for " + username)
+                            QTSession.objects.create(user=user,session_key=newKey,valid=True)
+                        
+                        body = {
+                            "playerId": username,
+                            "currency": CURRENCY_CHOICES[user.currency][1],
+                            "walletSessionId": str(newKey),
+                            "country": "CN", # user.country
+                            "lang": "zh_CN", # user.language,
+                            "mode": 'real',
+                            "device": "desktop", 
+                        }
+                        
+                    except Exception as e: 
+                        logger.error("Failed in getting user " + str(e))
+                        
                 else: 
                     body = {
                         "country": "CN", 
@@ -189,11 +233,11 @@ class GameLaunch(APIView):
                 url = apiUrl + "v1/games/" + gameId + "/launch-url"
                 #url = apiUrl + "v1/games/TK-froggrog/launch-url"
                 r = requests.post( url, headers=headers, data=json.dumps(body) )
-                launchData = r.json()
+                launchData = r.json()  
                 
                 if r.status_code != 200:
                     logger.error(launchData)
-                  
+                
                 return HttpResponse(r, content_type='application/json', status=r.status_code)
                     
             else:
@@ -241,16 +285,21 @@ class ProcessTransactions(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            roundId = request.GET['roundId']
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            roundId = body['roundId']
+            transType = body["txnType"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
         except:
             status_code = 400
@@ -329,16 +378,19 @@ class ProcessTransactions(APIView):
                                 'txnType': transType,
                                 'completed': completed, 
                                 'roundId': roundId, 
-                                'category': request.GET['category'],
-                                'device': request.GET['device']
+                                'category': body['category'],
+                                'device': body['device']
                             }
                         )
                         user.main_wallet = bal
                         bet.save()
                         user.save()
                         
+                    n_float = int(bal * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        "balance": str(bal),
+                        'balance': round(bal),
                         "referenceId": trans_id
                     }
                     
@@ -380,15 +432,18 @@ class ProcessTransactions(APIView):
                             'txnType': transType,
                             'completed': completed, 
                             'roundId': roundId, 
-                            'category': request.GET['category'],
-                            'device': request.GET['device']
+                            'category': body['category'],
+                            'device': body['device']
                         }
                     )
                     bet.save()
                     user.save()
                     
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
                 response = {
-                    "balance": str(user.main_wallet),
+                    'balance': round(bal),   
                     "referenceId": trans_id
                 }
                 
@@ -440,17 +495,21 @@ class ProcessRollback(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
-            orig_txnId = request.GET['betId']
+            orig_txnId = body['betId']
             
         except:
             status_code = 400
@@ -466,23 +525,10 @@ class ProcessRollback(APIView):
         
         try:
             user = CustomUser.objects.get(username=playerId)
-            qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
             prov = GameProvider.objects.get(provider_name="QTech")
             cat = Category.objects.get(name='Games')
             
-            if not qt_session.valid:
-                status_code = 400
-                message = 'Missing, invalid or expired player (wallet) session token'
-                logger.error(message) 
-                
-                response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
-                    "message": message
-                }
-                
-                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
-            
-            elif user.block:
+            if user.block:
                 status_code = 403
                 message = "The player account is blocked"
                 logger.error("Blocked user {} trying to access QT Game".format(username))
@@ -493,6 +539,19 @@ class ProcessRollback(APIView):
                 }
                 
                 return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+            try: 
+                qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+                
+                if not qt_session.valid:
+                    message = 'Expired (wallet) session being used for rollback!'
+                    logger.info(message) 
+                
+            except Exception as e:
+                message = 'Player (wallet) session Missing but proceed with rollback!'
+                logger.info(message) 
+            
+            
                 
         except:
             status_code = 400
@@ -509,6 +568,9 @@ class ProcessRollback(APIView):
         user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         
+        n_float = int(user.main_wallet * 100) / 100.0
+        bal = Decimal(n_float)
+        
         try:
             #
             # try to find the original QT txnId for rollback
@@ -522,15 +584,16 @@ class ProcessRollback(APIView):
                                            ref_no=orig_txnId
                                            )
             
+            
             response = {
-                "balance": str(user.main_wallet),
+                'balance': round(bal),
                 "referenceId": trans_id
             }
             
         except:
             logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
             response = {
-                "balance": str(user.main_wallet)
+                "balance": round(bal)
             }
             
         #
@@ -547,15 +610,16 @@ class ProcessRollback(APIView):
                     amount_wagered=0.00,
                     amount_won=amount,
                     transaction_id=trans_id,
-                    outcome=7,
+                    outcome=3,
+                    resolved_time=timezone.now(),
                     currency=user.currency,
                     market=ibetCN,
                     other_data={
                         'transactionType': "RollBack",
                         'rollBackFrom': orig_txnId,
                         'completed': completed, 
-                        'category': request.GET['category'],
-                        'device': request.GET['device']
+                        'category': body['category'],
+                        'device': body['device']
                     }
                 )
                 bet.save()

@@ -48,6 +48,6 @@ class PaymentSetting(View):
             return HttpResponse(json.dumps(response), content_type="application/json")
 
         except Exception as e:
-            logger.error("Setting favorite deposit method error: ", e)
+            logger.error("Setting favorite deposit method error: {}".format(str(e)))
             return HttpResponse(status=400)
 
