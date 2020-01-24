@@ -58,14 +58,14 @@ def MD5(code):
 def agftp(request): 
 
     try:
-        ftp = ftpClient.agFtpConnect()
+        ftp = ftpClient.AgFTP()
         
         try:
             r = RedisClient().connect()
             redis = RedisHelper()
         except:
-            logger.critical("(FATAL_ERROR)There is something wrong with AG redis connection.")
-            return HttpResponse({'status': 'There is something wrong with AG redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning("There is something wrong with AG redis connection.")
+            return HttpResponse({'status': 'There is something wrong with AG redis connection.'})
 
 
         try:
@@ -73,8 +73,8 @@ def agftp(request):
             
         except ftplib.error_perm as resp:
             if str(resp) == "550 No files found":
-                logger.error("No files in this directory of AG folders")
-                return HttpResponse(ERROR_CODE_NOT_FOUND, status=status.HTTP_404_NOT_FOUND) 
+                logger.warning("No files in this directory of AG folders")
+                return HttpResponse(ERROR_CODE_NOT_FOUND) 
             else:
                 raise
         for folder in folders:
@@ -97,8 +97,8 @@ def agftp(request):
                         files = ftp.ftp_session.nlst()
                     except ftplib.error_perm as resp:
                         if str(resp) == "550 No files found":
-                            logger.error("No files in this directory of AG small folders")
-                            return HttpResponse(ERROR_CODE_NOT_FOUND, status=status.HTTP_404_NOT_FOUND) 
+                            logger.warning("No files in this directory of AG small folders")
+                            return HttpResponse(ERROR_CODE_NOT_FOUND) 
                         else:
                             raise
                     
@@ -160,7 +160,7 @@ def agftp(request):
                                         
                                     except ObjectDoesNotExist:
                                         logger.error("This user does not exist in AG ftp.")
-                                        return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+                                        return HttpResponse(ERROR_CODE_INVALID_INFO) 
 
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -232,7 +232,7 @@ def agftp(request):
                                         
                                     except ObjectDoesNotExist:
                                         logger.error("This user does not exist in AG ftp.")
-                                        return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+                                        return HttpResponse(ERROR_CODE_INVALID_INFO) 
 
                                     if float(netAmount) > float(betAmount):
                                         outcome = 0
@@ -303,7 +303,7 @@ def agftp(request):
                                         
                                     except ObjectDoesNotExist:
                                         logger.error("This user does not exist in AG ftp.")
-                                        return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+                                        return HttpResponse(ERROR_CODE_INVALID_INFO) 
 
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -370,7 +370,7 @@ def agftp(request):
                                             
                                         except ObjectDoesNotExist:
                                             logger.error("This user does not exist in AG ftp.")
-                                            return HttpResponse(ERROR_CODE_INVALID_INFO,status=status.HTTP_406_NOT_ACCEPTABLE) 
+                                            return HttpResponse(ERROR_CODE_INVALID_INFO) 
 
                                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
@@ -403,20 +403,25 @@ def agftp(request):
                                                                 }
                                                             )
                         else:
+                            logger.info("AG:: No new file from ftp.")
                             continue
                     
                     ftp.ftp_session.cwd('..')
                         
                 else:
+                    logger.info("AG:: No new folder from ftp.")
                     continue
 
                 
             ftp.ftp_session.cwd('..')
-        ftp.ftp_session.quit()
         return HttpResponse(CODE_SUCCESS, status=status.HTTP_200_OK)
     except ftplib.error_temp:
-        logger.critical("(FATAL_ERROR)Cannot connect with AG ftp.")
-        return HttpResponse(ERROR_CODE_FAIL, status=status.HTTP_400_BAD_REQUEST)
+        logger.warning("Cannot connect with AG ftp.")
+        return HttpResponse(ERROR_CODE_FAIL)
+
+    except Exception as e:
+        logger.critical("(FATAL_ERROR) Getting AG bet histroy error. {}".format(str(e)))
+        return HttpResponse(ERROR_CODE_FAIL)
 
 def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
@@ -469,12 +474,14 @@ def getBalance(request):
             tree = ET.fromstring(rdata)
             info = tree.get('info')
             msg =  tree.get('msg')
+
             return Response({'info': info, 'msg': msg})
         else:
+            logger.error("AG::The request is failed for AG getBalance api.")
             return Response({"error":"The request is failed"}) 
     except ObjectDoesNotExist:
-        logger.critical("The user does not exist in AG getBalance api.")
-        return Response({"error":"The user does not exist in AG getBalance api."}) 
+        logger.error("The user is not existed in AG getBalance api.")
+        return Response({"error":"The user is not existed in AG getBalance api."}) 
 
 def getBalance(user):
     password = AG_CAGENT + user.username
@@ -510,6 +517,7 @@ def getBalance(user):
         msg =  tree.get('msg')
         return json.dumps({'balance': info})
     else:
+        logger.critical("AG::The request is failed for AG get balance api.")
         return json.dumps({"error":"The request is failed for AG get balance"}) 
     
 
@@ -670,7 +678,7 @@ def forwardGame(request):
             # rdata = r.text
             return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key})
         else:
-            logger.error("Cannot check or create AG game account in AG forwardGame.")
+            logger.critical("AG::Cannot check or create AG game account in AG forwardGame.")
             return Response({"error": "Cannot check or create AG game account in AG forwardGame."})
         
         
@@ -803,17 +811,17 @@ def agFundTransfer(user, fund_wallet, credit, agtype):
 
                     else:
                         success = False
-                        logger.error("Cannot prepare transfer credit for AG game account agFundTransfer.")
+                        logger.critical("AG::Cannot prepare transfer credit for AG game account agFundTransfer.")
                         return Response({"error": "Cannot prepare transfer credit for AG game account agFundTransfer."})
                         break
                 else:
                     success = False
-                    logger.error("Cannot get balance for AG game account agFundTransfer.")
+                    logger.critical("AG::Cannot get balance for AG game account agFundTransfer.")
                     return Response({"error": "Cannot get balance for AG game account agFundTransfer."})
                     break
         else:
-            logger.error("Cannot check or create AG game account agFundTransfer.")
-            return Response({"error": "Cannot check or create AG game account agFundTransfer."})
+            logger.critical("AG::Cannot check or create AG game account for agFundTransfer.")
+            return Response({"error": "Cannot check or create AG game account for agFundTransfer."})
 
 
 
@@ -829,7 +837,7 @@ def agService(request):
             if feature == MD5(username + ag_type + stamp + AG_MD5):
                 return HttpResponse("Success")
             else:
-                logger.error("error, invalid invoking agService api")
+                logger.error("AG::error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")
         except:
             logger.error("this user does not exist in AG agService.")

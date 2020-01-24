@@ -191,7 +191,7 @@ class UserDetailsView(RetrieveUpdateAPIView):
                 return Response(data)
             return Response(serializer.data)
         except Exception as e:
-            logger.error("Error getting user details", e)
+            logger.error("Error getting user details {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -215,7 +215,7 @@ class UserDetailsView(RetrieveUpdateAPIView):
             logger.info("User details format is not correct", e)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error("Error updating user details", e)
+            logger.error("Error updating user details {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def get_object(self):
@@ -439,7 +439,11 @@ class LoginView(GenericAPIView):
                 loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
+
             logger.error("cannot get users device info in login iovation.{}".format(str(e)))
+
+           
+
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -1300,7 +1304,7 @@ class GenerateActivationCode(APIView):
                 user.update(activation_code=random_num)
                 send_sms(str(random_num), user[0].pk)
         except Exception as e:
-            logger.error("Error Generating Activation Code: ", e)
+            logger.error("Error Generating Activation Code: {}".format(str(e)))
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
@@ -1425,7 +1429,7 @@ class UserSearchAutocomplete(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error from searching user: ", e)
+            logger.error("Error from searching user: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1493,7 +1497,7 @@ class SetLimitation(View):
             return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
 
         except Exception as e:
-            logger.error("Error from setting user's limitation: ", e)
+            logger.error("Error from setting user's limitation: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)      
 
 class DeleteLimitation(View):
@@ -1544,7 +1548,7 @@ class DeleteLimitation(View):
             return HttpResponse(json.dumps(response, cls=LazyEncoder), content_type="application/json")
         
         except Exception as e:
-            logger.error("Error from delete user's limitation: ", e)
+            logger.error("Error from delete user's limitation: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1586,7 +1590,7 @@ class CancelDeleteLimitation(View):
             return HttpResponse(('Successfully cancel the {} limitation action'.format(limit_type)), status=200)
 
         except Exception as e:
-            logger.error("Error from delete user's limitation: ", e)
+            logger.error("Error from delete user's limitation: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class GetLimitation(View):
@@ -1691,7 +1695,7 @@ class GetLimitation(View):
             return HttpResponse(json.dumps(limitationDict, cls=DjangoJSONEncoder), content_type="application/json", status=200)
         
         except Exception as e:
-            logger.error("Error from getting user's limitations: ", e)
+            logger.error("Error from getting user's limitations: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class SetBlockTime(View):
@@ -1726,7 +1730,7 @@ class SetBlockTime(View):
             return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(userId, lock_timespan)), status=200)
         
         except Exception as e:
-            logger.error("Error from setting user's blocking time : ", e)
+            logger.error("Error from setting user's blocking time : {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
         
  
@@ -1768,7 +1772,7 @@ class MarketingSettings(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
         
         except Exception as e:
-            logger.error("Error getting marketing for a user", e)
+            logger.error("Error getting marketing for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
@@ -1820,7 +1824,7 @@ class MarketingSettings(View):
             return HttpResponse(('Successfully set the marketing setting'), status=200)
 
         except Exception as e:
-            logger.error("Error setting marketing for a user", e)
+            logger.error("Error setting marketing for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1852,7 +1856,7 @@ class PrivacySettings(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
         except Exception as e:
-            logger.error("Error getting privacy setting for a user", e)
+            logger.error("Error getting privacy setting for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1886,7 +1890,7 @@ class PrivacySettings(View):
             return HttpResponse(('Successfully set the privacy setting'), status=200)
 
         except Exception as e:
-            logger.error("Error getting privacy setting for a user", e)
+            logger.error("Error getting privacy setting for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1914,7 +1918,7 @@ class GetBetHistory(View):
             return HttpResponse(json.dumps(response), content_type='application/json',status=200)
 
         except Exception as e:
-            logger.error("Error getting bet history for a user", e)
+            logger.error("Error getting bet history for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class ActivityCheckSetting(View):
@@ -1941,7 +1945,7 @@ class ActivityCheckSetting(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
         
         except Exception as e:
-            logger.error("Error getting privacy setting for a user", e)
+            logger.error("Error getting privacy setting for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
@@ -1968,7 +1972,7 @@ class ActivityCheckSetting(View):
             return HttpResponse(('Successfully set the activity check setting'), status=200)
         
         except Exception as e:
-            logger.error("Error from setting privacy", e)
+            logger.error("Error from setting privacy {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1993,7 +1997,7 @@ class CheckUserStatusAPI(View):
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
         except Exception as e:
-            logger.error("Error from setting privacy", e)
+            logger.error("Error from setting privacy {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -2047,7 +2051,7 @@ class UserSecurityQuestion(View):
             return HttpResponse(json.dumps(data), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error getting security question for a user: ", e)
+            logger.error("Error getting security question for a user: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         
@@ -2082,7 +2086,7 @@ class UserSecurityQuestion(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error setting security questions: ", e)
+            logger.error("Error setting security questions: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class SetWithdrawPassword(View):
@@ -2125,7 +2129,7 @@ class SetWithdrawPassword(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
 
         except Exception as e:
-            logger.error("Error setting withdraw password: ", e)
+            logger.error("Error setting withdraw password: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -2178,5 +2182,5 @@ class ResetWithdrawPassword(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
         except Exception as e:
-            logger.error("Error resetting withdraw password: ", e)
+            logger.error("Error resetting withdraw password: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
