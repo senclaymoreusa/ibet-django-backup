@@ -641,7 +641,7 @@ class approvePayout(generics.GenericAPIView):
             update_data.review_status = REVIEW_APP
             update_data.remark = notes
             update_data.release_by = user
-            update_data.current_balance -= update_data.amount
+            update_data.current_balance = user.main_walllet - update_data.amount
             update_data.save()
 
             logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
@@ -802,38 +802,54 @@ def transactionConfirm(request):
     cur_status = statusConversion[Status]
     notes = body.get('notes')
     try:
-        order_id = Transaction.objects.filter(transaction_id=orderId)
+        order_id = Transaction.objects.get(transaction_id=orderId)
     except Transaction.DoesNotExist:
         order_id = None
         logger.error("Transaction does not exist for qaicash transaction confirm")
         return HttpResponse("Transaction does not exist for qaicash transaction confirm", content_type="text/plain")
 
     if order_id: 
-        update = order_id.update(
-            status=cur_status,
-            last_updated=timezone.now(),
-        )
+        # update = order_id.update(
+        #     status=cur_status,
+        #     last_updated=timezone.now(),
+        # )
+        order_id.status = cur_status
+        order_id.last_updated = timezone.now()
 
         if cur_status == 0:
-            if transaction_type == TRANSACTION_DEPOSIT:
-                    
-                update = order_id.update(
-                    arrive_time=timezone.now(),
-                    current_balance=update.current_balance + update.amount,
-                    remark = 'Transaction success!')
+            if order_id.transaction_type == TRANSACTION_DEPOSIT:
+                try:
+                    user = CustomUser.objects.get(username=order_id.user_id)
+                except ObjectDoesNotExist:
+                    logger.error("Qaicash:: the user does not exist for transaction Confirm.")
+                    return HttpResponse("the user does not exist for transaction Confirm", content_type="text/plain")
+                # update = order_id.update(
+                #     arrive_time=timezone.now(),
+                #     #current_balance= + update.amount,
+                #     remark = 'Transaction success!')
+                order_id.arrive_time = timezone.now()
+                order_id.current_balance = user.main_walllet + update.amount
+                order_id.remark = 'Transaction success!'
+                order_id.save()
 
-            elif transaction_type == TRANSACTION_WITHDRAWAL:
+            elif order_id.transaction_type == TRANSACTION_WITHDRAWAL:
 
-                update = order_id.update(
-                    arrive_time=timezone.now(),
-                    current_balance=update.current_balance - update.amount,
-                    remark = 'Transaction success!')
+                # update = order_id.update(
+                #     arrive_time=timezone.now(),
+                #     current_balance=update.current_balance - update.amount,
+                #     remark = 'Transaction success!')
+                order_id.arrive_time = timezone.now()
+                order_id.current_balance = user.main_walllet - update.amount
+                order_id.remark = 'Transaction success!'
+                order_id.save()
 
             
         else :
             
-            update = order_id.update(
-                remark = notes)
+            # update = order_id.update(
+            #     remark = notes)
+            order_id.remark = notes
+            order_id.save()
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
