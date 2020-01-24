@@ -665,7 +665,7 @@ def forwardGame(request):
             
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
-            
+           
             param = des_encrypt(s,AG_DES).decode("utf-8") 
             
             key = MD5(param + AG_MD5)
@@ -835,7 +835,14 @@ def agService(request):
         try:
             user = CustomUser.objects.get(username=username)
             if feature == MD5(username + ag_type + stamp + AG_MD5):
-                return HttpResponse("Success")
+                if ag_type == "6": #deposit
+                    return HttpResponseRedirect(AG_TRANSFER_URL)
+                elif ag_type == '9': #register real account
+                    return HttpResponseRedirect(AG_REGIS_URL)
+                elif ag_type == '12': #exit game
+                    return HttpResponseRedirect(AG_EXIST_URL)
+                elif ag_type == '13': #customer service page
+                    return HttpResponseRedirect(AG_CS_URL)
             else:
                 logger.error("AG::error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")
