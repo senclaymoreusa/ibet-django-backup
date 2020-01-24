@@ -17,9 +17,9 @@ cron:
    url: "/games/api/ky/getbets/"
    schedule: "*/4 * * * *"
    
- - name: "background_ea_getBetDetail"
-   url: "/background/api/ea_gamebet"
-   schedule: "*/15 * * * *"
+#  - name: "background_ea_getBetDetail"
+#    url: "/background/api/ea_gamebet"
+#    schedule: "*/15 * * * *"
 
  - name: "game_ag_agftp"
    url: "/games/api/ag/ftp"
