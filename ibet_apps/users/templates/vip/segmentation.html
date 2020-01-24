@@ -1,0 +1,56 @@
+{% extends "xadmin/base_site.html" %}
+
+{% block content-nav %}
+{% endblock %}
+
+{% block content %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load staticfiles%}
+    <link rel="stylesheet" type="text/css" href="{% static 'xadmin/css/ibet-admin-segmentation.css' %}" />
+</head>
+<body>
+<table id="segmentation_table" class="table-striped table-bordered hover">
+    <thead>
+    <tr>
+        <th scope="col" style="width:5%">#</th>
+        <th scope="col" style="width:10%">NAME</th>
+        <th scope="col" style="width:8%">PLAYERS</th>
+        <th scope="col" style="width:10%">TURNOVER THRESHOLD</th>
+        <th scope="col" style="width:10%">ANNUAL THRESHOLD</th>
+        <th scope="col" style="width:10%">PLATFORM TURNOVER DAILY</th>
+        <th scope="col" style="width:10%">DEPOSIT AMOUNT DAILY</th>
+        <th scope="col" style="width:10%">DEPOSIT AMOUNT MONTHLY</th>
+        <th scope="col" style="width:10%">GENERAL BONUSES</th>
+        <th scope="col" style="width:10%">PRODUCT TURNOVER BONUSES</th>
+    </tr>
+    </thead>
+    <tbody style="font-size:13px">
+        {% for segment in segment_list%}
+        <tr>
+            <td>{{ segment.level }}</td>
+            <td>{{ segment.name }}</td>
+            <td>{{ segment.players }}</td>
+            <td>{{ segment.turnover_threshold }}</td>
+            <td>{{ segment.annual_threshold }}</td>
+            <td>{{ segment.platform_turnover_daily }}</td>
+            <td>{{ segment.deposit_amount_daily }}</td>
+            <td>{{ segment.deposit_amount_monthly }}</td>
+            {% if segment.general_bonuses %}
+                <td>Yes</td>
+            {% else %}
+                <td>No</td>
+            {% endif %}
+            {% if segment.product_turnover_bonuses %}
+                <td>Yes</td>
+            {% else %}
+                <td>No</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
+{% endblock %}
