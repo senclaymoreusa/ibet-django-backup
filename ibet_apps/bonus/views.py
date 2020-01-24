@@ -3,7 +3,10 @@ import sys
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
+
+from bonus.bonus_helper import checkMustHave
 from bonus.models import *
+from system.models import UserToUserGroup
 from users.models import CustomUser
 from games.models import Category
 from utils.admin_helper import bonusValueToKey, dateToDatetime, BONUS_TYPE_VALUE_DICT, BONUS_DELIVERY_VALUE_DICT, \
@@ -37,7 +40,7 @@ class BonusSearchView(View):
     def get(self, request, *args, **kwargs):
         bonuses = {}
         result = {}
-        bonus_all = Bonus.objects.all()
+        bonus_all = Bonus.objects.filter(parent__isnull=True)
 
         try:
             request_type = request.GET.get('type')
@@ -137,9 +140,9 @@ class BonusSearchView(View):
                     'amount__sum'] or 0,
                 UserBonusEvent.objects.filter(bonus=pk, status=BONUS_ISSUED).aggregate(Count('amount'))[
                     'amount__count'],
-                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Sum('amount'))[
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_RELEASED).aggregate(Sum('amount'))[
                     'amount__sum'] or 0,
-                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_REDEEMED).aggregate(Count('amount'))[
+                UserBonusEvent.objects.filter(bonus=pk, status=BONUS_RELEASED).aggregate(Count('amount'))[
                     'amount__count']
             )
 
@@ -238,13 +241,18 @@ class BonusView(View):
                         type = req_data.get('trigger_type')
                     type = BONUS_TYPE_VALUE_DICT.get(type)
 
+                    ftd_bonus = False    # first time deposit bonus
+                    if type == BONUS_TYPE_DEPOSIT and req_data.get('trigger_subtype') == 'first':
+                        # add a successful deposit must have
+                        ftd_bonus = True
+
                     bonus_amount_list = req_data.get('bonus_amount_list')
 
-                    max_user_amount = req_data.get('max_user_amount')
+                    # max_user_amount = req_data.get('max_user_amount')
                     max_amount = req_data.get('max_target_user_amount')
 
-                    if max_user_amount:
-                        max_user_amount = float(max_user_amount)
+                    # if max_user_amount:
+                    #     max_user_amount = float(max_user_amount)
 
                     if max_amount:
                         max_amount = float(max_amount)
@@ -278,7 +286,7 @@ class BonusView(View):
                             max_total_times=int(req_data.get('max_total_times')),
                             max_relevant_times=int(req_data.get('max_associated_accounts')),
                             max_users=int(req_data.get('max_user')),
-                            max_user_amount=max_user_amount,  # None is unlimited
+                            # max_user_amount=max_user_amount,  # None is unlimited
                             max_amount=max_amount,  # None is unlimited
                             delivery=BONUS_DELIVERY_VALUE_DICT.get(req_data.get('delivery_method')),
                             ## TODO: Need to deal with campaign if that's decided to be a P0 feature
@@ -312,6 +320,9 @@ class BonusView(View):
                             requirements = req_data['requirements']
 
                             must_have = requirements.get('must_have')
+                            if type == BONUS_TYPE_DEPOSIT and (not ftd_bonus) and must_have and (BONUS_VALID_DEPOSIT not in must_have):
+                                must_have.append(BONUS_VALID_DEPOSIT)
+
                             aggregate_method = requirements['aggregate_method']
                             time_limit = None
                             if requirements['time_limit']:
@@ -323,53 +334,55 @@ class BonusView(View):
                                         must_have=int(req)
                                     )
                                     must_have_req.save()
-                                    logger.info("Create a new must have Requirement for " + str(bonus_obj.name))
+                                    logger.info("Create a new must have Requirement for " + str(must_have_req.pk))
                             # add wager requirements
                             wager_multiple = requirements.get('wager_multiple')
                             wager_dict = wager_multiple[curr_idx]
 
                             # this bonus has no wager requirements on this product, and the bonus money cannot be
                             # applied on this product
-                            for wager in wager_dict:
-                                wager_cates = BONUS_GAME_CATEGORY[wager]
-                                amount_threshold = 0
-                                if 'amount_threshold' in bonus_amount_list[curr_idx].keys():
-                                    amount_threshold = bonus_amount_list[curr_idx]['amount_threshold']
+                            if wager_dict:
+                                for wager in wager_dict:
+                                    wager_cates = BONUS_GAME_CATEGORY[wager]
+                                    amount_threshold = 0
+                                    if 'amount_threshold' in bonus_amount_list[curr_idx].keys():
+                                        amount_threshold = bonus_amount_list[curr_idx]['amount_threshold']
 
-                                if float(wager_dict[wager]) == -1:
-                                    continue
-                                wager_req = Requirement(
-                                    aggregate_method=aggregate_method,
-                                    time_limit=time_limit,
-                                    turnover_multiplier=int(wager_dict[wager]),
-                                    amount_threshold=amount_threshold,
-                                    bonus=bonus_obj,
-                                )
-
-                                wager_req.save()
-                                logger.info("Create a new wager Requirement for " + str(bonus_obj.name))
-                                # add requirement category and bonus category
-
-                                for cate in wager_cates:
-                                    wager_cate_obj = Category.objects.get(name=cate)
-
-                                    rc_obj = RequirementCategory(
-                                        requirement=wager_req,
-                                        category=wager_cate_obj
-                                    )
-                                    rc_obj.save()
-                                    logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
-
-                                    bc_obj = BonusCategory(
+                                    if float(wager_dict[wager]) == -1:
+                                        continue
+                                    wager_req = Requirement(
+                                        aggregate_method=aggregate_method,
+                                        time_limit=time_limit,
+                                        turnover_multiplier=int(wager_dict[wager]),
+                                        amount_threshold=amount_threshold,
                                         bonus=bonus_obj,
-                                        category=wager_cate_obj,
                                     )
-                                    bc_obj.save()
-                                    logger.info("Create a new BonusCategory for " + str(bonus_obj.name))
+
+                                    wager_req.save()
+                                    logger.info("Create a new wager Requirement for " + str(bonus_obj.name))
+                                    # add requirement category and bonus category
+
+                                    for cate in wager_cates:
+                                        wager_cate_obj = Category.objects.get(name=cate)
+
+                                        rc_obj = RequirementCategory(
+                                            requirement=wager_req,
+                                            category=wager_cate_obj
+                                        )
+                                        rc_obj.save()
+                                        logger.info("Create a new RequirementCategory for " + str(bonus_obj.name))
+
+                                        bc_obj = BonusCategory(
+                                            bonus=bonus_obj,
+                                            category=wager_cate_obj,
+                                        )
+                                        bc_obj.save()
+                                        logger.info("Create a new BonusCategory for " + str(bonus_obj.name))
 
                         # add target user group
                         if 'players' in req_data.keys():
                             players = req_data['players']
+                            target_all = players.get('target_all')
                             if players.get('target_player'):
                                 for key in players.get('target_player'):
                                     ni_group = BonusUserGroup(
@@ -386,6 +399,51 @@ class BonusView(View):
                                     )
                                     ne_group.save()
                             logger.info("Add new groups info for bonus " + str(bonus_obj.name))
+
+                            # get target users
+                            if target_all is True:
+                                bonus_users = CustomUser.objects.all()
+                            else:
+                                bonus_user_groups = BonusUserGroup.objects.filter(bonus=bonus_obj, excluded=False)
+                                bonus_users = list()
+                                for bonus_user_group in bonus_user_groups:
+                                    user_groups = UserToUserGroup.objects.filter(group=bonus_user_group.groups)
+                                    for user_group in user_groups:
+                                        bonus_users.append(user_group.user.pk)
+                                bonus_users = CustomUser.objects.filter(pk__in=bonus_users).distinct()
+
+                            # get excluded users
+                            bonus_excluded_user_groups = BonusUserGroup.objects.filter(bonus=bonus_obj, excluded=True)
+                            bonus_excluded_users = list()
+                            for bonus_excluded_user_group in bonus_excluded_user_groups:
+                                user_groups = UserToUserGroup.objects.filter(group=bonus_excluded_user_group.groups)
+                                for user_group in user_groups:
+                                    bonus_excluded_users.append(user_group.user.pk)
+
+                            logger.info("Successfully getting user bonus groups " + str(bonus_obj.name))
+
+                            must_haves = Requirement.objects.filter(bonus=bonus_obj).values_list('must_have', flat=True)
+
+                            # add initial issued user bonus event
+                            for user in bonus_users:
+                                if user.pk in bonus_excluded_users:
+                                    continue
+                                # check must have
+                                valid = True
+                                for must_have in must_haves:
+                                    if must_have and not checkMustHave(user, must_have):
+                                        valid = False
+                                        break
+                                if valid == True:
+                                    UserBonusEvent.objects.create(
+                                        owner=user,
+                                        bonus=bonus_obj,
+                                        status=BONUS_ISSUED,
+                                        delivered_by=CustomUser.objects.get(username='System')
+                                    )
+                            logger.info("Successfully issued bonus to target groups " + str(bonus_obj.name))
+
+
 
                     # if 'categories' in req_data.keys():
                     #     print(req_data['categories'])
@@ -404,8 +462,9 @@ class BonusView(View):
                     #         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
                     # add target user group
+
         except Exception as e:
-            logger.error("Error creating new bonus details " + str(e))
+            logger.error("Error creating new bonus details ", str(e))
             response = JsonResponse({"error": "Error creating new bonus, please try again!"})
             response.status_code = 400
             return response

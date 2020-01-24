@@ -40,15 +40,15 @@ def setup_models():
     
     return (PROVIDER, CATEGORY)
 
-
-class GameLaunchView(View):
+class GetPNGTicket(View):
     """
     Test class to simulate a game launch
     """
     def get(self, request, *args, **kwargs):
         try:
+            user_id = request.GET.get("userid")
             png_ticket = uuid.uuid4()
-            user_obj = CustomUser.objects.get(username="kevin")
+            user_obj = CustomUser.objects.get(pk=user_id)
 
             # Case where user's existing PNGTicket needs to be updated
             try:
@@ -59,11 +59,12 @@ class GameLaunchView(View):
             # Case where user has never played PNG games before
             except:
                 PNGTicket.objects.create(png_ticket=png_ticket, user_obj=user_obj)
-
-            return HttpResponse("PNGTicket created or updated")
+            
+            json_to_return = { "ticket" : str(png_ticket) }
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         except Exception as e:
-            logger.error("PLAY'nGO GameLaunchView: " + str(e))
+            logger.critical("PLAY'nGO Game Launch Error: " + str(e))
             return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -82,16 +83,21 @@ def png_authenticate(data):
 
         try:
             existing_ticket = PNGTicket.objects.get(png_ticket=session_token)
+            # user_obj = Token.objects.get(key=session_token).user
             user_obj = existing_ticket.user_obj
             # print("user_obj.username: " + user_obj.username)
+
+            birthday_array = str(user_obj.date_of_birth).split("/")
+            png_birthday_formatted = birthday_array[2] + "-" + birthday_array[0] + "-" + birthday_array[1]
+            user_registration_time = str(user_obj.time_of_registration).split(" ")[0]
 
             external_id = user_obj.username
             status_code = PNG_STATUS_OK 
             status_message = "ok"
             user_currency = CURRENCY_CHOICES[user_obj.currency][1]
             country = user_obj.country
-            birthdate = user_obj.date_of_birth
-            registration = user_obj.time_of_registration
+            birthdate = png_birthday_formatted
+            registration = user_registration_time
             res_language = user_obj.language
             affiliate_id = "" # Placeholder
             real = int(user_obj.main_wallet * 100) / 100.0
@@ -99,6 +105,7 @@ def png_authenticate(data):
             
             if checkUserBlock(user_obj):
                 status_code = PNG_STATUS_ACCOUNTDISABLED
+                status_message = "Account Disabled"
 
             # Compose response dictionary and convert to response XML
             res_dict = {
@@ -139,11 +146,11 @@ def png_authenticate(data):
                 }
             }
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
             return HttpResponse(res_msg, content_type='text/xml') # Successful response
 
         except Exception as e:
-            logger.error("PLAY'nGO AuthenticateView: " + str(e))
+            logger.critical("PLAY'nGO Authentication Error: " + str(e))
             return HttpResponse(str(e))
 
     except:
@@ -176,7 +183,7 @@ def png_balance(data):
                 }
             }
 
-            res_msg = xmltodict.unparse(res_dict, pretty=True)
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
             return HttpResponse(res_msg, content_type='text/xml')
 
         # Retrieve balance of specified user and set status code based on user account status.
@@ -203,11 +210,11 @@ def png_balance(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO BalanceView: " + str(e))
+        logger.critical("PLAY'nGO Balance Error: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -231,8 +238,8 @@ def png_reserve(data):
         actual_value = req_dict['reserve']['actualValue']
         
         user_obj = CustomUser.objects.get(username=username)
-        user_balance = int(user_obj.main_wallet * 100) / 100.0
-        bet_amount_decimal = float(bet_amount_str)
+        user_balance = user_obj.main_wallet
+        bet_amount_decimal = decimal.Decimal(bet_amount_str)
         user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
         status_code = PNG_STATUS_OK
@@ -241,10 +248,10 @@ def png_reserve(data):
         # Idempotence - check if bet with transaction_id was already successfully placed.
         try:
             existing_bet = GameBet.objects.get(ref_no=transaction_id)
-            logger.error("Bet with transaction_id already exists.")
+            logger.error("PLAY'nGO: Bet with transaction_id already exists.")
             bet_already_placed = True
         except ObjectDoesNotExist:
-            logger.info("Bet with transaction_id does not exist yet.")
+            logger.info("PLAY'nGO: Bet with transaction_id does not exist yet.")
             pass
 
         if bet_already_placed:
@@ -283,12 +290,12 @@ def png_reserve(data):
                     #other_data = {}
                 )
 
-                logger.info("PLAY'nGO ReserveView Success: Bet placed for user: " + user_obj.username)
+                logger.info("PLAY'nGO Reserve Success: Bet placed for user " + user_obj.username)
         
         # Bet amount is bigger than user balance.
         else:
             status_code = PNG_STATUS_NOTENOUGHMONEY
-            logger.error("PLAY'nGO ReserveView: Not enough money to place bet.")
+            logger.error("PLAY'nGO Reserve Error: Not enough money to place bet.")
 
         # Compose response dictionary and convert to response XML.
         res_dict = {
@@ -306,11 +313,11 @@ def png_reserve(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO ReserveView: " + str(e))
+        logger.critical("PLAY'nGO Reserve Error: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -367,7 +374,7 @@ def png_cancel_reserve(data):
                     user_name = user_obj.username,
                     amount_wagered = 0.00,
                     amount_won = amount_to_refund,
-                    #outcome = None,
+                    outcome = 3,
                     #odds = None,
                     #bet_type = None,
                     #line = None,
@@ -376,16 +383,16 @@ def png_cancel_reserve(data):
                     market = ibetVN, # Need to clarify with provider
                     ref_no = transaction_id,
                     #bet_time = None,
-                    # resolved_time = timezone.now(),
+                    resolved_time = timezone.now(),
                     #other_data = {}
                 )
                 
-                logger.info("PLAY'nGO CancelReserveView Success: Bet successfully refunded.")
+                logger.info("PLAY'nGO Cancel Reserve Success: Bet successfully refunded.")
 
         # Specified bet does not exist.
         except ObjectDoesNotExist:
             ext_trans_id = ""
-            logger.error("PLAY'nGO CancelReserveView: Specified bet does not exist.")
+            logger.error("PLAY'nGO Cancel Reserve Error: Specified bet does not exist.")
 
         # Compose response dictionary and convert to response XML.
         res_dict = {
@@ -402,11 +409,11 @@ def png_cancel_reserve(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO CancelReserveView: " + str(e))
+        logger.critical("PLAY'nGO Cancel Reserve Error: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -436,8 +443,8 @@ def png_release(data):
         # free_game_total_gain = req_dict['release']['freegameTotalGain']
 
         user_obj = CustomUser.objects.get(username=username)
-        user_balance = int(user_obj.main_wallet * 100) / 100.0
-        win_amount_decimal = float(win_amount_str)
+        user_balance = user_obj.main_wallet
+        win_amount_decimal = decimal.Decimal(win_amount_str)
         user_currency_text = CURRENCY_CHOICES[user_obj.currency][1]
 
         status_code = PNG_STATUS_OK
@@ -446,7 +453,7 @@ def png_release(data):
         # Idempotence - check if release with transaction_id was already successfully resolved.
         try:
             existing_release = GameBet.objects.get(ref_no=transaction_id)
-            logger.error("Release with transaction_id already exists.")
+            logger.error("PLAY'nGO Release Error: Release with transaction_id already exists.")
             release_already_resolved = True
         except ObjectDoesNotExist:
             pass
@@ -469,7 +476,7 @@ def png_release(data):
                     user_name = user_obj.username,    
                     amount_wagered = 0.00,
                     amount_won = win_amount_decimal,
-                    #outcome = None,
+                    outcome = 0,
                     #odds = None,
                     #bet_type = None,
                     #line = None,
@@ -482,10 +489,10 @@ def png_release(data):
                     #other_data = {}
                 )
 
-                logger.info("PLAY'nGO ReleaseView Success: Winnings sent to user " + str(user_obj.username))
+                logger.info("PLAY'nGO Release Success: Winnings sent to user " + str(user_obj.username))
 
         else:
-            logger.error("PLAY'nGO ReleaseView: Transaction already resolved.")
+            logger.error("PLAY'nGO Release Error: Transaction already resolved.")
             pass
 
         res_dict = {
@@ -502,11 +509,11 @@ def png_release(data):
             }
         }
 
-        res_msg = xmltodict.unparse(res_dict, pretty=True)
+        res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
         return HttpResponse(res_msg, content_type='text/xml')
 
     except Exception as e:
-        logger.error("PLAY'nGO ReleaseView: " + str(e))
+        logger.critical("PLAY'nGO Release Error: " + str(e))
         return HttpResponse(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -539,5 +546,5 @@ class RootView(View):
                 return HttpResponse("Playngo: Invalid request received.", status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            logger.error("Unspecified error in Playngo.")
+            logger.critical("General error in Playngo: " + str(e))
             return HttpResponse(str(e))

@@ -36,13 +36,7 @@ from utils.aws_helper import getThirdPartyKeys
 logger = logging.getLogger('django')
 
 import base64
-
-
-# connect AWS S3
-third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
-KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
-
+import pytz
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -89,6 +83,19 @@ def generateUrl(param, is_api):
     return url
 
 
+def kyBalance(user):
+    param = "s=1&account=" + str(user.username)
+    url = generateUrl(param, True)
+    
+    res = requests.get(url)
+    if res.status_code == 200:
+        res_data = res.json()
+        balance = float(res_data["d"]["money"])
+        return balance
+    else:
+        return 0
+
+
 class KyBets(View):
     def post(self, request, *args, **kwargs):
         try:
@@ -120,47 +127,70 @@ class KyBets(View):
             url = url + '?' + req
             res = requests.get(url)
 
-            data = res.json()
+            if res.status_code == 200:
+                data = res.json()
 
-            if data['d']['code'] == 0:
-                count = int(data['d']['count'])
-                record_list = data['d']['list']
+                if data['d']['code'] == 0:
+                    count = int(data['d']['count'])
+                    record_list = data['d']['list']
 
-                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
-                category = Category.objects.filter(name='Table Games')
+                    provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                    category = Category.objects.filter(name='Table Games')
 
-                game_id = record_list['GameID']
-                accounts = record_list['Accounts']
-                # server_id = record_list['ServerID']
-                # kind_id = record_list['KindID']
-                # table_id = record_list['TableID']
-                cell_score = record_list['CellScore']
-                profit = record_list['Profit']
-                revenue = record_list['Revenue']
+                    game_id = record_list['GameID']
+                    accounts = record_list['Accounts']
+                    # server_id = record_list['ServerID']
+                    # kind_id = record_list['KindID']
+                    # table_id = record_list['TableID']
+                    cell_score = record_list['CellScore']
+                    profit = record_list['Profit']
+                    revenue = record_list['Revenue']
+                    start_time = record_list['GameStartTime']
+                    end_time = record_list['GameEndTime']
 
-                for i in range(0, count):
-                    username = accounts[i][6:]
-                    user = CustomUser.objects.get(username=username)
+                    for i in range(0, count):
+                        username = accounts[i][6:]
+                        user = CustomUser.objects.get(username=username)
 
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                    GameBet.objects.create(
-                        provider=provider,
-                        category=category[0],
-                        user=user,
-                        user_name=user.username,
-                        amount_wagered=decimal.Decimal(cell_score[i]),
-                        amount_won=decimal.Decimal(profit[i]) - decimal.Decimal(revenue[i]),
-                        transaction_id=trans_id,
-                        market=ibetCN,
-                        ref_no=game_id[i],
-                        resolved_time=timezone.now(),
-                        other_data=json.dumps({"game_id": game_id[i]})
-                    )
+                        bet_time = datetime.strptime(start_time[i], '%Y-%m-%d %H:%M:%S')
+                        bet_time = bet_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        bet_time = bet_time.astimezone(pytz.utc)
 
-                return HttpResponse("You have add {} records".format(count), status=200)
+                        resolved_time = datetime.strptime(end_time[i], '%Y-%m-%d %H:%M:%S')
+                        resolved_time = resolved_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        resolved_time = resolved_time.astimezone(pytz.utc)
+
+                        if int(cell_score[i] == 0):
+                            outcome = 2 # Tie Game
+                        if win_amount > 0:
+                            outcome = 0 # Won
+                        else:
+                            outcome = 1 # Lose
+
+                        GameBet.objects.create(
+                            provider=provider,
+                            category=category[0],
+                            user=user,
+                            user_name=user.username,
+                            amount_wagered=decimal.Decimal(cell_score[i]),
+                            amount_won=decimal.Decimal(win_amount),
+                            outcome=outcome,
+                            transaction_id=trans_id,
+                            market=ibetCN,
+                            ref_no=game_id[i],
+                            bet_time=bet_time,
+                            resolved_time=resolved_time,
+                            other_data={}
+                        )
+
+                    return HttpResponse("You have add {} records".format(count), status=200)
+                else:
+                    return HttpResponse("No record at this time", status=200)
             else:
-                return HttpResponse("No record at this time", status=200)
+                logger.warning("Kaiyuan GetRecord Failed: {}".format(repr(res)))
+                return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
             return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
@@ -332,8 +362,9 @@ def kyTransfer(user, amount, wallet, method):
                         currency=user.currency,
                         transfer_from=wallet,
                         transfer_to='ky',
-                        product=1,
+                        product=GAME_TYPE_TABLE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
+                        channel=None,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True
@@ -350,8 +381,9 @@ def kyTransfer(user, amount, wallet, method):
                         currency=user.currency,
                         transfer_from='ky',
                         transfer_to=wallet,
-                        product=1,
+                        product=GAME_TYPE_TABLE_GAMES,
                         transaction_type=TRANSACTION_TRANSFER,
+                        channel=None,
                         status=TRAN_SUCCESS_TYPE
                     )
                     return True

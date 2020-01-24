@@ -23,6 +23,7 @@ class GameProvider(models.Model):
     market = models.CharField(max_length=50, null=True)
     notes = models.CharField(max_length=100, null=True, blank=True)
     is_transfer_wallet = models.BooleanField(default=False)
+    timezone = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return self.provider_name
@@ -72,7 +73,7 @@ class Game(models.Model):
     image_url = models.CharField(max_length=200, null=True, blank=True)
     attribute = models.CharField(max_length=500, null=True, blank=True)
     provider = models.ForeignKey(GameProvider, on_delete=models.CASCADE)
-    popularity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    popularity = models.DecimalField(max_digits=10, decimal_places=4, default=0)
     jackpot_size = models.IntegerField(null=True, blank=True)
     smallgame_id = models.CharField(max_length=200, null=True, blank=True)
     is_free = models.NullBooleanField(default=None)
@@ -109,13 +110,13 @@ class GameBet(models.Model):
     # expect game_name to be mostly used for sportsbook, as it would be the name of the bet itself (juventus vs. psg, lakers vs. warriors)
 
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE) # *required
-    amount_wagered = models.DecimalField(max_digits=12, decimal_places=2, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
+    amount_wagered = models.DecimalField(max_digits=12, decimal_places=4, default=0) # max digits at 12, assuming no bet is greater than 9,999,999,999.99 = (10 billion - .01)
     user_name = models.CharField(max_length=255, blank=True, null=True)
 
-    amount_won = models.DecimalField(max_digits=12, decimal_places=2, null=True) # if amount_won = 0, outcome is also 0 (false)
+    amount_won = models.DecimalField(max_digits=12, decimal_places=4, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=2,) # payout odds (in american odds), e.g. +500, -110, etc.
+    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=4) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
     transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)
@@ -124,12 +125,13 @@ class GameBet(models.Model):
     ref_no = models.CharField(max_length=100, null=True, blank=True)
     bet_time = models.DateTimeField(
         _('Time Bet was Placed'),
-        auto_now_add=True,
-        editable=False,
+        default=timezone.now,
+        null=True
     )
 
     resolved_time = models.DateTimeField(null=True, blank=True)
     other_data = JSONField(null=True, default=dict)
+    result = models.SmallIntegerField(choices=GAME_STATUS_CHOICES, default=GAME_STATUS_OPEN)
 
     # def __str__(self):
     #     return self.game_name + ' bet placed on ' + str(bet_time)
@@ -198,3 +200,13 @@ class QTSession(models.Model):
 
 
 
+class GameThirdPartyAccount(models.Model):
+
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    provider = models.ForeignKey('games.GameProvider', on_delete=models.CASCADE)
+    third_party_account = models.CharField(max_length=30, null=True)
+
+    created_time = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )

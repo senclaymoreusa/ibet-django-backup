@@ -3,25 +3,20 @@ from xadmin.views import CommAdminView
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-
-from system.models import UserGroup, PermissionGroup, UserToUserGroup, UserPermission
+from django.conf import settings
 
 from users.models import CustomUser, UserAction
 from accounting.models import Transaction
 from utils.constants import *
 import simplejson as json
-from django.views import View
-from django.urls import reverse
-from django.core import serializers
+
 from system.models import *
-import re
 from django.db.models import Q, Sum
 from utils.constants import *
 import logging
 from datetime import datetime, time
 from django.core.serializers.json import DjangoJSONEncoder
 from dateutil.relativedelta import *
-from django.core import serializers
 import pytz
 import requests
 
@@ -182,7 +177,7 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         max_pub_date_time = tz.localize(datetime.combine(date, time.max))
         transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
         deposits = transactions.filter(transaction_type=TRANSACTION_DEPOSIT, status=TRAN_SUCCESS_TYPE)
-        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL, status=TRAN_APPROVED_TYPE)
+        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL, status=TRAN_SUCCESS_TYPE)
 
         dateStr = date.strftime("%b %e %Y")
         dataPerUnit = {
@@ -270,7 +265,7 @@ def getCurrency(currency):
 
 
 
-class MembersReportView(CommAdminView): 
+class MembersReportView(CommAdminView):
 
 
     def get(self, request):
@@ -439,10 +434,6 @@ def getMarketOpt():
     return markets
 
 
-
-
-
-
 class FinanceReportView(CommAdminView): 
 
     def get(self, request):
@@ -457,7 +448,23 @@ class FinanceReportView(CommAdminView):
         markets = getMarketOpt()
         context['markets'] = markets
 
-        
-        
-
         return render(request, 'finance_report.html', context)
+
+
+
+# This is the class containing all APIs built on top of Redshift
+class UserEventReportView (CommAdminView):
+
+    def get(self, request):
+
+        # This is only a template
+        settings.redshift_cursor.execute("SELECT * FROM accounting_transaction_detailed;")
+        rows = settings.redshift_cursor.fetchall()
+        for row in rows:
+            # do your reporting here
+            print (row)
+
+        return
+
+
+

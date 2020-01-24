@@ -183,7 +183,8 @@ def requestEADeposit(user, amount, from_wallet):
                     currency=user_currency,
                     transfer_from=from_wallet,
                     transfer_to="EA",
-                    product=2,
+                    product=GAME_TYPE_LIVE_CASINO,
+                    channel=None,
                     transaction_type=TRANSACTION_TRANSFER,
                     status=TRAN_PENDING_TYPE
                 )
@@ -281,7 +282,7 @@ def requestEADeposit(user, amount, from_wallet):
         if properties_status == "0" and properties_payment_id:
             status_code = "0"
             with transaction.atomic():
-                trans.status = TRAN_APPROVED_TYPE
+                trans.status = TRAN_SUCCESS_TYPE
                 trans.save()
             
             if comfirmEADeposit(request_id, properties_payment_id, status_code):
@@ -418,7 +419,8 @@ def requestEAWithdraw(user, amount, to_wallet):
                     currency=user_currency,
                     transfer_from="EA",
                     transfer_to=to_wallet,
-                    product=2,
+                    product=GAME_TYPE_LIVE_CASINO,
+                    channel=None,
                     transaction_type=TRANSACTION_TRANSFER,
                     status=TRAN_PENDING_TYPE
                 )
@@ -503,7 +505,7 @@ def requestEAWithdraw(user, amount, to_wallet):
         if properties_status == "0":
             error_message = "Successfully comfirm withdraw"
             with transaction.atomic():
-                trans.status = TRAN_APPROVED_TYPE
+                trans.status = TRAN_SUCCESS_TYPE
                 trans.save()
 
                 # user.ea_wallet = user.ea_wallet - Decimal(float(amount))

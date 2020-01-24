@@ -16,6 +16,7 @@ import json
 import logging
 import datetime
 import sys
+import psycopg2
 
 from botocore.exceptions import ClientError, NoCredentialsError
 from dotenv import load_dotenv
@@ -42,6 +43,7 @@ def getKeys(bucket, file):
     try:
         keys = s3.get_object(Bucket=bucket, Key=file)
         config = json.loads(keys['Body'].read())
+
     except ClientError as e:
         logger.error(e)
         return None
@@ -61,15 +63,26 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '7i^ke1w79@h(!g0)e18c8(^j=c8ewfx8=*9n4652o%0f3i^g_-'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# # SECURITY WARNING: don't run with debug turned on in production!
+if os.environ["ENV"].find('prod') != -1:
+    DEBUG = False
+    ALLOWED_HOSTS = ['.claymoreasia.com', 
+                     '.elasticbeanstalk.com', 
+                     '3.115.60.156',
+                     '172.31.32.117', 
+                     '52.194.242.127'
+                     ]
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = ['*']
+    
 
 CORS_ORIGIN_WHITELIST = [
     'localhost:3000'
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
+       # Added this for Andorid to access back-end
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -189,8 +202,16 @@ WSGI_APPLICATION = 'djauth.wsgi.application'
 
 TESTING = sys.argv[1:2] == ['test']
 
+s3_bucket = "ibet-admin-" + os.environ["ENV"]
+
+### This is a hack as we have to use the redshift on apdev for local.
+if 'local' in s3_bucket:
+    s3_bucket = "ibet-admin-apdev"
+redshift_data = getKeys(s3_bucket, 'config/ibetadmin_redshift.json')
+
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -199,9 +220,8 @@ if os.getenv("ENV") == "local":
             'PASSWORD': '',
             'HOST': '',
             'PORT': 5432,
-        }
+        },
     }
-
 
     print("[" + str(datetime.datetime.now()) + "] Using local Redis...")
     REDIS = {
@@ -210,12 +230,12 @@ if os.getenv("ENV") == "local":
     }
 
 elif "ENV" in os.environ:
+
+    s3_bucket = "ibet-admin-" + os.environ["ENV"]
+    db_data = getKeys(s3_bucket, 'config/ibetadmin_db.json')
     print("[" + str(datetime.datetime.now()) + "] Using db of " + os.environ["ENV"])
-    AWS_S3_ADMIN_BUCKET = "ibet-admin-" + os.environ["ENV"]
-    db_data = getKeys(AWS_S3_ADMIN_BUCKET, 'config/ibetadmin_db.json')
-    
     print("DB HOST: " + db_data['RDS_HOSTNAME'])
-    # print(db_data)
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -224,16 +244,26 @@ elif "ENV" in os.environ:
             'PASSWORD': db_data['RDS_PASSWORD'],
             'HOST': db_data['RDS_HOSTNAME'],
             'PORT': db_data['RDS_PORT'],
-        }
+        },
     }
 
     print("[" + str(datetime.datetime.now()) + "] Using staging Redis...")
     REDIS = {
-        # "HOST": 'staging-redis-cluster.hivulc.clustercfg.apne1.cache.amazonaws.com',
         "HOST": 'letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com',
         "PORT": 6379
     }
-    # print("letou-staging-redis.hivulc.ng.0001.apne1.cache.amazonaws.com")
+
+try:
+    redshift_connection = psycopg2.connect(user=redshift_data['REDSHIFT_USERNAME'],
+                                           password=redshift_data['REDSHIFT_PASSWORD'],
+                                           host=redshift_data['REDSHIFT_HOSTNAME'],
+                                           port=redshift_data['REDSHIFT_PORT'],
+                                           database=redshift_data['REDSHIFT_DB_NAME'])
+    redshift_cursor = redshift_connection.cursor()
+    print('Successfully established Redshift connection.')
+
+except exception as e:
+    print ("FATAL__ERROR: cannot establish Redshift connection: ", e)
 
 
 # Password validation
@@ -278,7 +308,9 @@ LANGUAGE_CODE = 'en-us'
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
-    ('fr', _('Franch')),
+    # ('fr', _('Franch')),
+    ('vi', ('Vietnam')),
+    ('th', ('Thailand')),
 )
 
 # TIME_ZONE = 'UTC'
@@ -316,7 +348,8 @@ STATIC_URL = '/static/'
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 
 log_filename = "logs/debug.log"
@@ -383,7 +416,7 @@ else:
         }, 
         'handlers': {
             'file': {
-                'level': 'ERROR',
+                'level': 'INFO',
                 'class': 'logging.FileHandler',
                 'filename': '/opt/python/log/django-logger.log',
                 'formatter': 'verbose',
@@ -392,7 +425,7 @@ else:
         'loggers': {
             'django': {
                 'handlers': ['file'],
-                'level': 'ERROR',
+                'level': 'INFO',
                 'propagate': True,
             },
         }
@@ -421,6 +454,7 @@ TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
 STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
+    os.path.join(BASE_DIR, 'extra_app', 'xadmin', 'static'),
 ]
 
 AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'
