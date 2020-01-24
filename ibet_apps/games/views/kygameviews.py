@@ -108,7 +108,7 @@ class KyBets(View):
                 start_time = get_timestamp() - 300000 # five minutes before now
             
             # Query Bet Order
-            endTime = get_timestamp() - 60000 # one minute before now
+            end_time = get_timestamp() - 60000 # one minute before now
 
             timestamp = get_timestamp()
 
