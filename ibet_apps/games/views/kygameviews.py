@@ -99,13 +99,20 @@ def kyBalance(user):
 class KyBets(View):
     def post(self, request, *args, **kwargs):
         try:
-            # Query Bet Order
-            timestamp = get_timestamp()
+            r = RedisClient().connect()
+            redis = RedisHelper()
 
-            startTime = get_timestamp() - 300000 # five minutes before now
+            start_time = redis.get_ky_bets_timestamp
+
+            if start_time is None:
+                start_time = get_timestamp() - 300000 # five minutes before now
+            
+            # Query Bet Order
             endTime = get_timestamp() - 60000 # one minute before now
 
-            param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
+            timestamp = get_timestamp()
+
+            param = "s=6" + "&startTime=" + str(start_time) + "&endTime=" + str(end_time)
 
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
@@ -148,6 +155,8 @@ class KyBets(View):
                     start_time = record_list['GameStartTime']
                     end_time = record_list['GameEndTime']
 
+                    gamebets_list = []
+
                     for i in range(0, count):
                         username = accounts[i][6:]
                         user = CustomUser.objects.get(username=username)
@@ -169,8 +178,7 @@ class KyBets(View):
                         else:
                             outcome = 1 # Lose
 
-                        GameBet.objects.create(
-                            provider=provider,
+                        gamebet = GameBet(provider=provider,
                             category=category[0],
                             user=user,
                             user_name=user.username,
@@ -184,6 +192,29 @@ class KyBets(View):
                             resolved_time=resolved_time,
                             other_data={}
                         )
+
+                        # GameBet.objects.create(
+                        #     provider=provider,
+                        #     category=category[0],
+                        #     user=user,
+                        #     user_name=user.username,
+                        #     amount_wagered=decimal.Decimal(cell_score[i]),
+                        #     amount_won=decimal.Decimal(win_amount),
+                        #     outcome=outcome,
+                        #     transaction_id=trans_id,
+                        #     market=ibetCN,
+                        #     ref_no=game_id[i],
+                        #     bet_time=bet_time,
+                        #     resolved_time=resolved_time,
+                        #     other_data={}
+                        # )
+
+                        gamebets_list.append(gamebet)
+
+                    # bulk_create
+                    GameBet.objects.bulk_create(gamebets_list)
+                    # Set Redis
+                    redis.set_ky_bets_timestamp(end_time)
 
                     return HttpResponse("You have add {} records".format(count), status=200)
                 else:
