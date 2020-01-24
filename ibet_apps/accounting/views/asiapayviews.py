@@ -685,14 +685,14 @@ def payoutArrive(request):
             trans = Transaction.objects.get(transaction_id=OrderID)
             # print(trans)
             if StatusCode == '001' and TrustIUser == ASIAPAY_TRUSTUSER :  
-                trans.status = 0
+                trans.status = TRAN_SUCCESS_TYPE
                 trans.arrive_time = timezone.now()
                 trans.remark = 'Transaction success'
                 trans.current_balance = user.main_wallet - PayOutMoney 
                 trans.save()
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
-                trans.status = 1
+                trans.status = TRAN_FAIL_TYPE
                 trans.remark = 'Transaction failed'
                 trans.save()
                 return HttpResponse(ET.tostring(root1),content_type="text/xml")

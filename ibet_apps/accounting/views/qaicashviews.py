@@ -404,11 +404,11 @@ class submitDeposit(generics.GenericAPIView):
                 order_id= rdata["depositTransaction"]["transactionId"],
                 transaction_id=rdata['depositTransaction']['orderId'],
                 amount=rdata["depositTransaction"]["amount"],
-                status=2,
+                status=TRAN_CREATE_TYPE,
                 user_id=CustomUser.objects.get(pk=userId),
                 method= rdata["depositTransaction"]["depositMethod"],
                 currency= curr,
-                transaction_type=0,
+                transaction_type=TRANSACTION_DEPOSIT,
                 channel=QAICASH,
                 request_time=rdata["depositTransaction"]["dateCreated"],
             )
@@ -518,7 +518,7 @@ class submitPayout(generics.GenericAPIView):
                 user_id=user,
                 method= rdata["payoutTransaction"]["payoutMethod"],
                 currency= cur_val,
-                transaction_type=1,
+                transaction_type=TRANSACTION_WITHDRAWAL,
                 channel=QAICASH,
                 request_time=rdata['payoutTransaction']['dateCreated'],
             )
@@ -637,7 +637,7 @@ class approvePayout(generics.GenericAPIView):
 
             update_data.order_id = rdata['transactionId']
             update_data.last_updated = rdata["dateUpdated"]
-            update_data.status = 4
+            update_data.status = TRAN_APPROVED_TYPE
             update_data.review_status = REVIEW_APP
             update_data.remark = notes
             update_data.release_by = user
@@ -723,8 +723,8 @@ class rejectPayout(generics.GenericAPIView):
 
                     update_data.order_id = rdata['transactionId']
                     update_data.last_updated = rdata["dateUpdated"]
-                    update_data.status = 8
-                    update_data.review_status = 2
+                    update_data.status = TRAN_REJECTED_TYPE
+                    update_data.review_status = REVIEW_REJ
                     update_data.remark = notes
                     update_data.release_by = user
                     update_data.save()
