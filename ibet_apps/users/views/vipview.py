@@ -186,15 +186,15 @@ def getVIPData(queryset, start_time, end_time, type):
             'phone_verified': vip.phone_verified,
             'id_verified': vip.id_verified,
             'affiliate_id': referee,  # the affiliate who referred this VIP user
-            'ggr': calculateGGR(vip, start_time, end_time),
-            'turnover': calculateTurnover(vip, start_time, end_time),
+            'ggr': calculateGGR(vip, start_time, end_time, None),
+            'turnover': calculateTurnover(vip, start_time, end_time, None),
             'deposit': deposit_amount,
             'deposit_count': deposit_count,
             'ave_deposit': ave_deposit,
             'withdrawal': withdrawal_amount,
             'withdrawal_count': withdrawal_count,
-            'bonus_cost': calculateBonus(vip, start_time, end_time),
-            'ngr': calculateNGR(vip, start_time, end_time),
+            'bonus_cost': calculateBonus(vip, start_time, end_time, None),
+            'ngr': calculateNGR(vip, start_time, end_time, None),
         }
         if type == "list":
             vip_arr.append(vip_dict)

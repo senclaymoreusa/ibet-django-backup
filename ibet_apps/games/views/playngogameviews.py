@@ -83,12 +83,8 @@ def png_authenticate(data):
 
         try:
             existing_ticket = PNGTicket.objects.get(png_ticket=session_token)
-            # user_obj = Token.objects.get(key=session_token).user
             user_obj = existing_ticket.user_obj
-            # print("user_obj.username: " + user_obj.username)
 
-            birthday_array = str(user_obj.date_of_birth).split("/")
-            png_birthday_formatted = birthday_array[2] + "-" + birthday_array[0] + "-" + birthday_array[1]
             user_registration_time = str(user_obj.time_of_registration).split(" ")[0]
 
             external_id = user_obj.username
@@ -96,7 +92,7 @@ def png_authenticate(data):
             status_message = "ok"
             user_currency = CURRENCY_CHOICES[user_obj.currency][1]
             country = user_obj.country
-            birthdate = png_birthday_formatted
+            birthdate = user_obj.date_of_birth
             registration = user_registration_time
             res_language = user_obj.language
             affiliate_id = "" # Placeholder
@@ -151,7 +147,21 @@ def png_authenticate(data):
 
         except Exception as e:
             logger.critical("PLAY'nGO Authentication Error: " + str(e))
-            return HttpResponse(str(e))
+
+            # Invalid session token
+            res_dict = {
+                "authenticate": {
+                    "statusCode": {
+                        "#text": str(PNG_STATUS_WRONGUSERNAMEPASSWORD)
+                    },
+                    "statusMessage": {
+                        "#text": "Wrong Username or Password"
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
+            return HttpResponse(res_msg, content_type='text/xml')
 
     except:
         # Malformed xml, missing tags, or error parsing data
