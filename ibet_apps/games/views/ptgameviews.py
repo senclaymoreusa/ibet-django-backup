@@ -330,7 +330,7 @@ def ptTransfer(user, amount, wallet, method):
 
 def getGMTtime() :
     gmt_time = time.gmtime()
-    gmt_time_to_dt = datetime.datetime.fromtimestamp(mktime(gmt_time), tz=pytz.timezone('GMT'))
+    gmt_time_to_dt = datetime.fromtimestamp(mktime(gmt_time), tz=pytz.timezone('GMT'))
     # print(gmt_time_to_dt)
     # gmt_plus = gmt_time_to_dt + datetime.timedelta(minutes = -5)
     # print(gmt_plus.strftime('%Y-%m-%d%%20%H:%M:%S'))
@@ -365,73 +365,77 @@ class GetBetHistory(APIView):
             REDIS_KEY_PTSTARTTIME_GAMEBET = 'pt_starttime: game_bet'
             ts_from_redis = redis.get_pt_starttime(REDIS_KEY_PTSTARTTIME_GAMEBET)
             if ts_from_redis is None:
+                
                 startdate = getGMTtime()
-                redis.set_pt_starttime(REDIS_KEY_PTSTARTTIME_GAMEBET, startdate)
-                return HttpResponse("PT set first time", status=200)  
+                end_time = datetime.strptime(startdate, '%Y-%m-%d%%20%H:%M:%S') + timedelta(minutes = 5)
+                enddate = end_time.strftime('%Y-%m-%d%%20%H:%M:%S')
+               
+
 
             else:
                 start_time = datetime.strptime(ts_from_redis.decode(), '%Y-%m-%d%%20%H:%M:%S')
                 startdate = start_time.strftime('%Y-%m-%d%%20%H:%M:%S')
                 end_time = start_time + timedelta(minutes = 5)
                 enddate = end_time.strftime('%Y-%m-%d%%20%H:%M:%S')
+               
                 
-                rr = requests.post(PT_BASE_URL + "/game/flow/startdate/" + startdate + "/enddate/" + enddate, headers=headers, cert=(pt_pem.name, pt_key.name))
+            rr = requests.post(PT_BASE_URL + "/game/flow/startdate/" + startdate + "/enddate/" + enddate, headers=headers, cert=(pt_pem.name, pt_key.name))
             
-                if rr.status_code == 200 :  
-                    rrdata = rr.json()
+            if rr.status_code == 200 :  
+                rrdata = rr.json()
                     
-                    try: 
-                        records = rrdata['result']
-                        provider = GameProvider.objects.get(provider_name=PT_PROVIDER)
-                        category = Category.objects.get(name='Games')
-                        for record in records:
+                try: 
+                    records = rrdata['result']
+                    provider = GameProvider.objects.get(provider_name=PT_PROVIDER)
+                    category = Category.objects.get(name='Games')
+                    for record in records:
                             # get user here
-                            try:
-                                playername = record['PLAYERNAME']
-                                user = CustomUser.objects.get(username__iexact=playername.split('_')[1])
+                        try:
+                            playername = record['PLAYERNAME']
+                            user = CustomUser.objects.get(username__iexact=playername.split('_')[1])
                                 
-                                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                                if (float(record['BET']) - float(record['WIN']) > 0) :
-                                    outcome = 1 # lose
-                                elif (float(record['BET']) - float(record['WIN']) == 0) :
-                                    outcome = 2 # Tie/Push
-                                else:
-                                    outcome = 0 # win
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                            if (float(record['BET']) - float(record['WIN']) > 0) :
+                                outcome = 1 # lose
+                            elif (float(record['BET']) - float(record['WIN']) == 0) :
+                                outcome = 2 # Tie/Push
+                            else:
+                                outcome = 0 # win
                                 
-                                resolve = datetime.strptime(record['GAMEDATE'], '%Y-%m-%d %H:%M:%S')
-                                resolve = resolve.replace(tzinfo=pytz.timezone(provider.timezone))
-                                resolve = resolve.astimezone(pytz.utc)
+                            resolve = datetime.strptime(record['GAMEDATE'], '%Y-%m-%d %H:%M:%S')
+                            resolve = resolve.replace(tzinfo=pytz.timezone(provider.timezone))
+                            resolve = resolve.astimezone(pytz.utc)
                               
-                                GameBet.objects.create(
-                                        provider=provider,
-                                        category=category,
-                                        user=user,
-                                        user_name=user.username,
-                                        amount_wagered=decimal.Decimal(record['BET']),
-                                        amount_won=decimal.Decimal(record['WIN']),
-                                        outcome=outcome,
-                                        transaction_id=trans_id,
-                                        market=ibetCN,
-                                        ref_no=record['GAMEID'],
-                                        resolved_time=resolve,
-                                        other_data={}
-                                    )
+                            GameBet.objects.create(
+                                    provider=provider,
+                                    category=category,
+                                    user=user,
+                                    user_name=user.username,
+                                    amount_wagered=decimal.Decimal(record['BET']),
+                                    amount_won=decimal.Decimal(record['WIN']),
+                                    outcome=outcome,
+                                    transaction_id=trans_id,
+                                    market=ibetCN,
+                                    ref_no=record['GAMEID'],
+                                    resolved_time=resolve,
+                                    other_data={}
+                                )
                                 
                             
-                            except Exception as e:
-                                logger.error("PT cannot get customuser in get record.")
-                                return HttpResponse("PT cannot get customuser in bet records.", status=200)  
+                        except Exception as e:
+                            logger.error("PT cannot get customuser in get record.")
+                            return HttpResponse("PT cannot get customuser in bet records.", status=200)  
                         
-                        redis.set_pt_starttime(REDIS_KEY_PTSTARTTIME_GAMEBET, enddate)
-                        return HttpResponse("PT get {} bet records successfully".format(len(records)), status=200)  
-                    except Exception as e:
-                        logger.error("PT cannot get bet records")
-                        return HttpResponse("PT cannot get bet records.", status=200)  
+                    redis.set_pt_starttime(REDIS_KEY_PTSTARTTIME_GAMEBET, enddate)
+                    return HttpResponse("PT get {} bet records successfully".format(len(records)), status=200)  
+                except Exception as e:
+                    logger.error("PT cannot get bet records")
+                    return HttpResponse("PT cannot get bet records.", status=200)  
 
 
-                else:
-                    logger.critical("FATAL__ERROR: PT get bet record status code.")
-                    return HttpResponse("PT get bad bet record status code.", status=200)
+            else:
+                logger.critical("FATAL__ERROR: PT get bet record status code.")
+                return HttpResponse("PT get bad bet record status code.", status=200)
         finally:
             # delete the file.
             os.unlink(pt_key.name)
