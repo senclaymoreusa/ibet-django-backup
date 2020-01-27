@@ -362,8 +362,8 @@ class GetBetHistory(APIView):
             # get time
             r = RedisClient().connect()
             redis = RedisHelper()
-            REDIS_KEY_PTSTARTTIME_GAMEBET = 'pt_starttime: game_bet'
-            ts_from_redis = redis.get_pt_starttime(REDIS_KEY_PTSTARTTIME_GAMEBET)
+           
+            ts_from_redis = redis.get_pt_starttime()
             if ts_from_redis is None:
                 
                 startdate = getGMTtime()
@@ -426,7 +426,7 @@ class GetBetHistory(APIView):
                             logger.error("PT cannot get customuser in get record.")
                             return HttpResponse("PT cannot get customuser in bet records.", status=200)  
                         
-                    redis.set_pt_starttime(REDIS_KEY_PTSTARTTIME_GAMEBET, enddate)
+                    redis.set_pt_starttime(enddate)
                     return HttpResponse("PT get {} bet records successfully".format(len(records)), status=200)  
                 except Exception as e:
                     logger.error("PT cannot get bet records")

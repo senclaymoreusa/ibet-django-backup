@@ -8,6 +8,8 @@ REDIS_KEY_PREFIX_USERS_BY_DEVICE = 'users_by_device:'
 REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS = 'onebook_history:'
 REDIS_KEY_PREFIX_AG_FILES = 'AG_files:'
 REDIS_KEY_PREFIX_EA_BET_HISTORY = 'ea_last_game_file:'
+REDIS_KEY_PREFIX_PT_BET_SET = 'pt_starttime: game_bet'
+
 
 def getBonusByDeviceRedisKey(device_id):
     return REDIS_KEY_PREFIX_BONUS_BY_DEVICE + str(device_id)
@@ -26,6 +28,9 @@ def getAGFileHistoryRedisKey():
 
 def getEABetHistroyRedisKey():
     return REDIS_KEY_PREFIX_EA_BET_HISTORY
+
+def getPTStarttimeKey():
+    return REDIS_KEY_PREFIX_PT_BET_SET
 
 class RedisHelper():
     
@@ -78,11 +83,13 @@ class RedisHelper():
     def get_latest_timestamp(self, key):
         return self.r.get(key)
 
-    def set_pt_starttime(self, key, timestamp):
-        return self.r.set(key, timestamp)
+    def set_pt_starttime(self, timestamp):
+        pt_key = getPTStarttimeKey()
+        return self.r.set(pt_key, timestamp)
 
-    def get_pt_starttime(self, key):
-        return self.r.get(key)
+    def get_pt_starttime(self):
+        pt_key = getPTStarttimeKey()
+        return self.r.get(pt_key)
 
 
     def set_ag_added_file(self, ftp_file):
