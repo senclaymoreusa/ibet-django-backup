@@ -1659,6 +1659,11 @@ AG_DM = keys["AG"]["DM"]
 AG_FTP_USERNAME = keys["AG"]["FTP_USERNAME"]
 AG_FTP_PASSWORD = keys["AG"]["FTP_PASSWORD"]
 AG_FTP = keys["AG"]["FTP"]
+AG_TRANSFER_URL = "https://ibet-web-apdev.claymoreasia.com/p/fortune-center/transfer"
+AG_REGIS_URL = "https://ibet-web-apdev.claymoreasia.com/register"
+AG_EXIST_URL = "https://ibet-web-apdev.claymoreasia.com/live_casino"
+AG_CS_URL = "https://www.letou.com/cn/chat"
+
 #IMES
 IMES_PROVIDER = "IMES"
 
