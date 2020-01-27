@@ -84,28 +84,46 @@ def generateUrl(param, is_api):
 
 
 def kyBalance(user):
-    param = "s=1&account=" + str(user.username)
-    url = generateUrl(param, True)
-    
-    res = requests.get(url)
-    if res.status_code == 200:
-        res_data = res.json()
-        balance = float(res_data["d"]["money"])
-        return balance
-    else:
+    try:
+        param = "s=1&account=" + str(user.username)
+        url = generateUrl(param, True)
+        
+        res = requests.get(url)
+        if res.status_code == 200:
+            res_data = res.json()
+            if res_data["d"]["code"] == 0:
+                balance = float(res_data["d"]["money"])
+                return balance
+            else:
+                logger.warning("Kaiyuan get balance API connection request warning: {}".format(res_data["d"]["code"]))
+                return 0
+        else:
+            logger.warning("Kaiyuan get balance API connection request warning: {}".format(res.status_code))
+            return 0
+    except Exception as e:
+        logger.warning("Kaiyuan get balance API Error: {}".format(repr(e)))
         return 0
 
 
 class KyBets(View):
     def post(self, request, *args, **kwargs):
         try:
+            r = RedisClient().connect()
+            redis = RedisHelper()
+
+            start_time = redis.get_ky_bets_timestamp
+
+            if start_time is None:
+                timestamp = get_timestamp()
+                start_time = timestamp - 300000 # five minutes before now
+
             # Query Bet Order
-            timestamp = get_timestamp()
+            if type(start_time) == bytes:
+                start_time = start_time.decode("utf-8")
 
-            startTime = get_timestamp() - 300000 # five minutes before now
-            endTime = get_timestamp() - 60000 # one minute before now
+            end_time = timestamp - 60000 # one minute before now
 
-            param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
+            param = "s=6" + "&startTime=" + str(start_time) + "&endTime=" + str(end_time)
 
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
@@ -148,6 +166,8 @@ class KyBets(View):
                     start_time = record_list['GameStartTime']
                     end_time = record_list['GameEndTime']
 
+                    gamebets_list = []
+
                     for i in range(0, count):
                         username = accounts[i][6:]
                         user = CustomUser.objects.get(username=username)
@@ -169,8 +189,7 @@ class KyBets(View):
                         else:
                             outcome = 1 # Lose
 
-                        GameBet.objects.create(
-                            provider=provider,
+                        gamebet = GameBet(provider=provider,
                             category=category[0],
                             user=user,
                             user_name=user.username,
@@ -185,15 +204,39 @@ class KyBets(View):
                             other_data={}
                         )
 
+                        # GameBet.objects.create(
+                        #     provider=provider,
+                        #     category=category[0],
+                        #     user=user,
+                        #     user_name=user.username,
+                        #     amount_wagered=decimal.Decimal(cell_score[i]),
+                        #     amount_won=decimal.Decimal(win_amount),
+                        #     outcome=outcome,
+                        #     transaction_id=trans_id,
+                        #     market=ibetCN,
+                        #     ref_no=game_id[i],
+                        #     bet_time=bet_time,
+                        #     resolved_time=resolved_time,
+                        #     other_data={}
+                        # )
+
+                        gamebets_list.append(gamebet)
+
+                    # bulk_create
+                    GameBet.objects.bulk_create(gamebets_list)
+                    # Set Redis
+                    redis.set_ky_bets_timestamp(end_time)
+
                     return HttpResponse("You have add {} records".format(count), status=200)
                 else:
+                    redis.set_ky_bets_timestamp(end_time)
                     return HttpResponse("No record at this time", status=200)
             else:
                 logger.warning("Kaiyuan GetRecord Failed: {}".format(repr(res)))
                 return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
-            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
+            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=200)
 
 
 # @background(schedule=10)
