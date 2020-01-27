@@ -25,7 +25,7 @@ cron:
    url: "/games/api/ag/ftp"
    schedule: "*/5 * * * *"
 
-- name: "game_playtech_getBetDetail"
-  url: "/games/api/pt/get_record"
-  schedule: "*/5 * * * *"
+ - name: "game_playtech_getBetDetail"
+   url: "/games/api/pt/get_record"
+   schedule: "*/5 * * * *"
    
