@@ -404,12 +404,12 @@ class submitDeposit(generics.GenericAPIView):
                 order_id= rdata["depositTransaction"]["transactionId"],
                 transaction_id=rdata['depositTransaction']['orderId'],
                 amount=rdata["depositTransaction"]["amount"],
-                status=2,
+                status=TRAN_CREATE_TYPE,
                 user_id=CustomUser.objects.get(pk=userId),
                 method= rdata["depositTransaction"]["depositMethod"],
                 currency= curr,
-                transaction_type=0,
-                channel=3,
+                transaction_type=TRANSACTION_DEPOSIT,
+                channel=QAICASH,
                 request_time=rdata["depositTransaction"]["dateCreated"],
             )
             return Response(rdata)
@@ -518,8 +518,8 @@ class submitPayout(generics.GenericAPIView):
                 user_id=user,
                 method= rdata["payoutTransaction"]["payoutMethod"],
                 currency= cur_val,
-                transaction_type=1,
-                channel=3,
+                transaction_type=TRANSACTION_WITHDRAWAL,
+                channel=QAICASH,
                 request_time=rdata['payoutTransaction']['dateCreated'],
             )
             
@@ -637,10 +637,11 @@ class approvePayout(generics.GenericAPIView):
 
             update_data.order_id = rdata['transactionId']
             update_data.last_updated = rdata["dateUpdated"]
-            update_data.status = 4
+            update_data.status = TRAN_APPROVED_TYPE
             update_data.review_status = REVIEW_APP
             update_data.remark = notes
             update_data.release_by = user
+            update_data.current_balance = user.main_walllet - update_data.amount
             update_data.save()
 
             logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
@@ -722,8 +723,8 @@ class rejectPayout(generics.GenericAPIView):
 
                     update_data.order_id = rdata['transactionId']
                     update_data.last_updated = rdata["dateUpdated"]
-                    update_data.status = 8
-                    update_data.review_status = 2
+                    update_data.status = TRAN_REJECTED_TYPE
+                    update_data.review_status = REVIEW_REJ
                     update_data.remark = notes
                     update_data.release_by = user
                     update_data.save()
@@ -801,27 +802,54 @@ def transactionConfirm(request):
     cur_status = statusConversion[Status]
     notes = body.get('notes')
     try:
-        order_id = Transaction.objects.filter(transaction_id=orderId)
+        order_id = Transaction.objects.get(transaction_id=orderId)
     except Transaction.DoesNotExist:
         order_id = None
         logger.error("Transaction does not exist for qaicash transaction confirm")
         return HttpResponse("Transaction does not exist for qaicash transaction confirm", content_type="text/plain")
 
     if order_id: 
-        update = order_id.update(
-            status=cur_status,
-            last_updated=timezone.now(),
-        )
+        # update = order_id.update(
+        #     status=cur_status,
+        #     last_updated=timezone.now(),
+        # )
+        order_id.status = cur_status
+        order_id.last_updated = timezone.now()
 
         if cur_status == 0:
-            update = order_id.update(
-                arrive_time=timezone.now(),
-                remark = 'Transaction success!')
+            if order_id.transaction_type == TRANSACTION_DEPOSIT:
+                try:
+                    user = CustomUser.objects.get(username=order_id.user_id)
+                except ObjectDoesNotExist:
+                    logger.error("Qaicash:: the user does not exist for transaction Confirm.")
+                    return HttpResponse("the user does not exist for transaction Confirm", content_type="text/plain")
+                # update = order_id.update(
+                #     arrive_time=timezone.now(),
+                #     #current_balance= + update.amount,
+                #     remark = 'Transaction success!')
+                order_id.arrive_time = timezone.now()
+                order_id.current_balance = user.main_walllet + update.amount
+                order_id.remark = 'Transaction success!'
+                order_id.save()
+
+            elif order_id.transaction_type == TRANSACTION_WITHDRAWAL:
+
+                # update = order_id.update(
+                #     arrive_time=timezone.now(),
+                #     current_balance=update.current_balance - update.amount,
+                #     remark = 'Transaction success!')
+                order_id.arrive_time = timezone.now()
+                order_id.current_balance = user.main_walllet - update.amount
+                order_id.remark = 'Transaction success!'
+                order_id.save()
+
             
         else :
             
-            update = order_id.update(
-                remark = notes)
+            # update = order_id.update(
+            #     remark = notes)
+            order_id.remark = notes
+            order_id.save()
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
