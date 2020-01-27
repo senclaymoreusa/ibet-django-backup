@@ -68,6 +68,13 @@ def createUser(user):
                 }
 
         return rrdata
+    except Exception as e:
+        logger.error("PT APi key error.{}".format(str(e)))
+        rrdata = {
+            "errorInfo": "PT APi key error",
+            "errorcode": PT_GENERAL_ERROR
+        }
+        return rrdata
     finally:
         # delete the file.
         os.unlink(pt_key.name)
@@ -184,7 +191,9 @@ class GetPlayer(APIView):
                 }
 
             return HttpResponse(json.dumps(data),content_type='application/json',status=200)  
-
+        except Exception as e:
+            logger.error("PT APi key error .{}".format(str(e)))
+            return HttpResponse("PT APi key error .", status=200)
         finally:
             # delete the file.
             os.unlink(pt_key.name)
@@ -284,6 +293,9 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
         else :
             logger.critical("FATAL__ERROR: PT game transfer status code.")
             return False
+    except Exception as e:
+        logger.error("PT APi key error .{}".format(str(e)))
+        return False
     finally:
         # delete the file.
         os.unlink(pt_key.name)
@@ -436,6 +448,9 @@ class GetBetHistory(APIView):
             else:
                 logger.critical("FATAL__ERROR: PT get bet record status code.")
                 return HttpResponse("PT get bad bet record status code.", status=200)
+        except Exception as e:
+            logger.error("PT APi key error or Redis connect error.{}".format(str(e)))
+            return HttpResponse("PT APi key error or Redis connect error.", status=200)
         finally:
             # delete the file.
             os.unlink(pt_key.name)
