@@ -204,22 +204,6 @@ class KyBets(View):
                             other_data={}
                         )
 
-                        # GameBet.objects.create(
-                        #     provider=provider,
-                        #     category=category[0],
-                        #     user=user,
-                        #     user_name=user.username,
-                        #     amount_wagered=decimal.Decimal(cell_score[i]),
-                        #     amount_won=decimal.Decimal(win_amount),
-                        #     outcome=outcome,
-                        #     transaction_id=trans_id,
-                        #     market=ibetCN,
-                        #     ref_no=game_id[i],
-                        #     bet_time=bet_time,
-                        #     resolved_time=resolved_time,
-                        #     other_data={}
-                        # )
-
                         gamebets_list.append(gamebet)
 
                     # bulk_create
