@@ -493,7 +493,11 @@ def depositArrive(request):
         # print(OrderID)
         uID = request.POST.get("uID")
         userid = uID.strip('n')
-        logger.info(userid)
+        try:
+            user = CustomUser.objects.get(pk=userid)
+            
+        except ObjectDoesNotExist:
+            logger.error("Asiapay:: the user does not exist for depositArrive API.")
         # serializer = serializer_class(data=request.data)
         # logger.info(serializer)
         datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -535,6 +539,7 @@ def depositArrive(request):
                     trans.arrive_time = arrive_time
                     trans.remark = 'Transaction success'
                     trans.qrcode = ''
+                    trans.current_balance = user.main_wallet + RevMoney
                     trans.save()
 
                     # check if user has valid first deposit bonus and update the status
@@ -632,7 +637,12 @@ def payoutArrive(request):
         # print(OrderID)
         uID = request.POST.get("uID")
         userid = uID.strip('n')
-        logger.info(userid)
+        #logger.info(userid)
+        try:
+            user = CustomUser.objects.get(pk=userid)
+        except ObjectDoesNotExist:
+            logger.error("Asiapay:: the user does not exist for payoutArrive API.")
+
         # serializer = serializer_class(data=request.data)
         # logger.info(serializer)
         datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -675,13 +685,14 @@ def payoutArrive(request):
             trans = Transaction.objects.get(transaction_id=OrderID)
             # print(trans)
             if StatusCode == '001' and TrustIUser == ASIAPAY_TRUSTUSER :  
-                trans.status = 0
+                trans.status = TRAN_SUCCESS_TYPE
                 trans.arrive_time = timezone.now()
                 trans.remark = 'Transaction success'
+                trans.current_balance = user.main_wallet - PayOutMoney 
                 trans.save()
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
-                trans.status = 1
+                trans.status = TRAN_FAIL_TYPE
                 trans.remark = 'Transaction failed'
                 trans.save()
                 return HttpResponse(ET.tostring(root1),content_type="text/xml")
