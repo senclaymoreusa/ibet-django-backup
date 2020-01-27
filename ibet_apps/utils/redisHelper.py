@@ -8,7 +8,10 @@ REDIS_KEY_PREFIX_USERS_BY_DEVICE = 'users_by_device:'
 REDIS_KEY_PREFIX_ONEBOOK_BET_DETAILS = 'onebook_history:'
 REDIS_KEY_PREFIX_AG_FILES = 'AG_files:'
 REDIS_KEY_PREFIX_EA_BET_HISTORY = 'ea_last_game_file:'
+
 REDIS_KEY_PREFIX_PT_BET_SET = 'pt_starttime: game_bet'
+REDIS_KEY_PREFIX_KY_BET_DETAILS = 'ky_bets:'
+
 
 
 def getBonusByDeviceRedisKey(device_id):
@@ -29,8 +32,13 @@ def getAGFileHistoryRedisKey():
 def getEABetHistroyRedisKey():
     return REDIS_KEY_PREFIX_EA_BET_HISTORY
 
+
 def getPTStarttimeKey():
     return REDIS_KEY_PREFIX_PT_BET_SET
+
+def getKYBetDetailsRedisKey():
+    return REDIS_KEY_PREFIX_KY_BET_DETAILS
+
 
 class RedisHelper():
     
@@ -107,4 +115,13 @@ class RedisHelper():
     def get_ea_last_file(self):
         ea_bet_history = getEABetHistroyRedisKey()
         return self.r.get(ea_bet_history)
+
+    def set_ky_bets_timestamp(self, timestamp):
+        ky_bet_details = getKYBetDetailsRedisKey()
+        return self.r.set(ky_bet_details, timestamp)
+
+    def get_ky_bets_timestamp(self):
+        ky_bet_details = getKYBetDetailsRedisKey()
+        return self.r.get(ky_bet_details)
+
 
