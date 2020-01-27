@@ -113,8 +113,8 @@ class KyBets(View):
 
             start_time = redis.get_ky_bets_timestamp
 
+            timestamp = get_timestamp()
             if start_time is None:
-                timestamp = get_timestamp()
                 start_time = timestamp - 300000 # five minutes before now
 
             # Query Bet Order
