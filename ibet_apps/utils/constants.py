@@ -755,6 +755,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     H2P_PAYOUT_URL_VND = "https://app.racethewind.net/merchantpayout/M0514"
     BackURI = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_result"
     REDIRECTURL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/deposit_success"
+    HELP2PAY_RETURN_URL = "http://ibet-django.claymoreasia.com/accounting/api/help2pay/withdraw_result"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -786,6 +787,7 @@ elif "dev" in os.getenv("ENV"):
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
     BackURI = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_result"
     REDIRECTURL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/deposit_success"
+    HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
     ASTROPAY_URL = "https://api.astropaycard.com"
     ASTROPAY_X_LOGIN = keys["ASTROPAY"]["X_LOGIN"]
     ASTROPAY_X_TRANS_KEY = keys["ASTROPAY"]["X_TRANS_KEY"]
@@ -817,6 +819,7 @@ else:
     H2P_PAYOUT_URL_VND = "http://app.besthappylife.biz/MerchantPayout/M0514"
     BackURI = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_result"
     REDIRECTURL = "http://cf61d044.ngrok.io/accounting/api/help2pay/deposit_success"
+    HELP2PAY_RETURN_URL = "http://cf61d044.ngrok.io/accounting/api/help2pay/withdraw_result"
     ASTROPAY_URL = 'https://sandbox-api.astropaycard.com'  # astroPay sandbox url
     ASTROPAY_X_LOGIN = '1PboDQ2FySeUK8YmaJTkfVlFzy0zTMvQ'
     ASTROPAY_X_TRANS_KEY = 'sQaDolJOA4cvlPoBwLXQjDAEnOO1XCjX'
@@ -828,7 +831,6 @@ else:
 
 
 
-HELP2PAY_RETURN_URL = "http://ibet-django-apdev.claymoreasia.com/accounting/api/help2pay/withdraw_result"
 
 GAME_FILTER_OPTION = [
     {
@@ -1587,8 +1589,10 @@ IMES_KEY = keys["IMES"]["DESKEY"]
 # Kaiyuan Gaming
 KY_AGENT = "71452"
 KY_LINE_CODE_1 = "iBet01"
-KY_API_URL = "https://kyapi.ky206.com:189/channelHandle"
-KY_RECORD_URL = "https://kyapi.ky206.com:190/getRecordHandle"
+KY_AES_KEY = keys["KAIYUAN"]["DESKEY"]
+KY_MD5_KEY = keys["KAIYUAN"]["MD5KEY"]
+KY_API_URL = keys["KAIYUAN"]["KY_API_URL"]
+KY_RECORD_URL = keys["KAIYUAN"]["KY_RECORD_URL"]
 
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
@@ -1645,12 +1649,20 @@ QT_STATUS_CODE = (
 BETSOFT_KEY = keys["BETSOFT"]["KEY"]
 
 #AG
-AG_URL = "https://gi.claymoreasia.com/doBusiness.do"
-AG_FORWARD_URL = "https://gci.claymoreasia.com/forwardGame.do"
-AG_CAGENT = "EV3_AGIN"
-AG_MD5 = "2YgQUaUZfDDt"
-AG_DES = "MJp7ScbZ"
-AG_DM = "http://ibet.com"
+AG_URL = keys["AG"]["URL"]
+AG_FORWARD_URL = keys["AG"]["FORWARD_URL"]
+AG_CAGENT = keys["AG"]["CAGENT"]
+AG_MD5 = keys["AG"]["MD5"]
+AG_DES = keys["AG"]["DES"]
+AG_DM = keys["AG"]["DM"]
+AG_FTP_USERNAME = keys["AG"]["FTP_USERNAME"]
+AG_FTP_PASSWORD = keys["AG"]["FTP_PASSWORD"]
+AG_FTP = keys["AG"]["FTP"]
+AG_TRANSFER_URL = "https://ibet-web-apdev.claymoreasia.com/p/fortune-center/transfer"
+AG_REGIS_URL = "https://ibet-web-apdev.claymoreasia.com/register"
+AG_EXIST_URL = "https://ibet-web-apdev.claymoreasia.com/live_casino"
+AG_CS_URL = "https://www.letou.com/cn/chat"
+
 #IMES
 IMES_PROVIDER = "IMES"
 

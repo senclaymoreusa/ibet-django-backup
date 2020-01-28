@@ -195,7 +195,9 @@ class Transaction(models.Model):
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
-    
+    current_balance = models.DecimalField(
+        max_digits=20, decimal_places=4, default=0, verbose_name=_("Current Balance")
+    )
     # Transaction types: Deposit, Withdrawal
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")

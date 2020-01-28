@@ -15,16 +15,24 @@ import requests,json
 import logging
 import random
 from utils.constants import *
-import datetime
 from datetime import date
 from django.utils import timezone
 import time
+from datetime import datetime
+from datetime import timedelta
+from time import mktime
+import pytz
 import utils.aws_helper
 import os
 import tempfile
+import redis
+from utils.redisHelper import RedisHelper
+from utils.redisClient import RedisClient
+from decimal import Decimal
+
 
 logger = logging.getLogger("django")
-   
+
 
 
 def createUser(user):
@@ -35,7 +43,7 @@ def createUser(user):
     }
     player = "IBETPU_" + user.username.upper()
     admininfo = '/adminname/IBETPCNYUAT/kioskname/IBETPCNYUAT/'
-    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name 
+    userinfo = 'firstname/' + user.first_name + '/lastname/' + user.last_name +'/password/' + user.username
 
     # all the API cert file are local, will update to S3 and change the path before merge.
     try:
@@ -59,6 +67,13 @@ def createUser(user):
                 "errorcode": PT_GENERAL_ERROR
                 }
 
+        return rrdata
+    except Exception as e:
+        logger.error("PT APi key error.{}".format(str(e)))
+        rrdata = {
+            "errorInfo": "PT APi key error",
+            "errorcode": PT_GENERAL_ERROR
+        }
         return rrdata
     finally:
         # delete the file.
@@ -176,7 +191,9 @@ class GetPlayer(APIView):
                 }
 
             return HttpResponse(json.dumps(data),content_type='application/json',status=200)  
-
+        except Exception as e:
+            logger.error("PT APi key error .{}".format(str(e)))
+            return HttpResponse("PT APi key error .", status=200)
         finally:
             # delete the file.
             os.unlink(pt_key.name)
@@ -213,7 +230,7 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
     direction = "deposit" if method == 0 else "withdraw"
     
     player = "IBETPU_" + user.username.upper()
-    url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + amount + "/adminname/IBETPCNYUAT"
+    url = PT_BASE_URL + "/player/" + direction + "/playername/" + player + "/amount/" + str(amount) + "/adminname/IBETPCNYUAT"
     
     try:
     # with tempfile.NamedTemporaryFile(delete=False) as temp:
@@ -276,6 +293,9 @@ def transferHelp(method, user, amount, trans_id, orderid, wallet):
         else :
             logger.critical("FATAL__ERROR: PT game transfer status code.")
             return False
+    except Exception as e:
+        logger.error("PT APi key error .{}".format(str(e)))
+        return False
     finally:
         # delete the file.
         os.unlink(pt_key.name)
@@ -320,11 +340,19 @@ def ptTransfer(user, amount, wallet, method):
     except Exception as e:
         return False
 
+def getGMTtime() :
+    gmt_time = time.gmtime()
+    gmt_time_to_dt = datetime.fromtimestamp(mktime(gmt_time), tz=pytz.timezone('GMT'))
+    # print(gmt_time_to_dt)
+    # gmt_plus = gmt_time_to_dt + datetime.timedelta(minutes = -5)
+    # print(gmt_plus.strftime('%Y-%m-%d%%20%H:%M:%S'))
+    return gmt_time_to_dt.strftime('%Y-%m-%d%%20%H:%M:%S')
+
       
 
 class GetBetHistory(APIView):
 
-    # other work still needed....
+   
     permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
         headers = {
@@ -333,14 +361,99 @@ class GetBetHistory(APIView):
             'X_ENTITY_KEY': ENTITY_KEY
 
         }
-        # rr = requests.get(PT_BASE_URL + "/customreport/getdata/reportname/PlayerGames", headers=headers, cert=('/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.pem','/Users/jenniehu/Documents/work/Game/PT/fwdplaytechuatibetp/CNY_UAT_FB88/CNY_UAT_FB88.key'))
-        
-        
-        if rr.status_code == 200 :    
-               
-            rrdata = rr.json()
-            data = {
-                "test" : None
-            }
+        try:
+            # with tempfile.NamedTemporaryFile(delete=False) as temp:
+            pt_key = tempfile.NamedTemporaryFile(delete=False)
+            pt_key.write(PTKEY)
+            pt_key.flush()    # ensure all data written
+            # to get the path/file 
+            pt_pem = tempfile.NamedTemporaryFile(delete=False)
+            pt_pem.write(PTPEM)
+            pt_pem.flush()
+
+            # get time
+            r = RedisClient().connect()
+            redis = RedisHelper()
            
-        return HttpResponse(json.dumps(rrdata),content_type='application/json',status=200)
+            ts_from_redis = redis.get_pt_starttime()
+            if ts_from_redis is None:
+                
+                startdate = getGMTtime()
+                end_time = datetime.strptime(startdate, '%Y-%m-%d%%20%H:%M:%S') + timedelta(minutes = 5)
+                enddate = end_time.strftime('%Y-%m-%d%%20%H:%M:%S')
+               
+
+
+            else:
+                start_time = datetime.strptime(ts_from_redis.decode(), '%Y-%m-%d%%20%H:%M:%S')
+                startdate = start_time.strftime('%Y-%m-%d%%20%H:%M:%S')
+                end_time = start_time + timedelta(minutes = 5)
+                enddate = end_time.strftime('%Y-%m-%d%%20%H:%M:%S')
+               
+                
+            rr = requests.post(PT_BASE_URL + "/game/flow/startdate/" + startdate + "/enddate/" + enddate, headers=headers, cert=(pt_pem.name, pt_key.name))
+            
+            if rr.status_code == 200 :  
+                rrdata = rr.json()
+                    
+                try: 
+                    records = rrdata['result']
+                    provider = GameProvider.objects.get(provider_name=PT_PROVIDER)
+                    category = Category.objects.get(name='Games')
+                    for record in records:
+                            # get user here
+                        try:
+                            playername = record['PLAYERNAME']
+                            user = CustomUser.objects.get(username__iexact=playername.split('_')[1])
+                                
+                            trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                            if (float(record['BET']) - float(record['WIN']) > 0) :
+                                outcome = 1 # lose
+                            elif (float(record['BET']) - float(record['WIN']) == 0) :
+                                outcome = 2 # Tie/Push
+                            else:
+                                outcome = 0 # win
+                                
+                            resolve = datetime.strptime(record['GAMEDATE'], '%Y-%m-%d %H:%M:%S')
+                            resolve = resolve.replace(tzinfo=pytz.timezone(provider.timezone))
+                            resolve = resolve.astimezone(pytz.utc)
+                              
+                            GameBet.objects.create(
+                                    provider=provider,
+                                    category=category,
+                                    user=user,
+                                    user_name=user.username,
+                                    amount_wagered=decimal.Decimal(record['BET']),
+                                    amount_won=decimal.Decimal(record['WIN']),
+                                    outcome=outcome,
+                                    transaction_id=trans_id,
+                                    market=ibetCN,
+                                    ref_no=record['GAMEID'],
+                                    resolved_time=resolve,
+                                    other_data={}
+                                )
+                                
+                            
+                        except Exception as e:
+                            logger.error("PT cannot get customuser in get record.")
+                            return HttpResponse("PT cannot get customuser in bet records.", status=200)  
+                        
+                    redis.set_pt_starttime(enddate)
+                    return HttpResponse("PT get {} bet records successfully".format(len(records)), status=200)  
+                except Exception as e:
+                    logger.error("PT cannot get bet records")
+                    return HttpResponse("PT cannot get bet records.", status=200)  
+
+
+            else:
+                logger.critical("FATAL__ERROR: PT get bet record status code.")
+                return HttpResponse("PT get bad bet record status code.", status=200)
+        except Exception as e:
+            logger.error("PT APi key error or Redis connect error.{}".format(str(e)))
+            return HttpResponse("PT APi key error or Redis connect error.", status=200)
+        finally:
+            # delete the file.
+            os.unlink(pt_key.name)
+            os.unlink(pt_pem.name)
+           
+        

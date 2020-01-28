@@ -11,10 +11,10 @@ def getThirdPartyKeys(bucket, file):
         config_obj = s3client.get_object(Bucket=bucket, Key=file)
         config = json.loads(config_obj['Body'].read())
     except ClientError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
     except NoCredentialsError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
     return config
 
@@ -26,10 +26,10 @@ def getPTCertContent(bucket, file):
         # contents = filedata.decode('utf-8')
        
     except ClientError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
     except NoCredentialsError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
     return filedata
     
@@ -67,10 +67,10 @@ def getAWSClient(service_name, third_party_keys, region):
             aws_secret_access_key=third_party_keys["AWS_SECRET_ACCESS_KEY"],
         )
     except ClientError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
     except NoCredentialsError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
 
     return client 
@@ -80,10 +80,10 @@ def getSQSQueue(queue_name):
     try:
         queue = sqs.get_queue_by_name(QueueName=queue_name)
     except ClientError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
     except NoCredentialsError as e:
-        logger.error(e)
+        logger.error(str(e))
         return None
 
     return queue

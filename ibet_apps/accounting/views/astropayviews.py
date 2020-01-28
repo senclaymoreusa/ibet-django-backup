@@ -518,7 +518,7 @@ def capture_transaction(request):
                     'status':0,
                     'method':"AstroPay",
                     'arrive_time': timezone.now(),
-                    'product': "None",
+                    'product': "None"
                 }
                 # loop = asyncio.new_event_loop()
                 # asyncio.set_event_loop(loop)            

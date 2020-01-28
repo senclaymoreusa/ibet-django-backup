@@ -3,7 +3,10 @@ import sys
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
+
+from bonus.bonus_helper import checkMustHave
 from bonus.models import *
+from system.models import UserToUserGroup
 from users.models import CustomUser
 from games.models import Category
 from utils.admin_helper import bonusValueToKey, dateToDatetime, BONUS_TYPE_VALUE_DICT, BONUS_DELIVERY_VALUE_DICT, \
@@ -317,7 +320,7 @@ class BonusView(View):
                             requirements = req_data['requirements']
 
                             must_have = requirements.get('must_have')
-                            if (not ftd_bonus) and must_have and (BONUS_VALID_DEPOSIT not in must_have):
+                            if type == BONUS_TYPE_DEPOSIT and (not ftd_bonus) and must_have and (BONUS_VALID_DEPOSIT not in must_have):
                                 must_have.append(BONUS_VALID_DEPOSIT)
 
                             aggregate_method = requirements['aggregate_method']
@@ -331,7 +334,7 @@ class BonusView(View):
                                         must_have=int(req)
                                     )
                                     must_have_req.save()
-                                    logger.info("Create a new must have Requirement for " + str(bonus_obj.name))
+                                    logger.info("Create a new must have Requirement for " + str(must_have_req.pk))
                             # add wager requirements
                             wager_multiple = requirements.get('wager_multiple')
                             wager_dict = wager_multiple[curr_idx]
@@ -379,6 +382,7 @@ class BonusView(View):
                         # add target user group
                         if 'players' in req_data.keys():
                             players = req_data['players']
+                            target_all = players.get('target_all')
                             if players.get('target_player'):
                                 for key in players.get('target_player'):
                                     ni_group = BonusUserGroup(
@@ -395,6 +399,51 @@ class BonusView(View):
                                     )
                                     ne_group.save()
                             logger.info("Add new groups info for bonus " + str(bonus_obj.name))
+
+                            # get target users
+                            if target_all is True:
+                                bonus_users = CustomUser.objects.all()
+                            else:
+                                bonus_user_groups = BonusUserGroup.objects.filter(bonus=bonus_obj, excluded=False)
+                                bonus_users = list()
+                                for bonus_user_group in bonus_user_groups:
+                                    user_groups = UserToUserGroup.objects.filter(group=bonus_user_group.groups)
+                                    for user_group in user_groups:
+                                        bonus_users.append(user_group.user.pk)
+                                bonus_users = CustomUser.objects.filter(pk__in=bonus_users).distinct()
+
+                            # get excluded users
+                            bonus_excluded_user_groups = BonusUserGroup.objects.filter(bonus=bonus_obj, excluded=True)
+                            bonus_excluded_users = list()
+                            for bonus_excluded_user_group in bonus_excluded_user_groups:
+                                user_groups = UserToUserGroup.objects.filter(group=bonus_excluded_user_group.groups)
+                                for user_group in user_groups:
+                                    bonus_excluded_users.append(user_group.user.pk)
+
+                            logger.info("Successfully getting user bonus groups " + str(bonus_obj.name))
+
+                            must_haves = Requirement.objects.filter(bonus=bonus_obj).values_list('must_have', flat=True)
+
+                            # add initial issued user bonus event
+                            for user in bonus_users:
+                                if user.pk in bonus_excluded_users:
+                                    continue
+                                # check must have
+                                valid = True
+                                for must_have in must_haves:
+                                    if must_have and not checkMustHave(user, must_have):
+                                        valid = False
+                                        break
+                                if valid == True:
+                                    UserBonusEvent.objects.create(
+                                        owner=user,
+                                        bonus=bonus_obj,
+                                        status=BONUS_ISSUED,
+                                        delivered_by=CustomUser.objects.get(username='System')
+                                    )
+                            logger.info("Successfully issued bonus to target groups " + str(bonus_obj.name))
+
+
 
                     # if 'categories' in req_data.keys():
                     #     print(req_data['categories'])
@@ -413,6 +462,7 @@ class BonusView(View):
                     #         return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
                     # add target user group
+
         except Exception as e:
             logger.error("Error creating new bonus details ", str(e))
             response = JsonResponse({"error": "Error creating new bonus, please try again!"})
