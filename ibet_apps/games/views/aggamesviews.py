@@ -516,15 +516,13 @@ def getBalance(user):
         try:
             info = decimal.Decimal(tree.get('info'))
             msg =  tree.get('msg')
+            return json.dumps({'balance': info})
         except ObjectDoesNotExist:
             logger.info("AG::cannot get the user's balance.")
             return json.dumps({'balance': 0.00})
-        
-        
-        return json.dumps({'balance': info})
     else:
         logger.critical("AG::The request is failed for AG get balance api.")
-        return json.dumps({"error":"The request is failed for AG get balance"}) 
+        return json.dumps({'balance': 0.00}) 
     
 
 class test(APIView):
