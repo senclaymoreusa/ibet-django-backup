@@ -618,17 +618,28 @@ def getEAWalletBalance(user):
     api_response = {}
     
     try: 
+        properties_status = ""
+        propertiesMessage = ""
         for i in response['request']['element']['properties']:
             if i['@name'] == 'status' and "#text" in i:
                 properties_status= i['#text']
             elif i['@name'] == 'errdesc' and "#text" in i:
                 propertiesMessage = i['#text']
-                logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
         
         api_response['status_code'] = properties_status
         api_response['error_message'] = propertiesMessage
+        api_response['balance'] = propertiesBalance
+        
+        if properties_status == '203':
+            logger.info("The user never play ea game: {}".format(propertiesMessage))
+        else:
+            logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
 
     except:
+
+        properties_user_id = str(user.username)
+        propertiesBalance = 0
+        propertiesCurrency = ""
         for i in response['request']['element']['properties']:
             if i['@name'] == 'userid':
                 properties_user_id= i['#text']
@@ -647,10 +658,13 @@ def getEAWalletBalance(user):
             currency = CURRENCY_THB
         elif currency == "704":
             currency = CURRENCY_VND
+        else:
+            currency = CURRENCY_CNY
         
         api_response['currency'] = currency
     
-    logger.info("Successfully get the balance from EA and amount is: " + propertiesBalance)
+        logger.info("Successfully get the balance from EA and amount is: " + str(propertiesBalance))
+
     return json.dumps(api_response)
 
 
