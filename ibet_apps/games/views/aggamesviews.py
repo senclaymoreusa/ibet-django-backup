@@ -517,7 +517,7 @@ def getBalance(user):
             info = decimal.Decimal(tree.get('info'))
             msg =  tree.get('msg')
             return json.dumps({'balance': info})
-        except ObjectDoesNotExist:
+        except Exception as e:
             logger.info("AG::cannot get the user's balance.")
             return json.dumps({'balance': 0.00})
     else:
