@@ -236,6 +236,7 @@ class DebitAPI(View):
     def get(self, request, *args, **kwargs):
         username = request.GET.get("username")
         amount = request.GET.get("amount")
+        from_wallet = request.GET.get("from_wallet")
 
         try:
             user = CustomUser.objects.get(username=username)
