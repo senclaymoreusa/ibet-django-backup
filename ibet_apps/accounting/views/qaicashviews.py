@@ -828,7 +828,7 @@ def transactionConfirm(request):
                 #     #current_balance= + update.amount,
                 #     remark = 'Transaction success!')
                 order_id.arrive_time = timezone.now()
-                order_id.current_balance = user.main_walllet + update.amount
+                order_id.current_balance = user.main_wallet + order_id.amount
                 order_id.remark = 'Transaction success!'
                 order_id.save()
 
@@ -839,7 +839,7 @@ def transactionConfirm(request):
                 #     current_balance=update.current_balance - update.amount,
                 #     remark = 'Transaction success!')
                 order_id.arrive_time = timezone.now()
-                order_id.current_balance = user.main_walllet - update.amount
+                order_id.current_balance = user.main_wallet - order_id.amount
                 order_id.remark = 'Transaction success!'
                 order_id.save()
 
