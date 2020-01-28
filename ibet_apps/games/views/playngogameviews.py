@@ -255,6 +255,23 @@ def png_reserve(data):
         status_code = PNG_STATUS_OK
         bet_already_placed = False
 
+        if checkUserBlock(user_obj):
+            logger.error("PLAY'nGO Reserve Error: Blocked users are not allowed to place bets.")
+
+            res_dict = {
+                "reserve": {
+                    "statusCode": {
+                        "#text": str(PNG_STATUS_ACCOUNTDISABLED)
+                    },
+                    "statusMessage": {
+                        "#text": "Account Disabled"
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
+            return HttpResponse(res_msg, content_type='text/xml')
+
         # Idempotence - check if bet with transaction_id was already successfully placed.
         try:
             existing_bet = GameBet.objects.get(ref_no=transaction_id)
