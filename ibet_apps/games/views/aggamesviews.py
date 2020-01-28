@@ -513,12 +513,16 @@ def getBalance(user):
     rdata = r.text
     if r.status_code == 200:
         tree = ET.fromstring(rdata)
-        info = tree.get('info')
-        msg =  tree.get('msg')
-        return json.dumps({'balance': info})
+        try:
+            info = decimal.Decimal(tree.get('info'))
+            msg =  tree.get('msg')
+            return json.dumps({'balance': info})
+        except Exception as e:
+            logger.info("AG::cannot get the user's balance.")
+            return json.dumps({'balance': 0.00})
     else:
         logger.critical("AG::The request is failed for AG get balance api.")
-        return json.dumps({"error":"The request is failed for AG get balance"}) 
+        return json.dumps({'balance': 0.00}) 
     
 
 class test(APIView):
