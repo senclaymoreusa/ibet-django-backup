@@ -75,7 +75,7 @@ class EALiveCasinoClientLoginView(View):
                 status_code = 101
                 error_message = "Invalid password"
 
-            if user.block is True:
+            if checkUserBlock(user):
                 status_code = 104
                 error_message = "User has been block"
 
@@ -701,7 +701,7 @@ class EASingleLoginValidation(View):
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
             user_currency = user.currency
-            if user.block is True:
+            if checkUserBlock(user):
                 status_code = 104
                 error_message = "User has been block"
 
