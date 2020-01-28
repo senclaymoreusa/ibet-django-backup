@@ -533,8 +533,8 @@
                         'new_amount': $("#new-amount").val()
                     }
                 })
-                .done(function() {
-                    alert("Override successful");
+                .done(function(data) {
+                    alert("Override successful: " + data);
                     location.reload();
                 })
             });

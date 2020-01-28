@@ -164,6 +164,7 @@ class OverrideTransaction(CommAdminView):
     def post(self, request):
         # print(request)
         print(request.POST)
+        amount = request.POST.get("new_amount")
         return HttpResponse("hello")
 
 # get user details for modal
