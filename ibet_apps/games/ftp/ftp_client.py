@@ -20,7 +20,7 @@ class EaFTP():
                 break
             except Exception as e:
                 logger.warning("Connecting EA FTP error {}".format(str(e)))
-                logger.warning("Connecting EA FTP retry " + x)
+                logger.warning("Connecting EA FTP retry " + str(i))
                 sleep(3)
                 i += 1
 
@@ -35,7 +35,7 @@ class AgFTP():
                 break
             except Exception as e:
                 logger.warning("Connecting AG FTP error {}".format(str(e)))
-                logger.warning("Connecting AG FTP retry " + x)
+                logger.warning("Connecting AG FTP retry " + str(x))
                 sleep(3)
        
 

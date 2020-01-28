@@ -19,6 +19,14 @@ logger = logging.getLogger('django')
 redis = RedisHelper()
 
 
+def replaceComma (str):
+
+    if str is None or len(str) <= 0:
+        return str
+
+    return str.replace(",", "##")
+
+
 # Method that copies Game Bet history to S3
 # This is the first stage of the pipeline - the reason behind it is that, it's much more efficient
 # to batch copy from S3 to Redshift than to insert records directly to Redshift
@@ -55,7 +63,7 @@ def gamebet_copy(request):
                       + ('' if (result.game is None or result.game.name is None) else
                          result.game.name) + ',' \
                       + ('' if (result.game is None or result.game.game_url is None) else
-                         result.game.game_url) + ',' \
+                         replaceComma(result.game.game_url)) + ',' \
                       + ('' if (result.user is None or result.user.username is None) else
                          result.user.username) + ',' \
                       + ('' if (result.user is None or result.user.email is None) else
@@ -65,14 +73,14 @@ def gamebet_copy(request):
                       + ('' if result.outcome is None else result.get_outcome_display()) + ',' \
                       + ('' if result.odds is None else str(result.odds)) + ',' \
                       + ('' if result.bet_type is None else result.get_bet_type_display()) + ',' \
-                      + ('' if result.line is None else result.line) + ',' \
-                      + ('' if result.transaction_id is None else result.transaction_id) + ',' \
+                      + ('' if result.line is None else replaceComma(result.line)) + ',' \
+                      + ('' if result.transaction_id is None else replaceComma(result.transaction_id)) + ',' \
                       + ('' if result.currency is None else str(result.get_currency_display())) + ',' \
                       + ('' if result.market is None else str(result.get_market_display())) + ',' \
-                      + ('' if result.ref_no is None else result.ref_no) + ',' \
+                      + ('' if result.ref_no is None else replaceComma(result.ref_no)) + ',' \
                       + ('' if result.bet_time is None else str(result.bet_time)) + ',' \
                       + ('' if result.resolved_time is None else str(result.resolved_time)) + ',' \
-                      + ('' if result.other_data is None else str(result.other_data)) + '\n'
+                      + ('' if result.other_data is None else replaceComma(str(result.other_data))) + '\n'
             count = count + 1
         except Exception as e:
             error_message = "FATAL__ERROR piping GameBet entry into S3: exception = " + str(e)
@@ -116,12 +124,12 @@ def transaction_copy(request):
             if result.request_time > max_datetime:
                 max_datetime = result.request_time
             filestr = filestr \
-                      + ('' if result.transaction_id is None else result.transaction_id) + ',' \
+                      + ('' if result.transaction_id is None else replaceComma(result.transaction_id)) + ',' \
                       + ('' if (result.user_id is None or result.user_id.username is None) else
                          result.user_id.username) + ',' \
                       + ('' if (result.user_id is None or result.user_id.email is None) else
                          result.user_id.email) + ',' \
-                      + ('' if result.order_id is None else result.order_id) + ',' \
+                      + ('' if result.order_id is None else replaceComma(result.order_id)) + ',' \
                       + ('' if result.amount is None else str(result.amount)) + ',' \
                       + ('' if result.currency is None else str(result.get_currency_display())) + ',' \
                       + ('' if result.language is None else result.get_language_display()) + ',' \
@@ -133,18 +141,18 @@ def transaction_copy(request):
                       + ('' if result.arrive_time is None else str(result.arrive_time)) + ',' \
                       + ('' if result.status is None else result.get_status_display()) + ',' \
                       + ('' if result.transaction_type is None else result.get_transaction_type_display()) + ',' \
-                      + ('' if result.remark is None else result.remark) + ',' \
+                      + ('' if result.remark is None else replaceComma(result.remark)) + ',' \
                       + ('' if result.transfer_from is None else result.transfer_from) + ',' \
                       + ('' if result.transfer_to is None else result.transfer_to) + ',' \
                       + ('' if result.product is None else result.get_product_display()) + ',' \
                       + ('' if result.review_status is None else result.get_review_status_display()) + ',' \
-                      + ('' if result.bank_info is None else str(result.bank_info)) + ',' \
-                      + ('' if result.transaction_image is None else result.transaction_image) + ',' \
+                      + ('' if result.bank_info is None else replaceComma(str(result.bank_info))) + ',' \
+                      + ('' if result.transaction_image is None else replaceComma(result.transaction_image)) + ',' \
                       + ('' if result.month is None else str(result.month)) + ',' \
-                      + ('' if result.qrcode is None else result.qrcode) + ',' \
+                      + ('' if result.qrcode is None else replaceComma(result.qrcode)) + ',' \
                       + ('' if (result.commission_id is None or result.commission_id.pk is None) else
                          str(result.commission_id.pk)) + ',' \
-                      + ('' if result.other_data is None else str(result.other_data)) + ',' \
+                      + ('' if result.other_data is None else replaceComma(str(result.other_data))) + ',' \
                       + ('' if (result.release_by is None or result.release_by.username is None) else
                          result.release_by.username) + '\n'
             count = count + 1
@@ -195,9 +203,9 @@ def user_action_copy(request):
                       + ('' if (result.user is None or result.user.email is None) else result.user.email) + ',' \
                       + ('' if result.ip_addr is None else result.ip_addr) + ',' \
                       + ('' if result.event_type is None else result.get_event_type_display()) + ',' \
-                      + ('' if result.device is None else str(result.device)) + ',' \
-                      + ('' if result.browser is None else str(result.browser)) + ',' \
-                      + ('' if result.refer_url is None else str(result.refer_url)) + ',' \
+                      + ('' if result.device is None else replaceComma(str(result.device))) + ',' \
+                      + ('' if result.browser is None else replaceComma(str(result.browser))) + ',' \
+                      + ('' if result.refer_url is None else replaceComma(str(result.refer_url))) + ',' \
                       + ('' if result.page_id is None else str(result.page_id)) + ',' \
                       + ('' if result.created_time is None else str(result.created_time)) + '\n'
             count = count + 1
