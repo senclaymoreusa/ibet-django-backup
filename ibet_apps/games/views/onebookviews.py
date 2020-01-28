@@ -845,7 +845,7 @@ def checkUserBalance(user):
         return json.dumps(rdata)
     try:
         Data = rdata['Data']  
-        balance = Data[0]["balance"]
+        balance = decimal.Decimal(Data[0]["balance"])
         return json.dumps({"balance":balance})
     except:
         logger.error("ONEBOOK::Cannot find the data for onebook check user balance.")
