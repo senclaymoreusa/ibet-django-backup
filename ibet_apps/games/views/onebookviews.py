@@ -847,7 +847,7 @@ def checkUserBalance(user):
                 "wallet_id": '1'
             })
             rdata = r.json()
-            print(rdata)
+            
             if r.status_code == 200:
                 success = True
                 break
