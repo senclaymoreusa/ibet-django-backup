@@ -71,7 +71,7 @@ class GamesSearchView(View):
                     # Q(description_zh__icontains=q)|Q(description_fr__icontains=q)| 
                     # Q(attribute__icontains=q)|Q(category_id__name__icontains=q)
                     Q(name__icontains=q)|Q(name_zh__icontains=q)|
-                    Q(name_fr__icontains=q)
+                    Q(name_fr__icontains=q)| Q(provider__provider_name__icontains=q)
                 )
                 logger.info("Searching key word: " + str(q) + "from all games")
 
