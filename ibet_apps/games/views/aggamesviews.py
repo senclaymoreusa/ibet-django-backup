@@ -515,11 +515,12 @@ def getBalance(user):
         tree = ET.fromstring(rdata)
         try:
             info = decimal.Decimal(tree.get('info'))
+            msg =  tree.get('msg')
         except ObjectDoesNotExist:
             logger.info("AG::cannot get the user's balance.")
             return json.dumps({'balance': 0.00})
         
-        msg =  tree.get('msg')
+        
         return json.dumps({'balance': info})
     else:
         logger.critical("AG::The request is failed for AG get balance api.")
