@@ -513,7 +513,12 @@ def getBalance(user):
     rdata = r.text
     if r.status_code == 200:
         tree = ET.fromstring(rdata)
-        info = tree.get('info')
+        try:
+            info = decimal.Decimal(tree.get('info'))
+        except ObjectDoesNotExist:
+            logger.info("AG::cannot get the user's balance.")
+            return json.dumps({'balance': 0.00})
+        
         msg =  tree.get('msg')
         return json.dumps({'balance': info})
     else:
