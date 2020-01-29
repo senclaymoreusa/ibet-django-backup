@@ -72,7 +72,7 @@ def gpiTransfer(user, amount, wallet, method):
         req_param = {}
         req_param["merch_id"] = GPI_MERCH_ID
         req_param["merch_pwd"] = GPI_MERCH_PWD
-        req_param["cust_id"] = username
+        req_param["cust_id"] = user.username
         req_param["currency"] = currency
         req_param["amount"] = amount
         req_param["trx_id"] = trans_id
@@ -128,7 +128,7 @@ def gpiTransfer(user, amount, wallet, method):
         return True
         
     except Exception as e:
-        logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+        logger.error("Error: GPI Transfer API error -- {}".format(repr(e)))
         return False
 
 
@@ -402,7 +402,7 @@ class DebitAPI(View):
             return HttpResponse(status=400)
         
         except Exception as e:
-            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            logger.error("Error: GPI DebitAPI error -- {}".format(repr(e)))
             return HttpResponse(repr(e))
 
 
@@ -478,7 +478,7 @@ class CreditAPI(View):
             return HttpResponse(status=404)
         
         except Exception as e:
-            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            logger.error("Error: GPI CreditAPI error -- {}".format(repr(e)))
             return HttpResponse(status=500)
 
 
@@ -501,7 +501,7 @@ class CheckTransactionAPI(View):
 
             return HttpResponse(json.dumps(res), content_type="json/application", status=200)
         except Exception as e:
-            logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+            logger.error("Error: GPI CheckTransactionAPI error -- {}".format(repr(e)))
             return HttpResponse(status=400)
 
 
