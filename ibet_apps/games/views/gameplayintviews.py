@@ -157,9 +157,12 @@ def transCurrency(user):
         elif currency == CURRENCY_GBP:
             currency = "GBP"
         else:
-            currency = ""
+            raise ValueError
 
         return currency
+    except ValueError:
+        logger.warning("Warning: GPI currency transform DOES NOT SUPPORT -- {}".format(currency))
+        return ""
     except Exception as e:
         logger.error("ERROR: GPI currency transform error -- {}".format(repr(e)))
         return ""
@@ -242,6 +245,8 @@ class ValidateUserAPI(View):
             resp["ip"] = ip
             resp["date_of_birth"] = user.date_of_birth
             resp["test_cust"] = True
+
+            logger.info("GPI ValidateUserAPI token: {}, user: {} successful".format(token, user.username))
 
         except ObjectDoesNotExist:
             resp = {}
