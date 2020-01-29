@@ -114,7 +114,8 @@ class CheckTransferWallet():
         return 0
 
     def GPICheckAmount(self):
-        balance = getGPIBalance(self.user)
+        balance = decimal.Decimal(getGPIBalance(self.user))
+        print(balance)
         return balance
 
     def PTCheckAmount(self):

@@ -52,11 +52,9 @@ def getGPIBalance(user):
         
         res = xmltodict.parse(res.text)
 
-        res = json.dumps(res)
-
         if res["resp"]["error_code"] == "0":
             logger.info("GPI get balance for user: {}, {}".format(user.username, res["resp"]["balance"]))
-            return float(res["resp"]["balance"])
+            return res["resp"]["balance"]
         else:
             logger.warning("GPI get balance failed: {}".format(res["resp"]["error_code"]))
             return 0
