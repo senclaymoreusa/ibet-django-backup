@@ -125,12 +125,12 @@ class getDepositMethod(generics.GenericAPIView):
             if r.status_code == 400 or r.status_code == 401:
                 success = True
                 # Handle error
-                logger.info("Failed to complete a request for getDepositMethod...")
-                logger.error(responseJson)
+                logger.critical("Failed to complete a request for qaicash getDepositMethod...")
+                
                 return Response(responseJson)
             if r.status_code == 500:
-                logger.info("Request failed {} time(s)'.format(x+1)")
-                logger.info("Waiting for %s seconds before retrying again")
+                
+                logger.info("Request failed {} time(s) Waiting for %s seconds before retrying again".format(x+1))
                 sleep(delay)
         if not success:
             return Response(responseJson)
@@ -197,12 +197,12 @@ class getBankList(generics.GenericAPIView):
                 if r.status_code == 200:
                     return Response(data)            
                 if r.status_code == 400 or r.status_code == 401:
-                    logger.info("Failed to complete a request for retrieving available bank lists (getBankList())")
-                    logger.error(data)
+                    logger.critical("Failed to complete a request for Qaicash retrieving available bank lists (getBankList())")
+                    
                     return Response(data)
                 if r.status_code == 500:
-                    logger.info('Request failed {} time(s)'.format(x+1))
-                    logger.debug("wating for %s seconds before retrying again")
+                    
+                    logger.info("Request failed {} time(s) wating for %s seconds before retrying again".format(x+1))
                     sleep(delay) 
             return Response(data)
         else:
@@ -259,18 +259,17 @@ class getBankLimits(generics.GenericAPIView):
                 success = True
                 break
             if r.status_code == 400 or r.status_code == 401:
-                logger.info("There was something wrong with the result")
-                logger.info(r.text)
-                logger.info("Failed to complete a request for retrieving available deposit methods..")
-                logger.error(r.text)
+                
+                logger.info("Failed to complete a request for retrieving available Qaicash Bank Limits")
+                
                 return Response(data)
             if r.status_code == 500:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
+                logger.info('Request failed {} time(s) wating for %s seconds before retrying again'.format(x+1))
+                
                 sleep(delay) 
 
         if not success:
-            logger.info("Failed to complete a request for getBankLimits()")
+            logger.critical("Failed to complete a request for getBankLimits()")
             return Response({"error" : "Qaicash API returned a status code of 500", "message": r.text})
         else:
             data = r.json()
@@ -387,31 +386,30 @@ class submitDeposit(generics.GenericAPIView):
         if r.status_code == 200 or r.status_code == 201:
             success = True
         if r.status_code == 400 or r.status_code == 401:
-            logger.info("There was something wrong with the result")
-            logger.info(r.text)
-            logger.info("Failed to complete a request for retrieving available deposit methods..")
-            logger.error(r.text)
+            
+            logger.error("Failed to complete a request for submitting Qaciash deposit..")
+            
             return Response(rdata)
         if r.status_code == 500:
-            logger.info('Request failed {} time(s)'.format(x+1))
-            logger.debug("wating for %s seconds before retrying again")
+            logger.info('Request failed {} time(s) wating for %s seconds before retrying again'.format(x+1))
+            
             sleep(delay) 
         
         
         if not success:
-            logger.info("Failed to complete a request for deposit")
+            logger.critical("Failed to complete a request for Qaicash deposit")
             return Response({"error" : "Qaicash API returned a status code of 500", "message": r.text})
         else:
             create = Transaction.objects.create(
                 order_id= rdata["depositTransaction"]["transactionId"],
                 transaction_id=rdata['depositTransaction']['orderId'],
                 amount=rdata["depositTransaction"]["amount"],
-                status=2,
+                status=TRAN_CREATE_TYPE,
                 user_id=CustomUser.objects.get(pk=userId),
                 method= rdata["depositTransaction"]["depositMethod"],
                 currency= curr,
-                transaction_type=0,
-                channel=3,
+                transaction_type=TRANSACTION_DEPOSIT,
+                channel=QAICASH,
                 request_time=rdata["depositTransaction"]["dateCreated"],
             )
             return Response(rdata)
@@ -451,8 +449,8 @@ class submitPayout(generics.GenericAPIView):
         try:
             user = CustomUser.objects.get(username=userId)
         except ObjectDoesNotExist:
-            logger.error("The  user is not existed.")
-            return Response({"error":"The  user is not existed."}) 
+            logger.error("The  user does not exist.")
+            return Response({"error":"The  user does not exist."}) 
         trans_id = user.username+strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         mymethod = self.request.POST.get('method')
         list = [merchantId, trans_id, amount, currency, dateTime, userId]
@@ -520,15 +518,17 @@ class submitPayout(generics.GenericAPIView):
                 user_id=user,
                 method= rdata["payoutTransaction"]["payoutMethod"],
                 currency= cur_val,
-                transaction_type=1,
-                channel=3,
+                transaction_type=TRANSACTION_WITHDRAWAL,
+                channel=QAICASH,
                 request_time=rdata['payoutTransaction']['dateCreated'],
             )
+            
+            return Response(rdata)
         else:
-            logger.error('post information is not correct, please try again')
+            logger.critical('Qaicash::Unable to submit payout request.')
+            return Response({"error":"Qaicash::Unable to submit payout request."})
 
-        logger.info(rdata)
-        return Response(rdata)
+        
            
 class getPayoutTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
@@ -558,7 +558,7 @@ class getPayoutTransaction(generics.GenericAPIView):
                 logger.debug("wating for %s seconds before retrying again")
                 sleep(delay) 
         if not success:
-            logger.info('Failed to complete a request for payout transaction')
+            logger.critical('Failed to complete a request for qaicash payout transaction')
         # Handle error
 
         rdata = r.json()
@@ -621,11 +621,11 @@ class approvePayout(generics.GenericAPIView):
                     success = True
                     break
             except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
+                logger.info('Request failed {} time(s). wating for %s seconds before retrying again'.format(x+1))
+                
                 sleep(delay) 
         if not success:
-            logger.info('Failed to complete a request for payout transaction')
+            logger.critical('Failed to complete a request for approving payout transaction')
         # Handle error
         
         rdata = r.json()
@@ -637,24 +637,25 @@ class approvePayout(generics.GenericAPIView):
 
             update_data.order_id = rdata['transactionId']
             update_data.last_updated = rdata["dateUpdated"]
-            update_data.status = 4
+            update_data.status = TRAN_APPROVED_TYPE
             update_data.review_status = REVIEW_APP
             update_data.remark = notes
             update_data.release_by = user
+            update_data.current_balance = user.main_walllet - update_data.amount
             update_data.save()
 
             logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
             return Response(rdata)
 
         except ObjectDoesNotExist as e:
-            logger.error(e)
+            
             logger.info("matching user or transaction not found / does not exist" + str(e))
             return Response({"error": "Could not find matching user or transaction", "code": ERROR_CODE_NOT_FOUND})
 
         # this withdrawal transaction may not in held status
         except Exception as e:
-            logger.error("Error processing this transaction " + str(e))
-            return Response({"error": "Error processing this transaction ", "code": ERROR_CODE_INVAILD_INFO})
+            logger.error("Error approving this qaicash transaction " + str(e))
+            return Response({"error": "Error approving this transaction ", "code": ERROR_CODE_INVAILD_INFO})
 
 
 class rejectPayout(generics.GenericAPIView):
@@ -695,16 +696,16 @@ class rejectPayout(generics.GenericAPIView):
                     success = True
                     break
             except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
+                logger.info('Request failed {} time(s).wating for %s seconds before retrying again'.format(x+1))
+                
                 sleep(delay)  
         if not success:
-            logger.info('Failed to complete a request for payout transaction')
+            logger.critical('Failed to complete a request for rejecting payout transaction')
         # Handle error
 
         rdata = r.json()
         #print(rdata)
-        logger.info(rdata)
+        
 
         if r.status_code == 200:  
             
@@ -722,8 +723,8 @@ class rejectPayout(generics.GenericAPIView):
 
                     update_data.order_id = rdata['transactionId']
                     update_data.last_updated = rdata["dateUpdated"]
-                    update_data.status = 8
-                    update_data.review_status = 2
+                    update_data.status = TRAN_REJECTED_TYPE
+                    update_data.review_status = REVIEW_REJ
                     update_data.remark = notes
                     update_data.release_by = user
                     update_data.save()
@@ -733,17 +734,17 @@ class rejectPayout(generics.GenericAPIView):
                     logger.info('Finish updating the status of withdraw ' + str(rdata['orderId']) + ' to Approve')
                     return Response(rdata)
             except ObjectDoesNotExist as e:
-                logger.error(e)
-                logger.info("matching transaction not found / does not exist")
-                return Response({"error": "Could not find matching transaction","code": ERROR_CODE_NOT_FOUND})
+                
+                logger.error("matching transaction not found / does not exist for qaicash rejecting payout")
+                return Response({"error": "Could not find matching transaction for qaicash rejecting payout","code": ERROR_CODE_NOT_FOUND})
 
             except DatabaseError as e:
-                logger.info("Error update transaction " + str(e))
-                return Response({"error": "Error updating transaction ", "code": ERROR_CODE_DATABASE})
+                logger.info("Error update transaction for qaicash rejecting payout" + str(e))
+                return Response({"error": "Error updating transaction for qaicash rejecting payout", "code": ERROR_CODE_DATABASE})
 
         else:
-            logger.error('The request information is not correct, please try again.')
-            return Response({"error": "The request information is not correct", "code": ERROR_CODE_INVALID_INFO})
+            logger.error('The request information is not correct for qaicash rejecting payout, please try again.')
+            return Response({"error": "The request information is not correct for qaicash rejecting payout", "code": ERROR_CODE_INVALID_INFO})
 class getDepositTransaction(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = payoutTransactionSerialize
@@ -770,11 +771,11 @@ class getDepositTransaction(generics.GenericAPIView):
                 success = True
                 
         except ValueError:
-            logger.info('Request failed {} time(s)'.format(x+1))
-            logger.debug("wating for %s seconds before retrying again")
+            logger.info('Request failed {} time(s).wating for %s seconds before retrying again'.format(x+1))
+            
             sleep(delay) 
         if not success:
-            logger.info('Failed to complete a request for payout transaction')
+            logger.critical('Failed to complete a request for payout transaction')
         # Handle error
 
         rdata = r.json()
@@ -801,25 +802,54 @@ def transactionConfirm(request):
     cur_status = statusConversion[Status]
     notes = body.get('notes')
     try:
-        order_id = Transaction.objects.filter(transaction_id=orderId)
+        order_id = Transaction.objects.get(transaction_id=orderId)
     except Transaction.DoesNotExist:
         order_id = None
-        return HttpResponse("Transaction does not exist", content_type="text/plain")
+        logger.error("Transaction does not exist for qaicash transaction confirm")
+        return HttpResponse("Transaction does not exist for qaicash transaction confirm", content_type="text/plain")
 
     if order_id: 
-        update = order_id.update(
-            status=cur_status,
-            last_updated=timezone.now(),
-        )
+        # update = order_id.update(
+        #     status=cur_status,
+        #     last_updated=timezone.now(),
+        # )
+        order_id.status = cur_status
+        order_id.last_updated = timezone.now()
 
         if cur_status == 0:
-            update = order_id.update(
-                arrive_time=timezone.now(),
-                remark = 'Transaction success!')
+            if order_id.transaction_type == TRANSACTION_DEPOSIT:
+                try:
+                    user = CustomUser.objects.get(username=order_id.user_id)
+                except ObjectDoesNotExist:
+                    logger.error("Qaicash:: the user does not exist for transaction Confirm.")
+                    return HttpResponse("the user does not exist for transaction Confirm", content_type="text/plain")
+                # update = order_id.update(
+                #     arrive_time=timezone.now(),
+                #     #current_balance= + update.amount,
+                #     remark = 'Transaction success!')
+                order_id.arrive_time = timezone.now()
+                order_id.current_balance = user.main_wallet + order_id.amount
+                order_id.remark = 'Transaction success!'
+                order_id.save()
+
+            elif order_id.transaction_type == TRANSACTION_WITHDRAWAL:
+
+                # update = order_id.update(
+                #     arrive_time=timezone.now(),
+                #     current_balance=update.current_balance - update.amount,
+                #     remark = 'Transaction success!')
+                order_id.arrive_time = timezone.now()
+                order_id.current_balance = user.main_wallet - order_id.amount
+                order_id.remark = 'Transaction success!'
+                order_id.save()
+
             
         else :
-            update = order_id.update(
-                remark = notes)
+            
+            # update = order_id.update(
+            #     remark = notes)
+            order_id.remark = notes
+            order_id.save()
     return HttpResponse("Transaction is " + Status, content_type="text/plain")
 
 @api_view(['POST'])
@@ -834,9 +864,9 @@ def get_transaction_status(request):
         status = transaction.status
         return Response({"status": status})
     except ObjectDoesNotExist as e:
-        logger.error(e)
-        logger.info("matching transaction not found / does not exist")
-        return Response({"message": "Could not find matching transaction"})
+        
+        logger.error("matching transaction not found / does not exist for qaicash get_transaction_status method")
+        return Response({"message": "Could not find matching transaction for qaicash get_transaction_status method"})
 
 
 # class transactionStatusUpdate(generics.GenericAPIView):
@@ -899,11 +929,11 @@ class payoutMethod(generics.GenericAPIView):
                     success = True
                     break
             except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
+                logger.info('Request failed {} time(s).wating for %s seconds before retrying again'.format(x+1))
+               
                 sleep(delay) 
         if not success:
-            logger.info('Failed to complete a request for...')
+            logger.error('Failed to complete a request to get qaicash payout Method...')
         # Handle error
 
         data = r.json()
@@ -949,11 +979,11 @@ class getPayoutBankList(generics.GenericAPIView):
                     success = True
                     break
             except ValueError:
-                logger.info('Request failed {} time(s)'.format(x+1))
-                logger.debug("wating for %s seconds before retrying again")
+                logger.info('Request failed {} time(s).wating for %s seconds before retrying again'.format(x+1))
+                
                 sleep(delay) 
         if not success:
-            logger.info('Failed to complete a request for...')   
+            logger.error('Failed to complete a request to get qaicash Payout Bank List...')   
         data = r.json()
         
         return Response(data)
@@ -988,7 +1018,7 @@ class getPayoutBankLimits(generics.GenericAPIView):
                 logger.debug("wating for %s seconds before retrying again")
                 sleep(delay)  
         if not success:
-            logger.info('Failed to complete a request for...')
+            logger.error('Failed to complete a request to get qaicash Payout Bank Limits...')
         if r.status_code == 500:
             logger.info('Response content is not in JSON format.')
             data = '500 Internal Error'    
@@ -1011,6 +1041,6 @@ class getPayoutBankLimits(generics.GenericAPIView):
             
             )
         else:
-            logger.error('The request information is nor correct, please try again')
+            logger.error('The request information is nor correct for qaicash Payout Bank Limits, please try again')
         
         return Response(data)

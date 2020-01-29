@@ -27,8 +27,8 @@ users = CustomUser.objects.all()
 today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 yesterday = today - timezone.timedelta(days=1)
 this_month = today.replace(day=1)
-last_month = this_month + relativedelta(months=-1)
-before_last_month = this_month + relativedelta(months=-2)
+last_month = this_month - relativedelta(months=1)
+month_before_last = this_month - relativedelta(months=2)
 
 # Create System User
 try:
@@ -57,7 +57,7 @@ def getCommissionTrans():
 
 # get player list for affiliate or affiliates
 def getPlayers(affiliates):
-    player_list = None
+    player_list = CustomUser.objects.none()
     if affiliates in [None, '']:
         logger.info("Warning input for getting downline list!")
         return []
@@ -84,7 +84,7 @@ def getPlayers(affiliates):
 
 # get downline list for affiliate or affiliates
 def getDownlines(affiliates):
-    downline_list = None
+    downline_list = CustomUser.objects.none()
     if affiliates in [None, '']:
         logger.info("Invalid input for getting affiliates' downline list.")
         return []
@@ -114,7 +114,7 @@ def getDownlines(affiliates):
 def filterActiveUser(queryset, start_time, end_time, free_bets, cate):
     # get bet transaction in this period
     if not queryset:
-        return queryset
+        return GameBet.objects.none()
     active_filter = Q()
     if not free_bets:
         active_filter &= ~Q(other_data__is_free=True)

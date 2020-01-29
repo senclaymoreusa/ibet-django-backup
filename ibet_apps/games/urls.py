@@ -88,7 +88,6 @@ urlpatterns = [
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
     # playtech
-
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),
     path('api/pt/transfer_test', ptgameviews.PTTransferTest.as_view(), name = 'pt_transfer'),
     path('api/pt/get_record', ptgameviews.GetBetHistory.as_view(), name = 'pt_get_record'),
@@ -106,6 +105,7 @@ urlpatterns = [
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
+    
     
     # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
@@ -156,8 +156,10 @@ urlpatterns = [
     #AG
     path('api/ag/get_balance', aggamesviews.getBalance, name="Get_Balance"),
     path('api/ag/forward_game', aggamesviews.forwardGame, name="forward_Game"),
+    path('api/ag/ftp', csrf_exempt(aggamesviews.agftp), name="ag_ftp"),
     path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
+    path('api/ag/test', aggamesviews.test.as_view(), name="test"),
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)

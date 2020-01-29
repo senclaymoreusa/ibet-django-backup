@@ -102,7 +102,7 @@ class BetSoftAuthenticate(View):
                 return HttpResponse(response, content_type='text/xml')
 
         except ObjectDoesNotExist as e:
-            logger.error("(FATAL__ERROR) Betsoft authenticate error: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft authenticate error: {}".format(str(e)))
 
             response = {
                 "EXTSYSTEM": {
@@ -122,7 +122,7 @@ class BetSoftAuthenticate(View):
     
 
         except Exception as e:
-            logger.error("(FATAL__ERROR) Betsoft authenticate error: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft authenticate error: {}".format(str(e)))
             response = {
                 "EXTSYSTEM": {
                     "REQUEST": {
@@ -286,14 +286,14 @@ class BetSoftBetResult(View):
             return HttpResponse(response, content_type='text/xml')
         
         except ObjectDoesNotExist as e:
-            logger.error("(FATAL__ERROR) Betsoft bet/result error: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft bet/result error: {}".format(str(e)))
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
-            logger.error("(FATAL__ERROR) Betsoft bet/result error: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft bet/result error: {}".format(str(e)))
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
@@ -380,7 +380,7 @@ class BetSoftBetRefund(View):
 
 
         except CustomUser.DoesNotExist as e:
-            logger.error("(FATAL__ERROR) Betsoft refund bet error invalid user: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft refund bet error invalid user: {}".format(str(e)))
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
@@ -388,7 +388,7 @@ class BetSoftBetRefund(View):
             return HttpResponse(response, content_type='text/xml')
 
         except GameBet.DoesNotExist as e:
-            logger.error("(FATAL__ERROR) Betsoft refund bet error invalid transaction id: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft refund bet error invalid transaction id: {}".format(str(e)))
 
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "302"
@@ -396,7 +396,7 @@ class BetSoftBetRefund(View):
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
-            logger.error("(FATAL__ERROR) Betsoft refund bet error: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft refund bet error: {}".format(str(e)))
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "FAILED"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)
@@ -505,14 +505,14 @@ class BetSoftGetInfo(View):
 
         
         except ObjectDoesNotExist as e:
-            logger.error("(FATAL__ERROR) Betsoft get info error invalid user: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft get info error invalid user: {}".format(str(e)))
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "310"
             response = xmltodict.unparse(response, pretty=True)
             return HttpResponse(response, content_type='text/xml')
 
         except Exception as e:
-            logger.error("(FATAL__ERROR) Betsoft refund bet error: ", e)
+            logger.critical("(FATAL__ERROR) Betsoft refund bet error: {}".format(str(e)))
             response["EXTSYSTEM"]["RESPONSE"]["RESULT"] = "ERROR"
             response["EXTSYSTEM"]["RESPONSE"]["CODE"] = "399"
             response = xmltodict.unparse(response, pretty=True)

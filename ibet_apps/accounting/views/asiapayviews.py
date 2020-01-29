@@ -154,8 +154,7 @@ class submitDeposit(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        logger.info(encryptDES(eString, sign_encryptKey, myIv))
-        logger.info(encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        
       
         r = requests.post(url + "/standard/getway/depositiface", data={
             'Sign': encryptDES(eString, sign_encryptKey, myIv),
@@ -178,7 +177,7 @@ class submitDeposit(generics.GenericAPIView):
             'PayCardUserChName':RealName,
         })
         rdata = r.text
-        logger.info(rdata)
+        
         #print(rdata)
         if r.status_code == 200 or r.status_code == 201:
             tree = ET.fromstring(rdata)
@@ -202,7 +201,7 @@ class submitDeposit(generics.GenericAPIView):
                     channel=ASIAPAY,
                     status=TRAN_CREATE_TYPE,
                     method=bankidConversion[BankID],
-                    request_time=timezone.now(),
+                    request_time=timezone.now()
                     
                 )
                 if PayWay == ASIAPAY_QRPAYWAY or PayWay == '30':
@@ -243,14 +242,13 @@ class submitDeposit(generics.GenericAPIView):
                     "CardBankName":CardBankName })
                         
             else:
-                logger.info("There was something wrong with the result")
+                
                 logger.info(StatusMsg)
                 return Response({"order_id": "D"+trans_id,"StatusCode": StatusCode,"StatusMsg":StatusMsg })
                 
         else:
             # Handle error
-            logger.info("There was something wrong with the result")
-            logger.info(rdata)
+            logger.critical("FATAL__ERROR::Asipay::Unable to create deposit", exc_info=True, stack_info=1)
             return Response(rdata)
         return Response({"order_id": "D"+trans_id, "url": paymentAPIURL})
 
@@ -268,8 +266,8 @@ class submitCashout(generics.GenericAPIView):
         try:
             user = CustomUser.objects.get(pk=userid)
         except ObjectDoesNotExist:
-            logger.error("The  user is not existed.")
-            return Response({"error":"The  user is not existed."}) 
+            logger.error("The  user does not exist for Asiapay payout.")
+            return Response({"error":"The  user does not exist for Asiapay payout."}) 
         trans_id = user.username+strftime("%Y%m%d%H%M%S", gmtime())+str(random.randint(0,10000000))
         #OrderID =  "ibet" +strftime("%Y%m%d%H%M%S", gmtime())
         NoticeUrl = ""
@@ -295,7 +293,7 @@ class submitCashout(generics.GenericAPIView):
                 }
             }
             return Response(data)
-        logger.info(MD5(SignCode))
+        
         ParamList_Msg ={
             "rStr" : "",
             "cID": ASIAPAY_CID,
@@ -331,41 +329,46 @@ class submitCashout(generics.GenericAPIView):
         delay = kwargs.get("delay", 5)
         sign_encryptKey = DesKey(ASIAPAY_UNITEKEY.encode())
         msg_encryptKey = DesKey(Create_RandomKey(ASIAPAY_R1, ASIAPAY_KEY1,ASIAPAY_R2).encode())
-        logger.info("sign:" + encryptDES(eString, sign_encryptKey, myIv))
-        logger.info("msg:" + encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv))
+        
         
         if check_password(withdraw_password, user.withdraw_password):
-            r = requests.post(url + "/standard/getway/" + cashoutMethod, data={
-                'rStr':'',
-                'Sign': encryptDES(eString, sign_encryptKey, myIv),
-                'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
-                'TraceID': TraceID,
-                'OrderID':"W" + trans_id,
-                'cID':ASIAPAY_CID,
-                'uID':uID,
-                'cPass': ASIAPAY_CPASS,
-                'UserIP':UserIP,
-                'DesTime':DesTime,
-                'CashCardNumber':CashCardNumber,
-                'CashCardChName':CashCardChName,
-                'CashBankPro':CashBankPro,
-                'CashBankName':CashBankName,
-                'CashBankCity':CashBankCity,
-                'CashBankDetailName':CashBankDetailName,
-                'NoticeUrl':'',
-                'CashMoney':amount,
-                'CashMobile':'',
-                'CashType':'1',
-                'RealID':'',
-                'ResType':'xml',
-                'SafeLevel':0,
-                'SignCode':MD5(SignCode),
-                'tempparam':''
-            })
-            rdata = r.text
-            logger.info(rdata)
+            try:
+                r = requests.post(url + "/standard/getway/" + cashoutMethod, data={
+                    'rStr':'',
+                    'Sign': encryptDES(eString, sign_encryptKey, myIv),
+                    'Msg': encryptDES(CreateMsgStr(ParamList_Msg), msg_encryptKey, myIv),
+                    'TraceID': TraceID,
+                    'OrderID':"W" + trans_id,
+                    'cID':ASIAPAY_CID,
+                    'uID':uID,
+                    'cPass': ASIAPAY_CPASS,
+                    'UserIP':UserIP,
+                    'DesTime':DesTime,
+                    'CashCardNumber':CashCardNumber,
+                    'CashCardChName':CashCardChName,
+                    'CashBankPro':CashBankPro,
+                    'CashBankName':CashBankName,
+                    'CashBankCity':CashBankCity,
+                    'CashBankDetailName':CashBankDetailName,
+                    'NoticeUrl':'',
+                    'CashMoney':amount,
+                    'CashMobile':'',
+                    'CashType':'1',
+                    'RealID':'',
+                    'ResType':'xml',
+                    'SafeLevel':0,
+                    'SignCode':MD5(SignCode),
+                    'tempparam':''
+                })
+                rdata = r.text
+            except Exception as e:
+                logger.critical("FATAL__ERROR::Asiapay::Unable to create payout", exc_info=True, stack_info=1)
+                return JsonResponse({
+                    'status_code': ERROR_CODE_FAIL,
+                    'message': 'Asiapay unable to create payout'
+                })
         else:
-            logger.error("withdraw password is not correct.")    
+            logger.error("withdraw password is not correct for Asiapay payout.")    
             return JsonResponse({
                 'status_code': ERROR_CODE_INVALID_INFO,
                 'message': 'Withdraw password is not correct.'
@@ -373,7 +376,7 @@ class submitCashout(generics.GenericAPIView):
         tree = ET.fromstring(rdata)
         StatusCode = tree.find('StatusCode').text
         StatusMsg = tree.find('StatusMsg').text.split('|')[0]
-        logger.info(StatusMsg)
+        
         if StatusCode == '50001':
             create = Transaction.objects.create(
                 transaction_id=trans_id,
@@ -425,11 +428,12 @@ class depositfinish(generics.GenericAPIView):
                     success = True
                     break
                 else:
-                    logger.info('The request information is nor correct, please try again')
+                    
                     sleep(delay)
                     logger.info(rdata)
             except StatusCode.DoesNotExist:
                 StatusCode = None
+                logger.critical("FATAL__ERROR::Asiapay::Unable to cancel deposit", exc_info=True, stack_info=1)
                 return Response({"StatusCode": "400", "StatusMsg": "Please send it again."}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"StatusCode": StatusCode, "StatusMsg": StatusMsg})
@@ -443,32 +447,41 @@ class orderStatus(generics.GenericAPIView):
         OrderID = self.request.POST.get("order_id")
         CmdType = self.request.POST.get("CmdType")
         uID = "n" + userid
-        r = requests.post(url + '/standard/getway/orderstatus', data={
-            "cID":ASIAPAY_CID,
-            "uID":uID,
-            "CmdType": CmdType,
-            "OrderID":OrderID,
-        })
-        rdata = r.text
-        logger.info(rdata)
-        tree = ET.fromstring(rdata)
-        StatusCode = tree.find('StatusCode').text
-        StatusMsg =  tree.find('StatusMsg').text
-        return Response({"status" : StatusCode, "StatusMsg": StatusMsg})
+        try:
+            r = requests.post(url + '/standard/getway/orderstatus', data={
+                "cID":ASIAPAY_CID,
+                "uID":uID,
+                "CmdType": CmdType,
+                "OrderID":OrderID,
+            })
+            rdata = r.text
+            logger.info(rdata)
+            tree = ET.fromstring(rdata)
+            StatusCode = tree.find('StatusCode').text
+            StatusMsg =  tree.find('StatusMsg').text
+            return Response({"status" : StatusCode, "StatusMsg": StatusMsg})
+        except Exception as e:
+            logger.error("Asiapay::Unable to check order status")
+            return Response({"error" : "Unable to check Asiapay order status."})
+
 class exchangeRate(generics.GenericAPIView):
     queryset = Transaction.objects.all()
     serializer_class = asiapayExchangeRateFinishSerialize
     permission_classes = [AllowAny, ]
     def post(self, request, *args, **kwargs):
-        Amount = self.request.POST.get("Amount")
-        r = requests.post(url + '/standard/getway/ticker', data={
-            "cID":ASIAPAY_CID,
-            "ModeType":"BTC",
-            "Amount": Amount,
-        })
-        rdata = r.json()
-        logger.info(rdata)
-        return Response(rdata)
+        try:
+            Amount = self.request.POST.get("Amount")
+            r = requests.post(url + '/standard/getway/ticker', data={
+                "cID":ASIAPAY_CID,
+                "ModeType":"BTC",
+                "Amount": Amount,
+            })
+            rdata = r.json()
+            logger.info(rdata)
+            return Response(rdata)
+        except Exception as e:
+            logger.error("Asiapay::Unable to do Asiapay exchange rate.")
+            return Response({"error" : "Unable to do Asiapay exchange rate."})
 
 def depositArrive(request):
     if request.method == "POST":
@@ -480,7 +493,11 @@ def depositArrive(request):
         # print(OrderID)
         uID = request.POST.get("uID")
         userid = uID.strip('n')
-        logger.info(userid)
+        try:
+            user = CustomUser.objects.get(pk=userid)
+            
+        except ObjectDoesNotExist:
+            logger.error("Asiapay:: the user does not exist for depositArrive API.")
         # serializer = serializer_class(data=request.data)
         # logger.info(serializer)
         datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -522,6 +539,7 @@ def depositArrive(request):
                     trans.arrive_time = arrive_time
                     trans.remark = 'Transaction success'
                     trans.qrcode = ''
+                    trans.current_balance = user.main_wallet + RevMoney
                     trans.save()
 
                     # check if user has valid first deposit bonus and update the status
@@ -534,10 +552,12 @@ def depositArrive(request):
                 trans.remark = 'Transaction failed'
                 trans.qrcode = ''
                 trans.save()
+                
                 return HttpResponse(ET.tostring(root1),content_type="text/xml")
 
         except trans.DoesNotExist:
             trans = None
+            logger.critical("FATAL__ERROR::Asiapay::Unable to confirm deposit", exc_info=True, stack_info=1)
             return HttpResponse(ET.tostring(root2),content_type="text/xml")
 
 
@@ -617,7 +637,12 @@ def payoutArrive(request):
         # print(OrderID)
         uID = request.POST.get("uID")
         userid = uID.strip('n')
-        logger.info(userid)
+        #logger.info(userid)
+        try:
+            user = CustomUser.objects.get(pk=userid)
+        except ObjectDoesNotExist:
+            logger.error("Asiapay:: the user does not exist for payoutArrive API.")
+
         # serializer = serializer_class(data=request.data)
         # logger.info(serializer)
         datetime = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -660,17 +685,19 @@ def payoutArrive(request):
             trans = Transaction.objects.get(transaction_id=OrderID)
             # print(trans)
             if StatusCode == '001' and TrustIUser == ASIAPAY_TRUSTUSER :  
-                trans.status = 0
+                trans.status = TRAN_SUCCESS_TYPE
                 trans.arrive_time = timezone.now()
                 trans.remark = 'Transaction success'
+                trans.current_balance = user.main_wallet - PayOutMoney 
                 trans.save()
                 return HttpResponse(ET.tostring(root),content_type="text/xml")
             else:
-                trans.status = 1
+                trans.status = TRAN_FAIL_TYPE
                 trans.remark = 'Transaction failed'
                 trans.save()
                 return HttpResponse(ET.tostring(root1),content_type="text/xml")
 
         except trans.DoesNotExist:
             trans = None
+            logger.critical("FATAL__ERROR::Asiapay::Unable to confirm payout", exc_info=True, stack_info=1)
             return HttpResponse(ET.tostring(root2),content_type="text/xml")
