@@ -31,15 +31,16 @@ last_month = this_month - relativedelta(months=1)
 month_before_last = this_month - relativedelta(months=2)
 
 # Create System User
-try:
-    system_user = CustomUser.objects.get(username='System')
-except ObjectDoesNotExist as e:
-    system_user = CustomUser.objects.create_superuser(
-        username='System',
-        email='system@claymoreusa.com',
-        phone=0
-    )
-    logger.info("Create A System User")
+def createSystemUser():
+    try:
+        system_user = CustomUser.objects.get(username='System')
+    except ObjectDoesNotExist as e:
+        system_user = CustomUser.objects.create_superuser(
+            username='System',
+            email='system@claymoreusa.com',
+            phone=0
+        )
+        logger.info("Create A System User")
 
 
 # transaction filter
