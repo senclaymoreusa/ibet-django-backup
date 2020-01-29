@@ -230,25 +230,6 @@ def getCommissionRate(affilliate, start_time, end_time):
 
 # Sum total of Bet amount within the reporting period
 def calculateTurnover(user, start_time, end_time, product):
-    if not user:
-        logger.info("Error input for calculating turnover !")
-        return 0
-
-    turnover_filter = Q(user=user) & Q(resolved_time__isnull=False)
-
-    if product:
-        try:
-            product = Category.objects.get(name=product)
-            turnover_filter &= Q(product=product)
-        except Exception as e:
-            logger.info("Warning cannot find corresponding Game Category" + str(e))
-
-    user_bets = GameBet.objects.filter(turnover_filter)
-
-    bets = user_bets.order_by('ref_no', '-resolved_time').distinct('ref_no')  #include tip
-
-    # exclude rollback bets
-
     return 0
 
 
