@@ -18,8 +18,6 @@ logger = logging.getLogger('django')
 
 
 def get_transactions(request):
-
-    
     user_id = request.GET.get("user_id")
     trans_type = request.GET.get("type")
     time_from = request.GET.get("time_from")
@@ -32,7 +30,6 @@ def get_transactions(request):
             'success': False,
             'results': "You have to select start or end date"
         })
-
 
     try:
         user = CustomUser.objects.get(pk=user_id)

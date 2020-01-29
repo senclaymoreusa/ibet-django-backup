@@ -126,7 +126,7 @@
                         <td>{{ tran.risk_level }}</td>
                         <td>{{ tran.user_status }}</td>
                         <td>{{ tran.method }}</td>
-                        <td>{{ tran.payment }}</td>
+                        <td>{{ tran.channel }}</td>
                         <td>{{ tran.tran_no }}</td>
                         <td>{{ tran.order_id }}</td>
                         <td>{{ tran.app_time }}</td>
@@ -136,29 +136,31 @@
                         <td>{{ tran.status }}</td>
 
                         {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
-                        <td class="edit-txn">
-                            <button id="{{ tran.pk }}"class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
-                                Confirm
-                            </button>
-                        </td>
-                        
+                            <td class="edit-txn">
+                                <button id="{{ tran.pk }}"class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                    Confirm
+                                </button>
+                            </td>
+                            
                         {% elif tran.status == 'Failed' %}
-                        <td class="edit-txn">
-                            <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
-                                    <span class="glyphicon glyphicon-search"></span>
-                            </button>
-                        </td>
-                        <td class="edit-txn">
-                            <button class="result-override-btn" type="button" data-toggle="modal" data-target="#override-deposit">
-                                Override
-                            </button>
-                        </td>
+                            <td class="edit-txn">
+                                <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                </button>
+                            </td>
+                            {% if tran.channel == 'Asiapay' or tran.channel == 'Qaicash' or tran.channel == 'ScratchCard'%}
+                            <td class="edit-txn">
+                                <button class="result-override-btn" type="button" data-toggle="modal" data-target="#override-deposit">
+                                    Override
+                                </button>
+                            </td>
+                            {% endif %}
                         {% else %}
-                        <td class="edit-txn">
-                            <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
-                                    <span class="glyphicon glyphicon-search"></span>
-                            </button>
-                        </td>
+                            <td class="edit-txn">
+                                <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                </button>
+                            </td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -506,47 +508,6 @@
             });
         });
 
-
-        // double click result override button
-        $('#override-result').click(function (event) {
-            if (!$("#override-notes").val()) {
-                return;
-            }
-            event.preventDefault();
-            $('#override-notes').prop('disabled', true);
-            $(this).attr('id', 'override-result-confirm');
-            $(this).html('Click to request change');
-            $('#override-result-confirm').click(function (event) {
-                console.log('hi');
-                // TODO: Finish filling out override backend API function
-                
-                let thisTransNo = $("#dep_trans_no").val();
-                console.log(thisTransNo)
-                console.log($("#dep_trans_no").val())
-                $.ajax({
-                    method: 'POST',
-                    url: "{% url 'xadmin:override_result' %}",
-                    data: {
-                        'type': 'override_result',
-                        'txn_id': thisTransNo,
-                        'reason': $("#override-notes").val(),
-                        'new_amount': $("#new-amount").val()
-                    }
-                })
-                .done(function(data) {
-                    alert("Override successful: " + data);
-                    location.reload();
-                })
-            });
-        });
-        
-        // cancel override (enable text area and remove contents)
-        $('#cancel-override').click(function (event) {
-            $('#override-notes').prop('disabled', false);
-            $('#override-notes').val('');
-            $('#override-result-confirm').html('Request status change to Successful');
-            $('#override-result-confirm').attr('id', 'override-result');
-        })
 
         $('#deposit-review-cancel').click(function () {
             location.reload();

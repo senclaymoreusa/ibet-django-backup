@@ -797,7 +797,7 @@ elif "dev" in os.getenv("ENV"):
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
     
 else:
-    API_DOMAIN = "http://cf61d044.ngrok.io/"
+    API_DOMAIN = "http://339378af.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
