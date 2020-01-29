@@ -36,6 +36,104 @@ from datetime import date
 
 logger = logging.getLogger('django')
 
+def getGPIBalance(user):
+    try:
+        req_param = {}
+        req_param["merch_id"] = GPI_MERCH_ID
+        req_param["merch_pwd"] = GPI_MERCH_PWD
+        req_param["cust_id"] = user.username
+        req_param["currency"] = transCurrency(user)
+
+        req = urllib.parse.urlencode(req_param)
+
+        url = GPI_URL + 'getbalance' + '?' + req
+
+        res = requests.get(url)
+        
+        res = xmltodict.parse(res.text)
+
+        res = json.dumps(res)
+
+        if res["resp"]["error_code"] == "0":
+            logger.info("GPI get balance for user: {}, {}".format(user.username, res["resp"]["balance"]))
+            return float(res["resp"]["balance"])
+        else:
+            logger.warning("GPI get balance failed: {}".format(res["resp"]["error_code"]))
+            return 0
+    except Exception as e:
+        logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+        return 0
+
+
+def gpiTransfer(user, amount, wallet, method):
+    try:
+        currency = transCurrency(user)
+
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+        req_param = {}
+        req_param["merch_id"] = GPI_MERCH_ID
+        req_param["merch_pwd"] = GPI_MERCH_PWD
+        req_param["cust_id"] = username
+        req_param["currency"] = currency
+        req_param["amount"] = amount
+        req_param["trx_id"] = trans_id
+
+        req = urllib.parse.urlencode(req_param)
+
+        if method == 1:
+            url = GPI_URL + 'debit' + '?' + req
+
+            trans = Transaction.objects.create(
+                transaction_id=trans_id,
+                user_id=user,
+                order_id=trans_id,
+                amount=amount,
+                currency=user.currency,
+                transfer_from="gpi",
+                transfer_to=wallet,
+                product=GAME_TYPE_LIVE_CASINO,
+                transaction_type=TRANSACTION_TRANSFER,
+                status=TRAN_PENDING_TYPE
+            )
+
+        elif method == 0:
+            url = GPI_URL + 'credit' + '?' + req
+
+            trans = Transaction.objects.create(
+                transaction_id=trans_id,
+                user_id=user,
+                order_id=trans_id,
+                amount=amount,
+                currency=user.currency,
+                transfer_from=wallet,
+                transfer_to="gpi",
+                product=GAME_TYPE_LIVE_CASINO,
+                transaction_type=TRANSACTION_TRANSFER,
+                status=TRAN_PENDING_TYPE
+            )
+
+        res = requests.get(url)
+            
+        res = xmltodict.parse(res.text)
+
+        if int(res["resp"]["error_code"]) == 0:
+            trans = Transaction.objects.get(transaction_id=trans_id)
+
+            trans.order_id = res["resp"]["trx_id"]
+            trans.status = TRAN_COMPLETED_TYPE
+            trans.save()
+
+            # user.main_wallet = user.main_wallet + Decimal(amount)
+            # user.save()
+
+        return True
+        
+    except Exception as e:
+        logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
+        return False
+
+
 def transCurrency(user):
     try:
         currency = user.currency
@@ -236,7 +334,7 @@ class DebitAPI(View):
     def get(self, request, *args, **kwargs):
         username = request.GET.get("username")
         amount = request.GET.get("amount")
-        from_wallet = request.GET.get("from_wallet")
+        to_wallet = request.GET.get("to_wallet")
 
         try:
             user = CustomUser.objects.get(username=username)
@@ -264,7 +362,7 @@ class DebitAPI(View):
                 amount=amount,
                 currency=user.currency,
                 transfer_from="GPI",
-                transfer_to="main_wallet",
+                transfer_to=to_wallet,
                 product=GAME_TYPE_LIVE_CASINO,
                 transaction_type=TRANSACTION_TRANSFER,
                 status=TRAN_PENDING_TYPE
@@ -313,6 +411,7 @@ class CreditAPI(View):
     def get(self, request, *args, **kwargs):
         username = request.GET.get("username")
         amount = request.GET.get("amount")
+        from_wallet = request.GET.get("from_wallet")
 
         try:
             user = CustomUser.objects.get(username=username)
@@ -339,7 +438,7 @@ class CreditAPI(View):
                 order_id=trans_id,
                 amount=amount,
                 currency=user.currency,
-                transfer_from="main_wallet",
+                transfer_from=from_wallet,
                 transfer_to="GPI",
                 product=GAME_TYPE_LIVE_CASINO,
                 transaction_type=TRANSACTION_TRANSFER,
@@ -423,7 +522,7 @@ class GetOnlineUserAPI(View):
             logger.warning("GPI GetOnlineUserAPI warning -- {}".format(repr(e)))
             return HttpResponse(status=400)
 
-
+# cron job
 class GetOpenBetsAPI(View):
     def get(self, request, *args, **kwargs):
         try:

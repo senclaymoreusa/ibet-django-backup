@@ -11,6 +11,7 @@ from games.views.onebookviews import fundTransfer, checkUserBalance
 from games.views.kygameviews import kyTransfer, kyBalance
 from games.views.aggamesviews import agFundTransfer, getBalance
 from games.views.ptgameviews import ptTransfer
+from games.views.gameplayintviews import getGPIBalance, gpiTransfer
 import simplejson as json
 import decimal
 
@@ -42,6 +43,9 @@ class TransferDeposit():
     def PTDeposit(self):
         return ptTransfer(self.user, self.amount, self.from_wallet, 0)
 
+    def GPIDeposit(self):
+        return gpiTransfer(self.user, self.amount, self.from_wallet, 0)
+
 
     
 class TransferWithdraw():
@@ -69,6 +73,9 @@ class TransferWithdraw():
 
     def PTWithdraw(self):
         return ptTransfer(self.user, self.amount, self.to_wallet, 1)
+
+    def GPIWithdraw(self):
+        return gpiTransfer(self.user, self.amount, self.to_wallet, 1)
 
 
 class CheckTransferWallet():
@@ -107,7 +114,8 @@ class CheckTransferWallet():
         return 0
 
     def GPICheckAmount(self):
-        return 0
+        balance = getGPIBalance(self.user)
+        return balance
 
     def PTCheckAmount(self):
         return 0
