@@ -162,10 +162,8 @@ def transCurrency(user):
         return currency
     except ValueError:
         logger.warning("Warning: GPI currency transform DOES NOT SUPPORT -- {}".format(currency))
-        return ""
     except Exception as e:
         logger.error("ERROR: GPI currency transform error -- {}".format(repr(e)))
-        return ""
 
 
 def transLang(user):
