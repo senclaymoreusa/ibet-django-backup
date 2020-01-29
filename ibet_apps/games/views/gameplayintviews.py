@@ -488,7 +488,7 @@ class CheckTransactionAPI(View):
             req_param = {}
             req_param["merch_id"] = GPI_MERCH_ID
             req_param["merch_pwd"] = GPI_MERCH_PWD
-            req_param["trx_id"] = "Test11"
+            req_param["trx_id"] = trx_id
 
             req = urllib.parse.urlencode(req_param)
     
