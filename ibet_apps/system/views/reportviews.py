@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from django.views import View
 
 from users.models import CustomUser, UserAction
 from accounting.models import Transaction
@@ -22,7 +23,7 @@ import requests
 
 
 logger = logging.getLogger('django')
-
+# print(settings.redshift_cursor)
 
 class PerformanceReportView(CommAdminView): 
 
@@ -468,3 +469,51 @@ class UserEventReportView (CommAdminView):
 
 
 
+
+class UserGameBetHistory(View):
+
+    def get(self, request):
+
+        history_type = request.GET.get('type')
+        username =  request.GET.get('username')
+
+        if history_type == "deposit":
+
+            start_time = request.GET.get('start_time')
+            end_time = request.GET.get('end_time')
+
+            start_time = datetime.strptime(start_time, '%Y-%m-%d')
+            end_time= datetime.strptime(end_time, '%Y-%m-%d')
+
+            data = getDataFromRange(username, start_time, end_time, "transaction_deposit")
+            
+        else: 
+            pass
+        return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder))
+
+
+
+def getDataFromRange(username, time_from, time_to, type):
+
+    current_tz = timezone.get_current_timezone()
+    tz = pytz.timezone(str(current_tz))
+
+    data = []
+    interval = relativedelta(days=1)
+    if type == 'transaction_deposit':
+        date = time_from
+        while date <= time_to:
+            time_start = tz.localize(datetime.combine(date, time.min)) 
+            time_end = tz.localize(datetime.combine(date, time.max))
+
+            query = "SELECT CAST(SUM(amount) as DECIMAL) FROM accounting_transaction_detailed WHERE transaction_type='Deposit' and user_name='" + username + "' and request_time between '" + str(time_start) +  "' and '" + str(time_end) + "';"
+            settings.REDSHIFT_CURSOR.execute(query)
+            rows = settings.REDSHIFT_CURSOR.fetchone() 
+            row_data = {
+                "data": date.strftime("%Y-%m-%d"),
+                "amount": rows[0] if rows[0] else "0"
+            }
+            data.append(row_data)
+            date += interval
+
+        return data
