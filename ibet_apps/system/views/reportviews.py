@@ -510,6 +510,7 @@ class UserGameBetHistory(View):
         data, sum = getDataFromRange(username, start_time, end_time, history_type, sum)
 
         result['overall_deposit'] = sum if history_type == 'deposit' else getAmount(username, start_time, end_time, 'deposit')
+        result['overall_turnover'] = sum if history_type == 'turnover' else getAmount(username, start_time, end_time, 'turnover')
         result['overall_withdraw'] = getAmount(username, start_time, end_time, 'withdraw')
         result['overall_bet_casino'] = getBet(username, start_time, end_time, 'casino')
         result['overall_bet_sport'] = getBet(username, start_time, end_time, 'sport')
@@ -573,7 +574,9 @@ def getAmount(username, time_from, time_to, type):
         query = "SELECT SUM(amount) FROM accounting_transaction_detailed WHERE transaction_type='Deposit' and user_name='" + username + "' and request_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
     elif type == 'withdraw':
         query = "SELECT SUM(amount) FROM accounting_transaction_detailed WHERE transaction_type='Withdraw' and user_name='" + username + "' and request_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
-    
+    elif type == "turnover":
+        query = "SELECT SUM(amount_wagered) FROM games_gamebet_detailed WHERE user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+
     settings.REDSHIFT_CURSOR.execute(query)
     rows = settings.REDSHIFT_CURSOR.fetchone() 
     return rows[0] if rows[0] else 0
