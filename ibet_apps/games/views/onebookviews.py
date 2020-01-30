@@ -165,7 +165,7 @@ class CreateMember(APIView):
             return Response({"error":"The user does not exist in onebook CreateMember."}) 
 
 def createMember(user,currency,oddsType):
-
+    
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
         "vendor_id": ONEBOOK_VENDORID,
@@ -177,9 +177,10 @@ def createMember(user,currency,oddsType):
         "MaxTransfer": ONEBOOK_MAXTRANSFER,
         "MinTransfer": ONEBOOK_MINTRANSFER, #ONEBOOK_MINTRANSFER
     })
-    
+
     rdata = r.json()
     logger.info(rdata)
+    
     # print(rdata)
     if r.status_code == 200:
         if rdata['error_code'] == 0 or rdata['error_code'] == 6:
@@ -190,6 +191,8 @@ def createMember(user,currency,oddsType):
         logger.critical("ONEBOOK::Unable to create member.")
         return ERROR_CODE_FAIL
     
+    
+   
     
     
 
@@ -447,11 +450,11 @@ class FundTransfer(APIView):
                     if direction == '1':
                         #deposit
                         user.main_wallet = user.main_wallet - amount
-                        user.onebook_wallet = user.onebook_wallet + amount
+                        # user.onebook_wallet = user.onebook_wallet + amount
                     elif direction == '0':
                         #withdraw
                         user.main_wallet = user.main_wallet + amount
-                        user.onebook_wallet = user.onebook_wallet - amount
+                        # user.onebook_wallet = user.onebook_wallet - amount
                     user.save()
                     
                     return Response(rdata)
@@ -815,45 +818,72 @@ def CheckMemberOnline(request):
 
       
 def checkUserBalance(user):
+    if user.currency == CURRENCY_CNY:
+        currency = 13
+    elif user.currency == CURRENCY_USD:
+        currency = 3
+    elif user.currency == CURRENCY_THB:
+        currency = 4
+    elif user.currency == CURRENCY_EUR:
+        currency = 6
+    elif user.currency == CURRENCY_IDR:
+        currency = 15
+    elif user.currency == CURRENCY_VND:
+        currency = 51
+    elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
+        currency = 20
+    else:
+        currency = 13
+
+    if createMember(user, currency, "2") == CODE_SUCCESS:
     
-    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
-    delay = 5
-    success = False
-    for x in range(3):
-        r = requests.post(ONEBOOK_API_URL + "CheckUserBalance/", headers=headers, data={
-            "vendor_id": ONEBOOK_VENDORID,
-            "vendor_member_ids": user.username, 
-            "wallet_id": '1'
-        })
-        rdata = r.json()
-        
-        if r.status_code == 200:
-            success = True
-            break
-        elif r.status_code == 204:
-            success = True
-            # Handle error
-            logger.info("Failed to complete a request for onebook createMember...")
+        headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+        delay = 5
+        success = False
+        for x in range(3):
+            r = requests.post(ONEBOOK_API_URL + "CheckUserBalance/", headers=headers, data={
+                "vendor_id": ONEBOOK_VENDORID,
+                "vendor_member_ids": user.username, 
+                "wallet_id": '1'
+            })
+            rdata = r.json()
             
-            return Response(rdata)
-        elif r.status_code == 500:
-            logger.info("Request failed {} time(s).Waiting for %s seconds before retrying again".format(x+1))
-            
-            sleep(delay)
-    if not success:
-        logger.critical("ONEBOOK::Cannot find the data for onebook check user balance.")
-        return json.dumps(rdata)
-    try:
-        Data = rdata['Data']  
-        balance = Data[0]["balance"]
+            if r.status_code == 200:
+                success = True
+                break
+            elif r.status_code == 204:
+                success = True
+                # Handle error
+                logger.info("Failed to complete a request for onebook checkUserBalance...")
+                
+                return Response(rdata)
+            elif r.status_code == 500:
+                logger.info("Request failed {} time(s).Waiting for %s seconds before retrying again".format(x+1))
+                
+                sleep(delay)
+        if not success:
+            logger.error("ONEBOOK::Cannot find the data for onebook check user balance.")
+            balance = 0.00
+            return json.dumps({"balance":balance})
+        try:
+            Data = rdata['Data'] 
+            balance = Data[0]["balance"]
+            if balance == None:
+                balance = 0.00
+            else: 
+                balance = decimal.Decimal(Data[0]["balance"])
+            return json.dumps({"balance":balance})
+        except:
+            balance = 0.00
+            logger.error("ONEBOOK::Cannot find the data for onebook check user balance.")
+            return json.dumps({"error": "Cannot find the data for onebook check user balance.", "balance":balance})
+    else:
+        balance = 0.00
+        logger.error("ONEBOOK::Cannot create user for check user balance.")    
         return json.dumps({"balance":balance})
-    except:
-        logger.error("ONEBOOK::Cannot find the data for onebook check user balance.")
-        return json.dump({"error": "Cannot find the data for onebook check user balance."})
-    
 class test(View):
     def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="testdave123")
+        user = CustomUser.objects.get(username="angela06")
         
         #response = createMember(user, 13, "2")
         response = checkUserBalance(user)

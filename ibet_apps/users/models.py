@@ -176,10 +176,11 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=4, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=4, default=0)
-    ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=4, default=0)
-    ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=4, default=0)
+    # onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
+    # ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=4, default=0)
+    # ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=4, default=0)
+    # ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=4, default=0)
+    # gpi_wallet = models.DecimalField(_('GPI Wallet'), max_digits=20, decimal_places=4, default=0)
     # agent
     # affiliate = models.BooleanField(default=False)              #if a user is agent or not
     user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
