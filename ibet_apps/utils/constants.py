@@ -736,6 +736,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["PRODUCTION"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["PRODUCTION"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["PRODUCTION"]["FTP_USERNAME"]
@@ -768,6 +769,7 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["SANDBOX"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
@@ -800,6 +802,7 @@ else:
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["SANDBOX"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
