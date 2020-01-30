@@ -25,7 +25,6 @@ from games.models import *
 from accounting.models import * 
 from utils.constants import *
 
-
 logger = logging.getLogger('django')
 
 EA_GAME_HOST_URL = ""
@@ -209,7 +208,7 @@ def requestEADeposit(user, amount, from_wallet):
         request_id = "D"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
         # print(request_id)
-        url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
+        url = EA_DOMAIN + "deposit/wkpibet/server.php"
 
         headers = {'Content-Type': 'application/xml'}
         data = {
@@ -330,7 +329,7 @@ def comfirmEADeposit(request_id, properties_payment_id, status_code):
         elif status_code == "201":
             error_message = "ERR_INVALID_REQ"
 
-        url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
+        url = EA_DOMAIN + "deposit/wkpibet/server.php"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -444,7 +443,7 @@ def requestEAWithdraw(user, amount, to_wallet):
         request_id = "W"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
         
-        url = "https://testmis.ea2-mission.com/configs/external/withdrawal/wkpibet/server.php"
+        url = EA_DOMAIN + "withdrawal/wkpibet/server.php"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -580,7 +579,7 @@ def getEAWalletBalance(user):
     request_id = "C"
     request_id = request_id + "%0.12d" % random.randint(0,999999999999)
 
-    url = "https://testmis.ea2-mission.com/configs/external/checkclient/wkpibet/server.php"
+    url = EA_DOMAIN + "checkclient/wkpibet/server.php"
     headers = {'Content-Type': 'application/xml'}
     data = {
         "request": {
