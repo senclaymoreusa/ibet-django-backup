@@ -178,12 +178,17 @@ class OverrideTransaction(CommAdminView):
                 new_status = 0 if curr_txn.status == 1 else 1
                 curr_txn.status = new_status
                 curr_txn.remark = curr_txn.remark + " -> Result override to " + curr_txn.get_status_display()
-                curr_txn.save()
-                deposit = helpers.addOrWithdrawBalance(curr_txn.user_id.username, curr_txn.amount, "add")
-                if deposit:
+
+                # TODO: implement changelog function to record 
+                # addToChangelog()
+                
+                can_update = helpers.addOrWithdrawBalance(curr_txn.user_id.username, curr_txn.amount, "add")
+                if can_update:
+                    curr_txn.save()
                     return HttpResponse("Transaction No. " + pk + " was changed from 'Failed' to 'Successful'")
                 else:
                     return HttpResponse("Was not able to update user's balance")
+                    
         except Exception as e:
             logger.error("There was an error with overriding the transaction result", exc_info=1)
             logger.error(repr(e))

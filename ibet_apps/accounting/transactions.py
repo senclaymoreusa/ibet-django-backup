@@ -112,9 +112,7 @@ def save_transaction(request):
             'bank_acc_no': data['bank_acc_no'],
             'real_name': data['real_name']
         }
-        status = 2
-        if data['type'] == 0:
-            status = 3
+        status = 2 if data['type'] == 0 else 3
         try:
             txn = Transaction(
                 transaction_id=txn_id,
