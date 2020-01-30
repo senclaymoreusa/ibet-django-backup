@@ -42,12 +42,15 @@ def getGPIBalance(user):
         req_param["merch_id"] = GPI_MERCH_ID
         req_param["merch_pwd"] = GPI_MERCH_PWD
         req_param["cust_id"] = user.username
+        req_param["cust_name"] = user.username
         req_param["currency"] = transCurrency(user)
 
         req = urllib.parse.urlencode(req_param)
 
-        url = GPI_URL + 'getbalance' + '?' + req
+        url = GPI_URL + 'createuser' + '?' + req
+        res = requests.get(url)
 
+        url = GPI_URL + 'getbalance' + '?' + req
         res = requests.get(url)
         
         res = xmltodict.parse(res.text)
@@ -279,6 +282,7 @@ class CreateUserAPI(View):
             req_param["merch_id"] = GPI_MERCH_ID
             req_param["merch_pwd"] = GPI_MERCH_PWD
             req_param["cust_id"] = user.username
+            req_param["cust_name"] = user.username
             req_param["currency"] = transCurrency(user)
 
             req = urllib.parse.urlencode(req_param)
