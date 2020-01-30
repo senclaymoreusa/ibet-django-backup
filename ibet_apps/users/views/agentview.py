@@ -1,7 +1,8 @@
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core import serializers
-from django.db import transaction, IntegrityError
-from django.http import HttpResponse
+from django.db import transaction
+from django.db.utils import IntegrityError
+from django.http import HttpResponse, JsonResponse
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.db.models import Count, Sum, Q, F
@@ -904,3 +905,26 @@ class AgentDetailView(CommAdminView):
             subject = request.POST.get('subject')
             text = request.POST.get('text')
             return HttpResponse(status=200)
+
+        elif post_type == 'add_referral_channel':
+            affiliate_id = request.POST.get('affiliate_id')
+            new_channel_name = request.POST.get('new_channel_name')
+            affiliate = CustomUser.objects.get(pk=affiliate_id)
+            try:
+                new_channel = ReferChannel.objects.create(
+                    user_id=affiliate,
+                    refer_channel_name=new_channel_name
+                )
+                response = {
+                    'pk': new_channel.pk,
+                    'link': str(LETOU_DOMAIN) + str(affiliate.referral_code) + '/' + str(new_channel.pk),
+                    'time': str(new_channel.generated_time),
+                    'name': new_channel_name
+                }
+                logger.info("Create new refer channel {} for affiliate {}".format(new_channel_name, affiliate.username))
+                return HttpResponse(json.dumps(response))
+            except IntegrityError as e:
+                logger.info("Duplicate Refer Channel Name " + str(e))
+                response = JsonResponse({"error": "Duplicate Refer Channel Name, Please Try Again!"})
+                response.status_code = 400
+                return response
