@@ -40,6 +40,7 @@ class GetEaBetHistory(View):
             logger.critical("There is something wrong with redis connection. {}".format(str(e)))
             return HttpResponse(json.dumps({'status': 'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
 
+        gamebets_list = []
         file_list = []
 
         try:
@@ -48,12 +49,18 @@ class GetEaBetHistory(View):
             logger.warning("Getting gameinfolist.txt fail. {}".format(str(e)))
             return HttpResponse(json.dumps({'status': 'Getting gameinfolist.txt fail: ' + str(e)}), content_type='application/json')
 
+
+        if len(file_list) <= 0:
+            logger.warning("There is no new data in gameinfolist.txt")
+            return HttpResponse(json.dumps({'status': 'There is no new data in gameinfolist.txt'}), content_type='application/json')
+
         try: 
             last_file = redis.get_ea_last_file()
-            last_file = last_file.decode("utf-8")
             processed = True
             if last_file is None:
                 processed = False
+            else:
+                last_file = last_file.decode("utf-8")
 
             for f in file_list:
 
@@ -75,7 +82,8 @@ class GetEaBetHistory(View):
                     logger.warning("Uploading to S3 error", e)
                 
                 logger.info('Uploading to S3 to bucket ' + AWS_BET_S3_BUCKET + ' with file name ' + local_file_name)
-
+                
+                list_history = []
                 with open(local_file_name, 'r') as f:
                     data = xmltodict.parse(f.read())
                     # print(data)
@@ -87,12 +95,13 @@ class GetEaBetHistory(View):
                                 # print(each_game_type)
                                 game_code = each_game_type['@code']
                                 bet_detail = each_game_type['deal']
-                                gameHistoryToDatabase(bet_detail, game_code)
+                                list_history = gameHistoryToDatabase(bet_detail, game_code)
                         # only one type of game playing in this time range
                         else:
                             game_code = all_game_types['game']['@code']
                             bet_detail = all_game_types['game']['deal']
-                            gameHistoryToDatabase(bet_detail, game_code)
+                            list_history = gameHistoryToDatabase(bet_detail, game_code)
+                        gamebets_list = gamebets_list + list_history
                         logger.info('store EA bet history to database')
                     else:
                         logger.info('There is no bet history between this time range')
@@ -100,6 +109,7 @@ class GetEaBetHistory(View):
                     
                 os.remove(local_file_name)
 
+            GameBet.objects.bulk_create(gamebets_list)
 
             last_file = file_list[-1]
             last_file_name = last_file.split('/')[-1]
@@ -112,10 +122,12 @@ class GetEaBetHistory(View):
             }
             return HttpResponse(json.dumps(response), content_type="application/json")
         except Exception as e:
-            logger.critical("There is something wrong with get ea bet detai {}".format(str(e)))
-            return HttpResponse(json.dumps({'status':  'There is something wrong with redis connection.' + str(e)}), content_type='application/json')
+            logger.critical("There is something wrong with get ea bet detail {}".format(str(e)))
+            return HttpResponse(json.dumps({'status':  'There is something wrong with get ea bet detail.' + str(e)}), content_type='application/json')
 
 def gameHistoryToDatabase(bet_detail, game_code):
+
+    bet_list = []
 
     try: 
         provider = GameProvider.objects.get(provider_name=EA_PROVIDER)
@@ -153,7 +165,9 @@ def gameHistoryToDatabase(bet_detail, game_code):
             outcome = 2
         else:
             outcome = 0
-        GameBet.objects.create(
+        
+        
+        gamebet = GameBet(
             provider=provider,
             category=category,
             #game = None,
@@ -183,5 +197,6 @@ def gameHistoryToDatabase(bet_detail, game_code):
                 }
         )
 
-
+        bet_list.append(gamebet)
         logger.info("Successfully store the bet history to which code ID from EA is {}".format(game_code_id))
+        return bet_list
