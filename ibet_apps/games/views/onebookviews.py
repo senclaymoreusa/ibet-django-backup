@@ -450,11 +450,11 @@ class FundTransfer(APIView):
                     if direction == '1':
                         #deposit
                         user.main_wallet = user.main_wallet - amount
-                        user.onebook_wallet = user.onebook_wallet + amount
+                        # user.onebook_wallet = user.onebook_wallet + amount
                     elif direction == '0':
                         #withdraw
                         user.main_wallet = user.main_wallet + amount
-                        user.onebook_wallet = user.onebook_wallet - amount
+                        # user.onebook_wallet = user.onebook_wallet - amount
                     user.save()
                     
                     return Response(rdata)

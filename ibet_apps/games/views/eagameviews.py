@@ -389,7 +389,7 @@ class WithdrawEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            if float(user.ea_wallet) < float(amount):
+            if float(user.ea_wallet) < float(amount): # please change this
                 return HttpResponse("Balance not enough")
 
             if requestEAWithdraw(user, amount, "main") == CODE_SUCCESS:
