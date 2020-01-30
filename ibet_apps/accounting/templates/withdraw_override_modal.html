@@ -21,6 +21,7 @@
                         <p>Deposit Slip</p>
                         <p>Transaction No.</p>
                         <p>Created Time</p>
+                        <p>Resolved Time</p>
                         <p>Provider Ref No.</p>
                         <p>Amount</p>
                     </div>
@@ -28,7 +29,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 deposit-request-details">
+                <!-- <div class="col-md-4 deposit-request-details">
                     <div class="col-md-6 deposit-request-title">
                         <p>Bank</p>
                         <p>Branch</p>
@@ -38,7 +39,7 @@
                     </div>
                     <div class="col-md-6 deposit-request-data" id="bank_detail">
                     </div>
-                </div>
+                </div> -->
 
                 <!-- <div class="col-md-3 deposit-request-details" style="padding-bottom: 50px">
                     <div class="col-md-3 deposit-request-title">
@@ -80,10 +81,12 @@
         }
         event.preventDefault();
         $('#override-notes').prop('disabled', true);
+
         $(this).attr('id', 'override-result-confirm');
         $(this).html('Click to request change');
+
         $('#override-result-confirm').click(function (event) {
-            let thisTransNo = $("#dep_trans_no").val();
+            let thisTransNo = $("#wtd_trans_no").val();
 
             $.ajax({
                 method: 'POST',
@@ -91,7 +94,6 @@
                 data: {
                     'txn_id': thisTransNo,
                     'reason': $("#override-notes").val(),
-                    'new_amount': $("#new-amount").val(),
                 }
             })
             .done(function(data) {

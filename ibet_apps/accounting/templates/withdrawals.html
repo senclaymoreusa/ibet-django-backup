@@ -526,11 +526,10 @@
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
 
-            let id = $(this).attr("class") == "result-override-btn" ? "#override-deposit-detail" : "#trans-deposit-detail"
-
+            let id = $(this).attr("class") == "result-override-btn" ? "#override-deposit-detail" : "#trans_withdraw_detail"
             // transaction pk: data[12]
             // bank account: data[13]
-            showTransactionDetail(data);
+            showTransactionDetail(data, id);
             // showWithdrawDetail(data);
             // showBankDetail(data);
             var user_id = data[0];
@@ -553,7 +552,7 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addWithdrawRecord(data2, data[12], data[0]);
+                addWithdrawRecord(data2, data[18], data[0]);
             });
         });
 
@@ -623,16 +622,22 @@
             $("#withdraw_detail").append(content);
         }
 
-        showTransactionDetail = function (data) {
-            $("#trans_withdraw_detail").empty();
+        showTransactionDetail = function (data, id) {
+            $(id).empty();
             var content = "";
             // tran no.
+            content += "<p>...</p>";
+            // tran no.
             content += "<p id='transaction_id'>" + data[7] + "</p>";
-            // application time
+            // created+resolved time
             content += "<p>" + data[9] + "</p>";
+            content += "<p>" + data[10] + "</p>";
+            // ref no.
+            content += "<p>" + data[8] + "</p>";
             // amount
-            content += "<p>" + data[12] + "</p>";
-            $("#trans_withdraw_detail").append(content);
+            content += "<p>" + data[14] + "</p>";
+            
+            $(id).append(content);
         }
 
         $('#withdraw-review-cancel').click(function () {
