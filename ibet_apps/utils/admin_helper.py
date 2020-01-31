@@ -2,7 +2,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
-from django.db.models import Q, ObjectDoesNotExist
+from django.db.models import Q, ObjectDoesNotExist, Sum
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 from datetime import date
@@ -52,7 +52,7 @@ def getCommissionTrans():
 
 '''
 @param affiliates: affiliate object or queryset
-@return: players list(users referred by affiliates)
+@return: players list(users referred by affiliate)
 '''
 
 
@@ -79,7 +79,7 @@ def getPlayers(affiliates):
 
 '''
 @param affiliates: affiliate object or queryset
-@return: downline list(affiliates referred by affiliates)
+@return: downline list(affiliates referred by affiliate)
 '''
 
 
@@ -199,20 +199,27 @@ def calculateNewPlayer(user_group, start_time, end_time, free_bets):
     return new_player_count
 
 
-def getCommissionRate(user, start_time, end_time):
-    if not user:
+'''
+@param: affilliate object, time range
+@return: affilliate's commission rate in the month of end_time
+'''
+
+
+def getCommissionRate(affilliate, start_time, end_time):
+    if not affilliate:
+        logger.info("Error input for getting commission rate !")
         return 0
 
-    downlines = getDownlines(user)
+    downlines = getDownlines(affilliate)
     active_downline = filterActiveUser(downlines, start_time, end_time, True, None).count()
     downline_ftd = calculateFTD(downlines, start_time, end_time)
     ngr = 0
     for downline in downlines:
         ngr += calculateNGR(downline, start_time, end_time, None)
-    if user.commission_setting == 'System':
+    if affilliate.commission_setting == 'System':
         commissions = SystemCommissionLevel.objects.all().order_by('-commission_percentage')
     else:
-        commissions = PersonalCommissionLevel.objects.filter(user_id=user).order_by('-commission_percentage')
+        commissions = PersonalCommissionLevel.objects.filter(user_id=affilliate).order_by('-commission_percentage')
 
     if commissions:
         for level in commissions:
@@ -222,41 +229,43 @@ def getCommissionRate(user, start_time, end_time):
     return 0
 
 
-# TODO: functions need to be updated
-def calculateTurnover(user, start_time, end_time, cate):
+# Sum total of Bet amount within the reporting period
+def calculateTurnover(user, start_time, end_time, product):
     return 0
 
 
-def calculateGGR(user, start_time, end_time, cate):
+def calculateGGR(user, start_time, end_time, product):
     return 0
 
 
-def calculateDeposit(user, start_time, end_time):
-    count = 0
-    amount = 0
+def calculateNGR(user, start_time, end_time, product):
+    return 0
+
+
+def getTransactionAmount(user, start_time, end_time, type, product):
+    if not user:
+        return 0
+
+    trans_filter = Q(user_id=user) & Q(status=TRAN_SUCCESS_TYPE)
+
+    if start_time:
+        trans_filter &= Q(arrive_time__gte=start_time)
+    if end_time:
+        trans_filter &= Q(arrive_time__lte=end_time)
+    if type:
+        trans_filter &= Q(transaction_type=type)
+    if product:
+        try:
+            product = Category.objects.get(name=product)
+            trans_filter &= Q(product=product)
+        except Exception as e:
+            logger.info("Warning cannot find corresponding Game Category" + str(e))
+
+    trans = Transaction.objects.filter(trans_filter)
+    count = trans.count()
+    amount = trans.aggregate(Sum('amount'))['amount__sum']
+
     return count, amount
-
-
-def calculateWithdrawal(user, start_time, end_time):
-    count = 0
-    amount = 0
-    return count, amount
-
-
-def calculateBonus(user, start_time, end_time, cate):
-    return 0
-
-
-def calculateNGR(user, start_time, end_time, cate):
-    return 0
-
-
-def calculateAdjustment(user, start_time, end_time):
-    return 0
-
-
-def getUserBalance(user):
-    return user.main_wallet
 
 
 # USER SYSTEM

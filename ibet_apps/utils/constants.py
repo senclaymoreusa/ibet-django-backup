@@ -127,11 +127,11 @@ CURRENCY_CHOICES = (
     (CURRENCY_TTC, 'TTC')
 )
 
-TRAN_SUCCESS_TYPE = 0  # deposit / withdraw
+TRAN_SUCCESS_TYPE = 0  # deposit / withdraw / bonus / adjustment
 TRAN_FAIL_TYPE = 1  # deposit / withdraw
 TRAN_CREATE_TYPE = 2  # deposit / withdraw
 TRAN_PENDING_TYPE = 3  # deposit / withdraw
-TRAN_APPROVED_TYPE = 4  # not being used 
+TRAN_APPROVED_TYPE = 4
 TRAN_CANCEL_TYPE = 5  # deposit / withdraw
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
