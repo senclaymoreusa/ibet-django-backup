@@ -127,11 +127,11 @@ CURRENCY_CHOICES = (
     (CURRENCY_TTC, 'TTC')
 )
 
-TRAN_SUCCESS_TYPE = 0  # deposit / withdraw
+TRAN_SUCCESS_TYPE = 0  # deposit / withdraw / bonus / adjustment
 TRAN_FAIL_TYPE = 1  # deposit / withdraw
 TRAN_CREATE_TYPE = 2  # deposit / withdraw
 TRAN_PENDING_TYPE = 3  # deposit / withdraw
-TRAN_APPROVED_TYPE = 4  # not being used 
+TRAN_APPROVED_TYPE = 4
 TRAN_CANCEL_TYPE = 5  # deposit / withdraw
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
@@ -741,6 +741,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["PRODUCTION"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["PRODUCTION"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["PRODUCTION"]["FTP_USERNAME"]
@@ -773,6 +774,7 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["SANDBOX"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
@@ -805,6 +807,7 @@ else:
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["SANDBOX"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
@@ -1593,6 +1596,12 @@ KY_AES_KEY = keys["KAIYUAN"]["DESKEY"]
 KY_MD5_KEY = keys["KAIYUAN"]["MD5KEY"]
 KY_API_URL = keys["KAIYUAN"]["KY_API_URL"]
 KY_RECORD_URL = keys["KAIYUAN"]["KY_RECORD_URL"]
+
+# Game Play Int
+GPI_MERCH_ID = keys["GPI"]["MERCH_ID"]
+GPI_MERCH_PWD = keys["GPI"]["MERCH_PWD"]
+GPI_URL = keys["GPI"]["GPI_URL"]
+GPI_LIVE_CASINO_URL = keys["GPI"]["GPI_LIVE_CASINO_URL"]
 
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]

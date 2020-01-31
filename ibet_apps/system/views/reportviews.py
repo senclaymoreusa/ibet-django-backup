@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
+from django.views import View
 
 from users.models import CustomUser, UserAction
 from accounting.models import Transaction
@@ -22,7 +23,7 @@ import requests
 
 
 logger = logging.getLogger('django')
-
+# print(settings.redshift_cursor)
 
 class PerformanceReportView(CommAdminView): 
 
@@ -468,3 +469,155 @@ class UserEventReportView (CommAdminView):
 
 
 
+
+class UserGameBetHistory(View):
+
+    def get(self, request):
+
+        history_type = request.GET.get('type')
+        username =  request.GET.get('username')
+
+        start_time = request.GET.get('start_time')
+        end_time = request.GET.get('end_time')
+
+        start_time = datetime.strptime(start_time, '%Y-%m-%d')
+        end_time= datetime.strptime(end_time, '%Y-%m-%d')
+
+        current_tz = timezone.get_current_timezone()
+        tz = pytz.timezone(str(current_tz))
+
+        start_time = tz.localize(datetime.combine(start_time, time.min)) 
+        end_time = tz.localize(datetime.combine(end_time, time.max))
+
+        # if history_type == "deposit":
+        #     sum = 0
+        #     result = {}
+        #     data, sum = getDataFromRange(username, start_time, end_time, history_type, sum)
+        #     result['overall'] = sum
+        #     result['data'] = data
+            
+        # elif history_type == "turnover":
+
+        #     start_time = request.GET.get('start_time')
+        #     end_time = request.GET.get('end_time')
+
+            
+
+        # else:
+        #     pass
+        sum = 0
+        result = {}
+        data, sum = getDataFromRange(username, start_time, end_time, history_type, sum)
+
+        result['overall_deposit'] = sum if history_type == 'deposit' else getAmount(username, start_time, end_time, 'deposit')
+        result['overall_turnover'] = sum if history_type == 'turnover' else getAmount(username, start_time, end_time, 'turnover')
+        result['overall_withdraw'] = getAmount(username, start_time, end_time, 'withdraw')
+        result['overall_bet_casino'] = getBet(username, start_time, end_time, 'casino')
+        result['overall_bet_sport'] = getBet(username, start_time, end_time, 'sport')
+        result['overall_bet_games'] = getBet(username, start_time, end_time, 'games')
+        result['data'] = data
+        
+
+        return HttpResponse(json.dumps(result, cls=DjangoJSONEncoder))
+
+
+
+def getDataFromRange(username, time_from, time_to, type, sum):
+
+    current_tz = timezone.get_current_timezone()
+    tz = pytz.timezone(str(current_tz))
+
+    data = []
+    interval = relativedelta(days=1)
+    if type == 'deposit':
+        date = time_from
+        while date <= time_to:
+            time_start = tz.localize(datetime.combine(date, time.min)) 
+            time_end = tz.localize(datetime.combine(date, time.max))
+
+            query = "SELECT CAST(SUM(amount) as DECIMAL) FROM accounting_transaction_detailed WHERE transaction_type='Deposit' and user_name='" + username + "' and request_time between '" + str(time_start) +  "' and '" + str(time_end) + "';"
+            settings.REDSHIFT_CURSOR.execute(query)
+            rows = settings.REDSHIFT_CURSOR.fetchone() 
+            sum += rows[0] if rows[0] else 0
+            row_data = {
+                "data": date.strftime("%Y-%m-%d"),
+                "amount": rows[0] if rows[0] else "0"
+            }
+            data.append(row_data)
+            date += interval
+
+        return data, sum
+
+    elif type == 'turnover':
+
+        date = time_from
+        while date <= time_to:
+            time_start = tz.localize(datetime.combine(date, time.min)) 
+            time_end = tz.localize(datetime.combine(date, time.max))
+
+            query = "SELECT SUM(amount_wagered) FROM games_gamebet_detailed WHERE user_name='" + username + "' and bet_time between '" + str(time_start) +  "' and '" + str(time_end) + "';"
+            settings.REDSHIFT_CURSOR.execute(query)
+            rows = settings.REDSHIFT_CURSOR.fetchone()
+            sum += rows[0] if rows[0] else 0
+            row_data = {
+                "data": date.strftime("%Y-%m-%d"),
+                "bet_amount": rows[0] if rows[0] else "0"
+            }
+            data.append(row_data)
+            date += interval
+
+        return data, sum
+
+def getAmount(username, time_from, time_to, type):
+
+    if type == "deposit":
+        query = "SELECT SUM(amount) FROM accounting_transaction_detailed WHERE transaction_type='Deposit' and user_name='" + username + "' and request_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+    elif type == 'withdraw':
+        query = "SELECT SUM(amount) FROM accounting_transaction_detailed WHERE transaction_type='Withdraw' and user_name='" + username + "' and request_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+    elif type == "turnover":
+        query = "SELECT SUM(amount_wagered) FROM games_gamebet_detailed WHERE user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+
+    settings.REDSHIFT_CURSOR.execute(query)
+    rows = settings.REDSHIFT_CURSOR.fetchone() 
+    return rows[0] if rows[0] else 0
+
+
+def getBet(username, time_from, time_to, type):
+
+    if type == "sport":
+        query = "SELECT SUM(CAST(amount_won as DECIMAL)) FROM games_gamebet_detailed WHERE category_name='Sports' and user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+        settings.REDSHIFT_CURSOR.execute(query)
+        rows = settings.REDSHIFT_CURSOR.fetchone() 
+        won = rows[0] if rows[0] else 0
+
+        query = "SELECT SUM(CAST(amount_wagered as DECIMAL)) FROM games_gamebet_detailed WHERE category_name='Sports' and user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+        settings.REDSHIFT_CURSOR.execute(query)
+        rows = settings.REDSHIFT_CURSOR.fetchone() 
+        bet = rows[0] if rows[0] else 0
+
+    elif type == 'casino':
+
+        query = "SELECT SUM(CAST(amount_won as DECIMAL)) FROM games_gamebet_detailed WHERE category_name='Live Casino' and user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+        settings.REDSHIFT_CURSOR.execute(query)
+        rows = settings.REDSHIFT_CURSOR.fetchone() 
+        won = rows[0] if rows[0] else 0
+
+        query = "SELECT SUM(CAST(amount_wagered as DECIMAL)) FROM games_gamebet_detailed WHERE category_name='Live Casino' and user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+        settings.REDSHIFT_CURSOR.execute(query)
+        rows = settings.REDSHIFT_CURSOR.fetchone() 
+        bet = rows[0] if rows[0] else 0
+
+    elif type == 'games':
+
+
+        query = "SELECT SUM(CAST(amount_won as DECIMAL)) FROM games_gamebet_detailed WHERE category_name='Games' and user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+        settings.REDSHIFT_CURSOR.execute(query)
+        rows = settings.REDSHIFT_CURSOR.fetchone() 
+        won = rows[0] if rows[0] else 0
+
+        query = "SELECT SUM(CAST(amount_wagered as DECIMAL)) FROM games_gamebet_detailed WHERE category_name='Games' and user_name='" + username + "' and bet_time between '" + str(time_from) +  "' and '" + str(time_to) + "';"
+        settings.REDSHIFT_CURSOR.execute(query)
+        rows = settings.REDSHIFT_CURSOR.fetchone() 
+        bet = rows[0] if rows[0] else 0
+
+    return won - bet

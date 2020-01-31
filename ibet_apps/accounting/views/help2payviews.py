@@ -147,9 +147,9 @@ class DepositResult(generics.GenericAPIView):
         if trans_status == '000':
             update_data.status = 0
             result = "Success"
-            helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('Amount'), 'add')
-            if not helpers:
-                return Response({
+            can_deposit = helpers.addOrWithdrawBalance(update_data.user_id, request.POST.get('Amount'), 'add')
+            if not can_deposit:
+                return JsonResponse({
                     'message': 'There was an error with updating the user balance',
                     'success': False
                 })
@@ -225,19 +225,9 @@ def withdrawResult(request):
             if trans_status == '000':
                 update_data.status = 0
                 result = "Success"
-                helpers.addOrWithdrawBalance(update_data.user_id, amount, 'withdraw')
             elif trans_status == '001':
                 update_data.status = 1
                 result = "Failed"
-            elif trans_status == '006':
-                update_data.status = 4
-                result = "Approved"
-            elif trans_status == '007':
-                update_data.status = 8
-                result = "Rejected"
-            elif trans_status == '009':
-                update_data.status = 3
-                result = "Pending"
 
             update_data.order_id = withdrawID
             update_data.arrive_time = timezone.now()
@@ -319,7 +309,7 @@ class SubmitPayout(View):
                         transaction_type=TRANSACTION_WITHDRAWAL,
                         channel=0,
                         request_time=timezone.now(),
-                        other_data={'checksum': checksum},
+                        other_data={'checksum': checksum}
                     )
                     withdraw_request.save()
                     logger.info("Withdraw request created: " + str(withdraw_request))
@@ -341,7 +331,7 @@ class SubmitPayout(View):
                             "toBankAccountName": toBankAccountName,
                             "toBankAccountNumber": toBankAccountNumber,
                         }
-                        print(data)
+
                         r = requests.post(payoutURL, data=data)
                         
                         if r.status_code == 200:

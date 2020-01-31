@@ -186,8 +186,8 @@
             }
         });
 
-        $(document).on("click", "#refer_link_remove", function () {
-            var refer_link_id = $(this).parent().parent().find('#refer_link_id').val();
+        $(document).on("click", ".refer_link_remove", function () {
+            var refer_link_id = $(this).parent().parent().find('.refer_link_id').val();
             var refer_row = $(this).closest('.row')
             $.ajax({
                 type: 'POST',
@@ -243,10 +243,46 @@
             copyToClipboard(link);
         });
 
-        $(document).on("click", '#copy-link-list', function(){
-            var link = $(this).parent().parent().find('#promotion-link-list').text();
+        $(document).on("click", '.copy-link-list', function(){
+            var link = $(this).parent().parent().find('.refer-link-list').text();
             copyToClipboard(link);
         });
+
+        $(document).on("click", '#new-referral-save-btn', function(){
+            var new_channel_name = $('#refer-channel-name').val();
+            if (new_channel_name.length === 0) {
+                $('#new-refer-channel-errorMessage').text("Please enter valid channel name!");
+                $('#new-refer-channel-errorMessage').css('color', 'red');
+            }else{
+                $.ajax({
+                    type: 'POST',
+                    url: agent_detail_url,
+                    data: {
+                        'type': 'add_referral_channel',
+                        'affiliate_id': affiliate_id,
+                        'new_channel_name': new_channel_name,
+                    },
+                    success: function (data) {
+                        addReferChannel(data);
+                        $("#new-refer-channel").modal('toggle');
+                    },
+                    error: function(data){
+                        $('#new-refer-channel-errorMessage').text(data.responseJSON.error);
+                        $('#new-refer-channel-errorMessage').css('color', 'red');
+                    }
+                });
+            }
+        });
+
+        function addReferChannel(data){
+            data = $.parseJSON(data);
+            var lastDiv = $('.refer_link_row').last().clone();
+            lastDiv.find('.refer_link_id').val(data.pk)
+            lastDiv.find('.refer-link-name').text(data.name)
+            lastDiv.find('.refer-link-list').text(data.link)
+            lastDiv.find('.refer-link-date').text(moment(new Date(data.time)).format('MMM DD YYYY, HH:mm'))
+            $('.promotion-links').append(lastDiv);
+        }
 
         $(document).on("click", "#delete_commission_level_btn", function () {
             var current_level = $(this).parent().parent().find('.commission_level_label').html();
