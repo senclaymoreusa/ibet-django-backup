@@ -585,7 +585,7 @@ class DebitCustomer(View):
         
         # check for repeat request
         try:
-            repeat_debit = GameBet.objects.get(other_data__request_id=request_id, other_data__is_debit=True)
+            repeat_debit = GameBet.objects.get(other_data__request_id=request_id, other_data__is_debitcustomer=True)
             res = "error_code=0\r\n"
             res += "error_message=success\r\n"
             res += f"balance={repeat_debit.other_data['ending_balance']}\r\n"
@@ -614,7 +614,7 @@ class DebitCustomer(View):
 
                 user.main_wallet = user.main_wallet - amount
                 xmlJson = {
-                    'is_debit': True,
+                    'is_debitcustomer': True,
                     'is_outcome_correction': True,
                     'debit_data': dict(bet_xml.attrib), 
                     'bet_data': purchaseDict,
@@ -708,7 +708,6 @@ class CreditCustomer(View):
                         for change in changes:
                             if "open" not in change.attrib.get("OldStatus").lower():
                                 isBetCorrection = True
-                                break
 
                 PROVIDER, CATEGORY = getProviderCategory()
                 
