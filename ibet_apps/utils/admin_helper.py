@@ -241,10 +241,6 @@ def calculateNGR(user, start_time, end_time, product):
     return 0
 
 
-def getUserBalance(user):
-    return user.main_wallet
-
-
 def getTransactionAmount(user, start_time, end_time, type, product):
     if not user:
         return 0
