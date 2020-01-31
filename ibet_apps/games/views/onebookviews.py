@@ -554,7 +554,7 @@ def getBetDetail(request):
                     updates.save()
                         
                     if  "BetDetails" in rdata['Data']:
-                        
+                        gamebets_list = []
                         # logger.info(rdata["Data"]["BetDetails"])
                         for i in range(len(rdata["Data"]["BetDetails"])):
                             
@@ -578,7 +578,7 @@ def getBetDetail(request):
                             if rdata["Data"]["BetDetails"][i]["settlement_time"] == '':
                                     if not GameBet.objects.filter(ref_no=trans_id).exists():
                                     
-                                        GameBet.objects.create(provider=PROVIDER,
+                                        gamebet = GameBet(provider=PROVIDER,
                                                             category=cate,
                                                             user=user,
                                                             user_name=user.username,
@@ -593,13 +593,14 @@ def getBetDetail(request):
                                                                 "version_key": version_key
                                                             }
                                                         )
+                                        gamebets_list.append(gamebet)
                                 
                             else:
                                 if (outcome == "won" or outcome == "half won" or outcome == "lose" or outcome == "half lose" or outcome == "draw" or outcome == "reject" or  outcome == "refund" or outcome == "void"):
                                     
                                     resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
                                        
-                                    GameBet.objects.create(provider=PROVIDER,
+                                    gamebet = GameBet(provider=PROVIDER,
                                                         category=cate,
                                                         transaction_id=transid,
                                                         user=user,
@@ -617,6 +618,8 @@ def getBetDetail(request):
                                                                 "version_key": version_key
                                                             }
                                                     )
+                                    gamebets_list.append(gamebet)
+                        GameBet.objects.bulk_create(gamebets_list)
 
 
                         # sleep(delay)  
@@ -672,7 +675,7 @@ class GetBetDetail(APIView):
             if  "BetDetails" in rdata['Data']:
                 # logger.info(rdata["Data"]["BetDetails"])
                 
-
+                gamebets_list = []
                 for i in range(len(rdata["Data"]["BetDetails"])):
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     try:
@@ -683,7 +686,7 @@ class GetBetDetail(APIView):
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
                         
-                        GameBet.objects.get_or_create(provider=PROVIDER,
+                        gamebet = GameBet(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
                                                     user=user,
@@ -697,10 +700,11 @@ class GetBetDetail(APIView):
                                                     market=ibetCN,
                                                     
                                                     )
+                        gamebets_list.append(gamebet)
                     else:
                         resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
                         
-                        GameBet.objects.get_or_create(provider=PROVIDER,
+                        gamebet = GameBet(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
                                                     user=user,
@@ -714,6 +718,8 @@ class GetBetDetail(APIView):
                                                     resolved_time=utcToLocalDatetime(resolve),
                                                     market=ibetCN,
                                                     )
+                        gamebets_list.append(gamebet)
+                    GameBet.objects.bulk_create(gamebets_list)
                 sleep(delay)    
             else:
                 logger.info("BetDetails does not exist.")

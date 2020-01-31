@@ -358,44 +358,63 @@
                             <div class="col-md-2">
                                 CHANNEL NAME
                             </div>
-                            <div class="col-md-5">
+                            <div class="col-md-4">
                                 PROMOTION LINK
                             </div>
                             <div class="col-md-3">
                                 CREATED
                             </div>
                         </div>
-                        {% for link in promotion_link_list %}
-                        <div class="row" style="margin-bottom: 2px;" id="refer_link_row">
-                            <input type="hidden" value="{{ link.pk }}" id="refer_link_id">
-                            <div class="col-md-2">
-                                {{ link.refer_channel_name }}
+                        <div class="promotion-links">
+                            {% for link in promotion_link_list %}
+                            <div class="row refer_link_row" style="margin-bottom:5px;">
+                                <input type="hidden" value="{{ link.pk }}" class="refer_link_id">
+                                <div class="col-md-2 refer-link-name" style="padding-top:7px">
+                                    {{ link.refer_channel_name }}
+                                </div>
+                                <div class="col-md-4 refer-link-list" style="padding-top:7px">
+                                    {{ domain }}{{ referral_code }}/{{ link.pk }}
+                                </div>
+                                <div class="col-md-3 refer-link-date" style="padding-top:7px">
+                                    {{ link.generated_time|date:'M d Y, H:i' }}
+                                </div>
+                                <div class="col-md-1" style="margin-right: 2px;">
+                                    <button class="btn btn-primary btn-sm copy-link-list">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div class="col-md-1">
+                                    <button class="btn btn-danger btn-sm refer_link_remove">Remove</button>
+                                </div>
                             </div>
-                            <div class="col-md-4" id="promotion-link-list">
-                                {{ domain }}{{ referral_code }}/{{ link.pk }}
-                            </div>
-                            <div class="col-md-3">
-                                {{ link.genarated_time|date:'d/m/y H:i:s' }}
-                            </div>
-                            <div class="col-md-1" style="margin-right: 2px;">
-                                <button class="btn btn-primary btn-sm" id="copy-link-list">
-                                    Copy
-                                </button>
-                            </div>
-                            <div class="col-md-1">
-                                <button class="btn btn-danger btn-sm" id="refer_link_remove">Remove</button>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                         <br>
-                        <button type="button" class="btn btn-primary" id="add_refer_channel"><i
-                                class="fa fa-plus"></i></button>
+                        <button type="button" class="btn btn-primary" id="add_refer_channel" data-toggle="modal"
+                                data-target="#new-refer-channel"><i class="fa fa-plus"></i></button>
                         <br>
-
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="new-refer-channel" role="dialog">
+            <div class="modal-dialog" id="new-refer-channel-detail" style="width: 20%;">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-body" style="text-align:center">
+                        Enter New Refer Channel Name<br>
+                        <input id="refer-channel-name"><br>
+                        <p id='new-refer-channel-errorMessage'>&nbsp;</p>
+                        <button type="button" class="btn btn-primary" id="new-referral-save-btn"> Save </button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
 
         <!-- Affiliate detail buttons -->
         <div class='row' style="margin-top: 25px; margin-left: 0px;">
