@@ -18,8 +18,6 @@ logger = logging.getLogger('django')
 
 
 def get_transactions(request):
-
-    
     user_id = request.GET.get("user_id")
     trans_type = request.GET.get("type")
     time_from = request.GET.get("time_from")
@@ -32,7 +30,6 @@ def get_transactions(request):
             'success': False,
             'results': "You have to select start or end date"
         })
-
 
     try:
         user = CustomUser.objects.get(pk=user_id)
@@ -115,11 +112,8 @@ def save_transaction(request):
             'bank_acc_no': data['bank_acc_no'],
             'real_name': data['real_name']
         }
-        status = 2
-        if data['type'] == 0:
-            status = 3
+        status = 2 if data['type'] == 0 else 3
         try:
-
             txn = Transaction(
                 transaction_id=txn_id,
                 user_id=user,
