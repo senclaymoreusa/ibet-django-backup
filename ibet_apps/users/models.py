@@ -164,11 +164,15 @@ class CustomUser(AbstractBaseUser):
     product_attribute = models.CharField(_('Product Attribute'), max_length=255, default='', blank=True)
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)  # first time deposit
+    ftd_time_amount = models.DecimalField(_('Amount of FTD'), max_digits=20, decimal_places=4, default=0)
     verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='')
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
     member_status = models.SmallIntegerField(choices=MEMBER_STATUS, blank=True, null=True, default=0)
+    member_changed_time = models.DateTimeField(_('Status Changed Time'), blank=True, null=True)
+    member_changed_by = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_NULL,
+                                             related_name='MemberChange')
     risk_level = models.SmallIntegerField(choices=RISK_LEVEL, default=0)
 
     # The following 3 fields store the user's money for playing games. main_wallet is the primary wallet used.
@@ -176,13 +180,6 @@ class CustomUser(AbstractBaseUser):
     main_wallet = models.DecimalField(_('Main Wallet'), max_digits=20, decimal_places=4, default=0)
     other_game_wallet = models.DecimalField(_('Other Game Wallet'), max_digits=20, decimal_places=4, default=0)
     bonus_wallet = models.DecimalField(_('Bonus Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    # onebook_wallet = models.DecimalField(_('Onebook Wallet'), max_digits=20, decimal_places=4, null=True, default=0)
-    # ea_wallet = models.DecimalField(_('EA Wallet'), max_digits=20, decimal_places=4, default=0)
-    # ky_wallet = models.DecimalField(_('Kaiyuan Wallet'), max_digits=20, decimal_places=4, default=0)
-    # ag_wallet = models.DecimalField(_('AG Wallet'), max_digits=20, decimal_places=4, default=0)
-    # gpi_wallet = models.DecimalField(_('GPI Wallet'), max_digits=20, decimal_places=4, default=0)
-    # agent
-    # affiliate = models.BooleanField(default=False)              #if a user is agent or not
     user_to_affiliate_time = models.DateTimeField(_('Time of Becoming Agent'), default=None, null=True, blank=True)
     user_application_time = models.DateTimeField(_('Application Time'), default=None, null=True, blank=True)
     user_application_info = models.CharField(_('Application Introduction'), max_length=500, null=True, blank=True)

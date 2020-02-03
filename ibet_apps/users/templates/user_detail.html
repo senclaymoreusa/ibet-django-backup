@@ -25,6 +25,84 @@
         </div>
     </div>
     {% endif %}
+
+    <!-- fund status section -->
+    <div class="row" id="fund-rectangle">
+        <div class="detail-title-block" style="background-color: #00a281;">
+            <span class="detail-title">Fund status</span>
+        </div>
+        <div class="row" style="margin-top:20px;">
+            <div class="col-md-6" >
+                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                        <div class="block-title"><span></span></div>
+                        <div class="block-title"><span>TOTAL BALANCE</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                ${{ totalBalance|floatformat:2  }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                        <div class="block-title"><span>MAIN</span></div>
+                        <div class="block-title"><span>WALLET BALANCE</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                ${{ customuser.main_wallet|floatformat:2  }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                        <div class="block-title"><span>AVAILAVLE FOR</span></div>
+                        <div class="block-title"><span>WITHDRAWAL</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                ${{ customuser.main_wallet|floatformat:2  }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                        <div class="block-title"><span>MIN/ MAX</span></div>
+                        <div class="block-title"><span>WITHDRAW AMOUNT</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                NO LIMIT
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2" style="width: 20%;">
+                        <div class="block-title"><span>&nbsp;</span></div>
+                        <div class="block-title"><span>BONUS AMOUNT</span></div>
+                        <div class="fund-block">
+                            <div class="status-block-content">
+                                None
+                            </div>
+                        </div>
+                    </div>
+            </div>
+            <div class="col-md-6">
+                <div class="block-title"><span></span></div>
+                <div class="block-title"><span>BANANCE PER WALLET</span></div>
+                <div class="col-md-3" style="padding-left: 0px;">
+                    <div id="chart5" style="min-height: 135px;"></div>
+                </div>
+                <div class="col-md-9">
+                    <div class="row" id="walletData" style="margin-top: 10px;">
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div style="margin-top:15px;margin-left: 15px;">
+            <button class="btn btn-primary blockDisable"><span>Make adjustment</span></button>
+            <button class="btn btn-primary blockDisable"><span>Transfer in/ out</span></button>
+        </div>
+    </div>
+
+
+
+
     <!-- life time value section -->
     <div class="row" id="life-time-rectangle">
         <div class="detail-title-block" style="background-color: #ff6426;">
@@ -726,73 +804,6 @@
                 <input type="text" class="form-control" id="notes-input" placeholder="Write a new note...">
                 <button class="btn btn-primary blockDisable" id="post-btn">Post</button>
             </div>
-        </div>
-    </div>
-
-    <!-- fund status section -->
-    <div class="row" id="fund-rectangle">
-        <div class="detail-title-block" style="background-color: #00a281;">
-            <span class="detail-title">Fund status</span>
-        </div>
-        <div class="row" style="margin-top:20px;">
-            <div class="col-md-6" >
-                <div class="col-md-3">
-                    <div class="block-title"><span>MAIN</span></div>
-                    <div class="block-title"><span>WALLET BALANCE</span></div>
-                    <div class="fund-block">
-                        <div class="status-block-content">
-                            ${{ customuser.main_wallet|floatformat:2  }}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="block-title"><span>AVAILAVLE FOR</span></div>
-                    <div class="block-title"><span>WITHDRAWAL</span></div>
-                    <div class="fund-block">
-                        <div class="status-block-content">
-                            ${{ customuser.main_wallet|floatformat:2  }}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="block-title"><span>MIN/ MAX</span></div>
-                    <div class="block-title"><span>WITHDRAW AMOUNT</span></div>
-                    <div class="fund-block">
-                        <div class="status-block-content">
-                            NO LIMIT
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="block-title"><span>&nbsp;</span></div>
-                    <div class="block-title"><span>BONUS AMOUNT</span></div>
-                    <div class="fund-block">
-                        <div class="status-block-content">
-                            None
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6" style="margin-top:12px;">
-                <div>
-                    <div><span id="balance-wallet-title">BANANCE PER WALLET</span></div>
-                </div>
-                <div>
-                    <div class="pie-chart">
-                    </div>
-                </div>
-                <div class="col-md-10">
-
-                </div>
-            </div>
-
-
-        </div>
-
-        <div style="margin-top:35px;margin-left: 15px;">
-            <button class="btn btn-primary blockDisable"><span>Make adjustment</span></button>
-            <button class="btn btn-primary blockDisable"><span>Transfer in/ out</span></button>
-            <button  class="btn btn-primary blockDisable"><span>Release bonus</span></button>
         </div>
     </div>
 
@@ -2113,7 +2124,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
-<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-typeahead/2.10.6/jquery.typeahead.min.css" /> -->
+<link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css" />
+<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
 
 <script>
 
@@ -2172,6 +2184,9 @@ $(document).ready(function() {
     var previousURL = document.referrer;
 
     $("#back-btn").attr("href", previousURL);
+
+    var user_id = $('#hidden_user_id').val();
+    getWalletAmount(user_id);
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -2281,7 +2296,7 @@ $(document).ready(function() {
         }).val('');
     });
     
-    var user_id = $('#hidden_user_id').val();
+    // var user_id = $('#hidden_user_id').val();
     // console.log(user_id)
 
     $('#transaction_time_submit').click( function(e) {
@@ -2926,6 +2941,134 @@ function getTransData(data) {
         $("#transaction_tbody").append(content);
     }
 }
+
+
+function getWalletAmount(user_id) {
+
+
+    $.ajax({
+        type:'GET',
+        url:"{% url 'get_each_wallet_amount' %}",
+        data:{ 
+            'user_id': user_id,
+        },
+        success:function(data) {
+            renderChart(data);
+        }
+    });
+
+}
+
+
+function renderChart(data) {
+
+    let total = 0;
+    var walletMap = {
+        "mainValue": 0,
+        "oneBookValue": 0,
+        "PTValue": 0,
+        "AGValue": 0,
+        "KYValue": 0,
+        "GPIValue": 0,
+        "EAValue": 0,
+        "OPUSValue": 0,
+        "BBINValue": 0,
+    }
+
+    var amountMap = {
+        "mainValue": 0,
+        "oneBookValue": 0,
+        "PTValue": 0,
+        "AGValue": 0,
+        "KYValue": 0,
+        "GPIValue": 0,
+        "EAValue": 0,
+        "OPUSValue": 0,
+        "BBINValue": 0,
+    }
+
+
+    for (var i = 0; i < data.length; i++) {
+        switch(data[i].code) {
+            case "main":
+                walletMap['mainValue'] = data[i].percent; 
+                amountMap['mainValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                // console.log(total);
+                break;
+            case "BBIN":
+                walletMap['BBINValue'] = data[i].percent;
+                amountMap['BBINValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "OPUS":
+                walletMap['OPUSValue'] = data[i].percent;
+                amountMap['OPUSValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "GPI":
+                walletMap['GPIValue']= data[i].percent;
+                amountMap['GPIValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "PT":
+                walletMap['PTValue'] = data[i].percent;
+                amountMap['PTValue']= data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "EA":
+                walletMap['EAValue'] = data[i].percent;
+                amountMap['EAValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "KY":
+                walletMap['KYValue'] = data[i].percent;
+                amountMap['KYValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "Onebook":
+                walletMap['OnebookValue'] = data[i].percent;
+                amountMap['OnebookValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            case "AG":
+                walletMap['AGValue'] = data[i].percent;
+                amountMap['AGValue'] = data[i].amount; 
+                total = total + data[i].percent;
+                break;
+            default:
+        }
+    }
+    
+    if (total == 0) {
+        $('#chart5').text("There is no balance in each wallet")
+
+    } else {
+        var data1 = {
+          series: [{value: walletMap['mainValue'],  className: "mainWallet"}, {value: walletMap['OnebookValue'],  className: "onebookWallet"}, {value: walletMap['PTValue'] , className: "PTWallet"}, {value: walletMap['AGValue'],  className: "AGWallet"}, {value: walletMap['KYValue'],  className: "KYWallet"}, {value: walletMap['GPIValue'],  className: "GPIWallet"}, {value: walletMap['EAValue'],  className: "EAWallet"}, {value: walletMap['OPUSValue'],  className: "OPUSWallet"}, {value: walletMap['BBINValue'],  className: "BBINWallet"}]
+        };
+
+        var option1 = {
+          width: 130,
+          height: 130,
+        showLabel: false
+          
+        }
+
+        new Chartist.Pie('#chart5', data1, option1);
+        
+        var content = '';
+        content += '<div class="col-md-2" style="width: 20%; padding-left:0px"><div><span class="dot mainWallet"></span>Main</div><div><span class="dot onebookWallet"></span>Onebook</div><div><span class="dot PTWallet"></span>PT</div><div><span class="dot AGWallet"></span>AG</div><div><span class="dot KYWallet"></span>KY</div></div><div class="col-md-4" style="width: 30%; padding-left:0px">';
+        content += '<div>' + amountMap['mainValue'] + ' (' + walletMap['mainValue']  + '%)' + '</div><div>'  + amountMap['OnebookValue'] + ' (' + walletMap['OnebookValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' +'</div><div>' + amountMap['AGValue'] + ' (' + walletMap['AGValue']  + '%)' + '</div></div>';
+        content += '<div class="col-md-2" style="padding-left:0px"><div><span class="dot GPIWallet"></span>GPI</div><div><span class="dot EAWallet"></span>EA</div><div><span class="dot OPUSWallet"></span>OPUS</div><div><span class="dot BBINWallet"></span>BBIN</div></div><div class="col-md-4"  style="padding-left:0px">';
+        content += '<div>' + amountMap['GPIValue'] + ' (' + walletMap['GPIValue']  + '%)' + '</div><div>'  + amountMap['EAValue'] + ' (' + walletMap['EAValue']  + '%)' + '</div><div>'+ amountMap['OPUSValue'] + ' (' + walletMap['OPUSValue']  + '%)' + '</div><div>'+ amountMap['BBINValue'] + ' (' + walletMap['BBINValue']  + '%)' +'</div></div>';
+
+        $("#walletData").empty();
+        $("#walletData").append(content);
+
+    }
+}
+
 
 </script>
 

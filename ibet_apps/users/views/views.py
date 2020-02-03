@@ -411,7 +411,6 @@ class LoginView(GenericAPIView):
                 realIp = helpers.get_client_ip(request)
             otherData = self.iovationData
            
-
             # print(self.user.username)
             r = RedisClient().connect()
             redis = RedisHelper()
@@ -787,7 +786,7 @@ class AddOrWithdrawBalance(APIView):
 
         if type_balance == 'add':
             if user[0].ftd_time is None:
-                user.update(ftd_time=timezone.now(), modified_time=timezone.now())
+                user.update(ftd_time=timezone.now(), modified_time=timezone.now(), ftd_time_amount=balance)
 
             new_balance = currrent_balance + decimal.Decimal(balance)
             user.update(main_wallet=new_balance, modified_time=timezone.now())

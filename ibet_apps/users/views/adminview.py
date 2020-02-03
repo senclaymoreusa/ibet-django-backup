@@ -27,6 +27,7 @@ from django.urls import reverse
 from django.utils import translation
 from users.views.helper import *
 from games.models import GameBet, Category
+from utils.admin_helper import *
 
 import requests
 import logging
@@ -178,6 +179,14 @@ class UserDetailView(CommAdminView):
         #     # print("!!!! temperaryBlock: " + str(temporaryBlockRes))
         #     context['permanentBlock'] = permanentBlockRes
         #     # print(temporaryBlock, permanentBlock)
+
+
+        total_balance = customUser.main_wallet
+        each_wallet = UserWallet.objects.filter(user=customUser)
+        for wallet in each_wallet:
+            total_balance += wallet.wallet_amount
+        context['totalBalance'] = total_balance
+
 
         riskLevelMap = {}
         for t in CustomUser._meta.get_field('risk_level').choices:
@@ -862,26 +871,30 @@ class UserListView(CommAdminView):
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['source'] = str(user.get_user_attribute_display())
+            userDict['manager'] = str(user.vip_managed_by.username) if user.vip_managed_by else ""
             userDict['risk_level'] = ''
             userDict['balance'] = user.main_wallet + user.other_game_wallet
             userDict['product_attribute'] = ''
             userDict['time_of_registration'] = user.time_of_registration
             userDict['ftd_time'] = user.ftd_time
+            userDict['ftd_time_amount'] = user.ftd_time_amount if user.ftd_time_amount != 0 else ""
             userDict['verfication_time'] = user.verfication_time
             userDict['id_location'] = user.id_location
             userDict['phone'] = user.phone
             userDict['address'] = user.get_user_address()
-            # userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
+            deposit_sum = 0
+            turnover_sum = 0
+            bonus_sum = 0
             userDict['deposit_turnover'] = ''
             userDict['bonus_turnover'] = ''
-            userDict['contribution'] = 0
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
             # depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
             # withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
             betTims = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
             activeDays = int(betTims)
             userDict['active_days'] = activeDays
             userDict['member_status'] = user.get_member_status_display() if user.get_member_status_display() else ""
-            userDict['status_changed'] = ''
+            userDict['status_changed'] = user.member_changed_time if user.member_changed_time else ""
             userDict['changed_by'] = ''
             userDict['closure_reason'] = ''
 
@@ -1179,7 +1192,7 @@ class GetUserInfo(View):
                 'name': name,
                 'idNumber': '',
                 'birthday': user.date_of_birth,
-                'status': user.member_status if user.member_status else '',
+                'status': user.member_status,
                 'playerSegment': user.vip_level.level if user.vip_level else '',
                 'riskLevel': user.risk_level,
                 'manager': user.vip_managed_by.username if user.vip_managed_by else '',
