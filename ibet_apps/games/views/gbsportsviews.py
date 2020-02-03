@@ -16,6 +16,9 @@ from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
 import random
+from rest_framework.decorators import api_view, permission_classes
+import xml.etree.ElementTree as ET
+
 class WalletGeneralAPI(APIView):
 
     permission_classes = (AllowAny, )
@@ -818,6 +821,49 @@ class GenerateFakeUserGameURL(APIView):
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
 
         return Response({'game_url': url})
+
+@api_view(['POST'])
+@permission_classes((AllowAny,)) 
+def getSportTeamInfo(request):
+    teamcode = request.POST.get("teamcode")
+    language = request.POST.get("language")
+    if language == 'en': 
+        language = 'en-us'
+    elif language == 'zh': 
+        language = 'zh-cn'
+    elif language == 'th':
+        language = 'th-th'
+    elif language == 'vi':
+        language = 'vi-vn'
+    else:
+        language = 'zh-cn'
+
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    try:
+        r = requests.post(GB_CLIENT_API_URL + "GetSportTeamInfo", headers=headers, data={
+            "intSportCompetitorCode": teamcode,
+            "strLanguageCode": language   
+        })
+                        
+        rdata = r.text
+    except requests.RequestException:
+        logger.error("Connectivity error for GB getSportTeamInfo API.")
+        return Response({'error': 'Connectivity error for GB getSportTeamInfo API.'})
+    except ValueError:
+        logger.error("JSON parsing error for GB getSportTeamInfo API.")
+        return Response({'error': 'JSON parsing error for GB getSportTeamInfo API.'})
+    except (IndexError, KeyError):
+        logger.error("JSON format error for GB getSportTeamInfo API.")
+        return Response({'error': 'JSON format error for GB getSportTeamInfo API.'})
+        
+    if r.status_code == 200:
+        dic = xmltodict.parse(rdata)
+        TeamName = dic['DataTable']['diffgr:diffgram']['NewDataSet']['Table']['TeamName']
+
+        return Response(TeamName)
+    else:
+        logger.warning('GB::There was something wrong with the GB getSportTeamInfo connection')
+        return Response({'error':'There was something wrong with the GB getSportTeamInfo connection'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
