@@ -157,6 +157,7 @@ urlpatterns = [
     path('api/gb/walletsettle/', gbsports.WalletSettleAPIURL.as_view(), name='wallet_settle'),
     path('api/gb/generategameurl/', gbsports.GenerateGameURL.as_view(), name='generate_game_url'),
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
+    path('api/gb/getSportTeamInfo', gbsports.getSportTeamInfo, name='get_Sport_Team_Info'),
 
     # QT
     path('api/qt/accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),

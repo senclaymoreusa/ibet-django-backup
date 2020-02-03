@@ -1635,6 +1635,7 @@ GB_SPORT_URL = keys["GB"]["SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
 GB_GENERALKEY = keys["GB"]["GeneralKey"]
 GB_SECRETKEY = keys["GB"]["SecretKey"]
+GB_CLIENT_API_URL = keys["GB"]["CLIENT_API_URL"]
 
 
 # QT
