@@ -105,7 +105,7 @@ class GetEaBetHistory(View):
                             # if isinstance(bet_detail, list):
                             #     bet_detail = each_game_type['deal']
                             # else:
-                            print(bet_detail)
+                            # print(bet_detail)
                             list_history = gameHistoryToDatabase(bet_detail, game_code)
                         gamebets_list = gamebets_list + list_history
                         logger.info('store EA bet history to database')
