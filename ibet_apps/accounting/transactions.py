@@ -86,7 +86,8 @@ def get_transactions(request):
             data["transaction_type"] = tran.get_transaction_type_display()
             data["channel"] = tran.get_channel_display()
             data["amount"] = tran.amount
-            data["provider"] = tran.get_status_display()
+            data["balance"] = tran.current_balance
+            data["status"] = tran.get_status_display()
             trans_data.append(data)
         # res = serializers.serialize('json', all_transactions)
         logger.info("Successfully get transaction history")
@@ -136,4 +137,35 @@ def save_transaction(request):
                 'success': False,
                 'transaction_id': None
             })
-        
+
+
+
+def get_transaction_by_id(request):
+    if request.method == "GET":
+        transaction_id = request.GET.get("transaction_id")
+
+        try:
+            tran = Transaction.objects.get(transaction_id=transaction_id)
+            
+            trans_data = {
+                'transaction_id': tran.transaction_id,
+                'amount': tran.amount,
+                'balance': tran.current_balance,
+                'currency': tran.get_currency_display(),
+                'request_time': tran.request_time,
+                'transaction_type':  tran.get_transaction_type_display(),
+                'channel':  tran.get_channel_display(),
+                'status':  tran.get_status_display()
+            }
+
+            return JsonResponse({
+                'success': True,
+                'results': trans_data
+            })
+
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'results': "There is something wrong"
+            })
