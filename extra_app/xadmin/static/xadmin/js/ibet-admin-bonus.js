@@ -553,7 +553,7 @@ $(document).ready(function() {
         updateDataTarget(this);
         triggerType = $("input[name='bonus-trigger-type']:checked").val();
         if(triggerType === "verification"){
-            triggerSubType = $("input[name='verification-choice']:checked").val();
+            triggerSubType = "id,phone,email";
             $('#bonus-amount-detail, .wager-req-01').css("display", "");
             $('#bonus-amount-detail-02, .wager-req-02').css("display", "none");
             $('#bonus-amount-detail-03').css("display", "none");
