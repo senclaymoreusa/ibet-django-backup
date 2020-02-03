@@ -121,23 +121,21 @@
                 <div id="bonus-detail-02" style="margin:20px;">
                     <label for="bonus-type"><strong> BONUS MASTER TYPE* </strong></label><br>
                     <div id="bonus-type">
-                        <input type="checkbox" class="single-product" id="live-casino" value="live-casino"
-                               name="master-type"
-                               onclick="singleProductSelect(), liveCasinoSelect()"/>
-                        <label class="product-label" for="live-casino"> Live Casino bonus </label><br>
-                        <input type="checkbox" class="single-product" id="casino" value="casino" name="master-type"
-                               onclick="singleProductSelect(), casinoSelect()"/>
-                        <label class="product-label" for="casino"> Casino bonus </label><br>
-                        <input type="checkbox" class="free-product" id="free-spin" value="free-spin"
+                        <input type="radio" class="single-product" id="live-casino" value="live-casino"
                                name="master-type"/>
-                        <label class="product-label" for="free-spin"> Free spin bonus </label><br>
-                        <input type="checkbox" class="single-product" id="sports" value="sports" name="master-type"
-                               onclick="singleProductSelect(), sportsSelect()"/>
+                        <label class="product-label" for="live-casino"> Live Casino bonus </label><br>
+                        <input type="radio" class="single-product" id="casino" value="casino" name="master-type" />
+                        <label class="product-label" for="casino"> Casino bonus </label><br>
+<!--                        <input type="checkbox" class="free-product" id="free-spin" value="free-spin"-->
+<!--                               name="master-type"/>-->
+<!--                        <label class="product-label" for="free-spin"> Free spin bonus </label><br>-->
+                        <input type="radio" class="single-product" id="sports" value="sports" name="master-type" />
                         <label class="product-label" for="sports"> Sports bonus </label><br>
-                        <input type="checkbox" class="free-product" id="free-bet" value="free-bet" name="master-type"/>
-                        <label class="product-label" for="free-bet"> Free bet bonus </label><br>
-                        <input type="checkbox" class="multi-product" id="multi-product" value="multi-product"
-                               onclick="multiProductSelect()" name="master-type"/>
+                        <input type="radio" class="single-product" id="lottery" value="lottery" name="master-type" />
+                        <label class="product-label" for="lottery"> Lottery bonus </label><br>
+<!--                        <input type="checkbox" class="free-product" id="free-bet" value="free-bet" name="master-type"/>-->
+<!--                        <label class="product-label" for="free-bet"> Free bet bonus </label><br>-->
+                        <input type="radio" class="multi-product" id="multi-product" value="multi-product" name="master-type" />
                         <label class="product-label" for="multi-product"> Multi-product bonus </label><br>
                     </div>
                     <br>
@@ -767,65 +765,65 @@
     var bonus_url = '{% url "bonus_search" %}';
     var bonus_create = "{% url "bonus_name" name="new_bonus" %}";
 
-    function multiProductSelect() {
-      var checkBox = document.getElementById("multi-product");
-      if (checkBox.checked == true){
-        $('#live-casino, #casino, #sports').attr("disabled", true)
-        $('#live-casino, #casino, #sports').attr("checked", false)
-        $('label[for="live-casino"], label[for="casino"], label[for="sports"]').css("opacity", "0.35");
-      }else{
-        $('#live-casino, #casino, #sports').attr("disabled", false)
-        $('label[for="live-casino"], label[for="casino"], label[for="sports"]').css("opacity", "");
-      }
-    }
+<!--    function multiProductSelect() {-->
+<!--      var checkBox = document.getElementById("multi-product");-->
+<!--      if (checkBox.checked == true){-->
+<!--        $('#live-casino, #casino, #sports').attr("disabled", true)-->
+<!--        $('#live-casino, #casino, #sports').attr("checked", false)-->
+<!--        $('label[for="live-casino"], label[for="casino"], label[for="sports"]').css("opacity", "0.35");-->
+<!--      }else{-->
+<!--        $('#live-casino, #casino, #sports').attr("disabled", false)-->
+<!--        $('label[for="live-casino"], label[for="casino"], label[for="sports"]').css("opacity", "");-->
+<!--      }-->
+<!--    }-->
 
-    var liveCasinoBox = document.getElementById("live-casino");
-    var casinoBox = document.getElementById("casino");
-    var sportsBox = document.getElementById("sports");
+<!--    var liveCasinoBox = document.getElementById("live-casino");-->
+<!--    var casinoBox = document.getElementById("casino");-->
+<!--    var sportsBox = document.getElementById("sports");-->
 
-    function singleProductSelect(selectedProduct) {
-      if (liveCasinoBox.checked == true || casinoBox.checked == true || sportsBox.checked == true){
-        $('#multi-product').prop("disabled", true)
-        $('#multi-product').prop("checked", false)
-        $('label[for="multi-product"]').css("opacity", "0.35");
-      }else{
-        $('#multi-product').attr("disabled", false)
-        $('label[for="multi-product"]').css("opacity", "");
-      }
-    }
+<!--    function singleProductSelect(selectedProduct) {-->
+<!--      if (liveCasinoBox.checked == true || casinoBox.checked == true || sportsBox.checked == true){-->
+<!--        $('#multi-product').prop("disabled", true)-->
+<!--        $('#multi-product').prop("checked", false)-->
+<!--        $('label[for="multi-product"]').css("opacity", "0.35");-->
+<!--      }else{-->
+<!--        $('#multi-product').attr("disabled", false)-->
+<!--        $('label[for="multi-product"]').css("opacity", "");-->
+<!--      }-->
+<!--    }-->
 
-    function liveCasinoSelect(){
-       if (liveCasinoBox.checked == true ){
-        $('#casino, #sports').attr("disabled", true)
-        $('#casino, #sports').attr("checked", false)
-        $('label[for="casino"], label[for="sports"]').css("opacity", "0.35");
-      }else{
-        $('#casino, #sports').attr("disabled", false)
-        $('label[for="casino"], label[for="sports"]').css("opacity", "");
-      }
-    };
+<!--    function liveCasinoSelect(){-->
+<!--       if (liveCasinoBox.checked == true ){-->
+<!--        $('#casino, #sports').attr("disabled", true)-->
+<!--        $('#casino, #sports').attr("checked", false)-->
+<!--        $('label[for="casino"], label[for="sports"]').css("opacity", "0.35");-->
+<!--      }else{-->
+<!--        $('#casino, #sports').attr("disabled", false)-->
+<!--        $('label[for="casino"], label[for="sports"]').css("opacity", "");-->
+<!--      }-->
+<!--    };-->
 
-    function casinoSelect(){
-      if (casinoBox.checked == true ){
-        $('#live-casino, #sports').attr("disabled", true)
-        $('#live-casino, #sports').attr("checked", false)
-        $('label[for="live-casino"], label[for="sports"]').css("opacity", "0.35");
-      }else{
-        $('#live-casino, #sports').attr("disabled", false)
-        $('label[for="live-casino"], label[for="sports"]').css("opacity", "");
-      }
-    };
+<!--    function casinoSelect(){-->
+<!--      if (casinoBox.checked == true ){-->
+<!--        $('#live-casino, #sports').attr("disabled", true)-->
+<!--        $('#live-casino, #sports').attr("checked", false)-->
+<!--        $('label[for="live-casino"], label[for="sports"]').css("opacity", "0.35");-->
+<!--      }else{-->
+<!--        $('#live-casino, #sports').attr("disabled", false)-->
+<!--        $('label[for="live-casino"], label[for="sports"]').css("opacity", "");-->
+<!--      }-->
+<!--    };-->
 
-    function sportsSelect(){
-      if (sportsBox.checked == true){
-        $('#live-casino, #casino').attr("disabled", true)
-        $('#live-casino, #casino').attr("checked", false)
-        $('label[for="live-casino"], label[for="casino"]').css("opacity", "0.35");
-      }else{
-        $('#live-casino, #casino').attr("disabled", false)
-        $('label[for="live-casino"], label[for="casino"]').css("opacity", "");
-      }
-    };
+<!--    function sportsSelect(){-->
+<!--      if (sportsBox.checked == true){-->
+<!--        $('#live-casino, #casino').attr("disabled", true)-->
+<!--        $('#live-casino, #casino').attr("checked", false)-->
+<!--        $('label[for="live-casino"], label[for="casino"]').css("opacity", "0.35");-->
+<!--      }else{-->
+<!--        $('#live-casino, #casino').attr("disabled", false)-->
+<!--        $('label[for="live-casino"], label[for="casino"]').css("opacity", "");-->
+<!--      }-->
+<!--    };-->
 
 </script>
 {% endblock %}

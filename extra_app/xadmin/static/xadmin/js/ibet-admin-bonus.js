@@ -513,36 +513,37 @@ $(document).ready(function() {
 
     $('#bonus-next-02').on('click', function(){
         updateDataTarget(this);
-        $.each($("input[name='master-type']:checked"), function(){
-            var curMasterType = $(this).val();
-            masterType.push(curMasterType);
-            if (curMasterType == "casino"){
-                $('#wager-casino').prop('checked', true);
-                $('#wager-casino').prop('disabled', true);
-                $('#wager-casino-times').prop('required', true);
-                $('#casino-unselected').css("display", "none");
-                $('#casino-selected').css("display", "");
-            }else if (curMasterType == "live-casino"){
-                $('#wager-live-casino').prop('checked', true);
-                $('#wager-live-casino').prop('disabled', true);
-                $('#wager-live-casino-times').prop('required', true);
-                $('#live-casino-unselected').css("display", "none");
-                $('#live-casino-selected').css("display", "");
-            }else if (curMasterType == "sports"){
-                $('#wager-sports').prop('checked', true);
-                $('#wager-sports').prop('disabled', true);
-                $('#wager-sports-times').prop('required', true);
-                $('#sports-unselected').css("display", "none");
-                $('#sports-selected').css("display", "");
-            }
-        });
+        masterType = $("input[name='master-type']:checked").val();
+//        $.each($("input[name='master-type']:checked"), function(){
+//            var curMasterType = $(this).val();
+//            masterType.push(curMasterType);
+//            if (curMasterType == "casino"){
+//                $('#wager-casino').prop('checked', true);
+//                $('#wager-casino').prop('disabled', true);
+//                $('#wager-casino-times').prop('required', true);
+//                $('#casino-unselected').css("display", "none");
+//                $('#casino-selected').css("display", "");
+//            }else if (curMasterType == "live-casino"){
+//                $('#wager-live-casino').prop('checked', true);
+//                $('#wager-live-casino').prop('disabled', true);
+//                $('#wager-live-casino-times').prop('required', true);
+//                $('#live-casino-unselected').css("display", "none");
+//                $('#live-casino-selected').css("display", "");
+//            }else if (curMasterType == "sports"){
+//                $('#wager-sports').prop('checked', true);
+//                $('#wager-sports').prop('disabled', true);
+//                $('#wager-sports-times').prop('required', true);
+//                $('#sports-unselected').css("display", "none");
+//                $('#sports-selected').css("display", "");
+//            }
+//        });
         if($('#bonus-issue').is(":checked")){
             issued = true;
         }else{
             issued = false;
         }
         if(!$("input:radio[name='bonus-category']").is(":checked") ||
-        !$("input:checkbox[name='master-type']").is(":checked")){
+        !$("input:radio[name='master-type']").is(":checked")){
             showErrorMsg(this);
         }else{
             removeErrorMsg(this);
@@ -770,7 +771,7 @@ $(document).ready(function() {
                 "trigger_subtype": triggerSubType,  // id,email,phone    first, next     product, provider
                 "bonus_amount_list": bonusAmountList,   // amount types
                 "deposit_wager_base": depositWagerCal,  // 0 for deposit+bonus, 1 for bonus only
-                "master_types": masterType,
+                "master_type": masterType,
             };
 
             $.ajax({
