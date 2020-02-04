@@ -78,6 +78,7 @@ def getBetHistory(request):
             
             for bet in all_bets:
                 data = dict()
+                data["id"] = bet.pk
                 data["amount_wagered"] = bet.amount_wagered
                 data["amount_won"] = bet.amount_won
                 data["outcome"] = bet.get_outcome_display()
@@ -103,3 +104,64 @@ def getBetHistory(request):
                 'message': "There is something wrong"
             })
 
+
+
+
+def getBetById(request):
+
+
+    if request.method == "GET":
+
+        ref_no = request.GET.get("ref_no")
+
+        try:
+            
+            bet_details = GameBet.objects.filter(ref_no=ref_no)
+
+            amount_won = 0
+            amount_wagered = 0
+            outcome = ""
+            bet_time = ""
+            resolved_time = ""
+            provider = ""
+            category = ""
+            
+            for detail in bet_details:
+                if detail.amount_won and detail.amount_won > 0:
+                    amount_won = detail.amount_won
+                if detail.amount_wagered and detail.amount_wagered > 0:
+                    amount_wagered = detail.amount_wagered
+                if detail.outcome is not None:
+                    outcome = detail.get_outcome_display()
+                if detail.bet_time and not detail.resolved_time:
+                    bet_time = detail.bet_time
+                if detail.resolved_time:
+                    resolved_time = detail.resolved_time
+                if detail.provider:
+                    provider = detail.provider.provider_name
+
+                if detail.category:
+                    category = detail.category.name
+
+
+            bet_data = {
+                "amount_wagered": amount_won,
+                "amount_won": amount_wagered,
+                "outcome": outcome,
+                "date": bet_time,
+                "category": resolved_time,
+                "provider": provider,
+                "ref_no": category
+            }
+
+            return JsonResponse({
+                'success': True,
+                'results': bet_data
+            })
+        
+        except Exception as e:
+            logger.error("(Error) Getting bet history error: ", e)
+            return JsonResponse({
+                'success': False,
+                'message': "There is something wrong"
+            })
