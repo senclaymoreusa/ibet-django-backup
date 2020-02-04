@@ -6,7 +6,7 @@ from django.db.models import Q
 import datetime
 
 from accounting.models import Transaction
-from users.models import CustomUser
+from users.models import CustomUser, WithdrawAccounts
 from utils.admin_helper import utcToLocalDatetime
 from utils.constants import *
 import json
@@ -16,6 +16,35 @@ import logging
 
 logger = logging.getLogger('django')
 
+
+def addWithdrawAccount(request):
+    if request.method == "POST":
+        try:
+            print(request.body)
+            data = json.loads(request.body)
+            print(data)
+            user = CustomUser.objects.get(pk=data["user_id"])
+            name = data.get("full_name")
+            if (name):
+                user.first_name = name.split(" ")[0]
+                user.last_name = name.split(" ")[1]
+                user.save()
+
+            new_acc = WithdrawAccounts(
+                user=user,
+                account_no=data["acc_no"]
+            )
+            new_acc.save()
+            return JsonResponse({
+                'success': True,
+                'message': "Added new bank account for withdrawal"
+            })
+        except Exception as e:
+            logger.info(repr(e))
+            return JsonResponse({
+                'success': False,
+                'message': "Parameters incorrect or missing"
+            })
 
 def get_transactions(request):
     user_id = request.GET.get("user_id")
