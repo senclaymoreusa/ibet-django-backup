@@ -15,9 +15,11 @@ from time import gmtime, strftime, strptime
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
-import random
+import random, logging
 from rest_framework.decorators import api_view, permission_classes
 import xml.etree.ElementTree as ET
+
+logger = logging.getLogger('django')
 
 class WalletGeneralAPI(APIView):
 
@@ -152,7 +154,7 @@ class WalletBetAPIURL(APIView):
                                         provider=PROVIDER,
                                         transaction_id=trans_id,
                                         category=cate,
-                                        game_name=teamcode1 + '/' + teamcode2,
+                                        game_name=str(teamcode1) + '/' + str(teamcode2),
                                         user=user,
                                         user_name=user.username,
                                         currency=user.currency,
@@ -220,7 +222,7 @@ class WalletBetAPIURL(APIView):
                     
                     if temp >= total_amount:
                         current_balance = temp-total_amount
-              
+                        
                         with transaction.atomic():
                             
                             for x in range(len(data['GB']['Result']['ReturnSet']['BettingList'])):
@@ -251,25 +253,26 @@ class WalletBetAPIURL(APIView):
                                     bet_type = OTHER
                             
                                 if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
+                                    
                                     SportList = data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] 
+                                    
                                     category = 'Sports'
                                     try:
                                         cate = Category.objects.get(name=category)
                                     except:
-                                        logger.error("missing category.")
-                                    for y in range(SportList):
+                                        logger.error("GB::wallet bet API is missing category.")
+                                    for y in range(len(SportList)):
                                         teams = SportList[y]['Team']
-                                        teams_size = len(teams)
                                         
                                         teamcode1 = teams[0]['TeamCode']
                                         teamcode2 = teams[1]['TeamCode']
-
+                                        
                                         GameBet.objects.create(
                                             provider=PROVIDER,
                                             category=cate,
                                             transaction_id=trans_id,
                                             user=user,
-                                            game_name=teamcode1 + '/' + teamcode2,
+                                            game_name=str(teamcode1) + '/' + str(teamcode2),
                                             user_name=user.username,
                                             currency=user.currency,
                                             market=ibetCN,
@@ -435,7 +438,7 @@ class WalletSettleAPIURL(APIView):
                                 transaction_id=trans_id,
                                 user=user,
                                 user_name=user.username,
-                                game_name=teamcode1 + '/' + teamcode2,
+                                game_name=str(teamcode1) + '/' + str(teamcode2),
                                 currency=user.currency,
                                 market=ibetCN,
                                 ref_no=BetID,
@@ -572,7 +575,7 @@ class WalletSettleAPIURL(APIView):
                                     category=cate,
                                     user=user,
                                     user_name=user.username,
-                                    game_name=teamcode1 + '/' + teamcode2,
+                                    game_name=str(teamcode1) + '/' + str(teamcode2),
                                     transaction_id=trans_id,
                                     currency=user.currency,
                                     market=ibetCN,
