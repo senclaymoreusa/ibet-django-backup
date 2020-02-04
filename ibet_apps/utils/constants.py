@@ -127,11 +127,11 @@ CURRENCY_CHOICES = (
     (CURRENCY_TTC, 'TTC')
 )
 
-TRAN_SUCCESS_TYPE = 0  # deposit / withdraw
+TRAN_SUCCESS_TYPE = 0  # deposit / withdraw / bonus / adjustment
 TRAN_FAIL_TYPE = 1  # deposit / withdraw
 TRAN_CREATE_TYPE = 2  # deposit / withdraw
 TRAN_PENDING_TYPE = 3  # deposit / withdraw
-TRAN_APPROVED_TYPE = 4  # not being used 
+TRAN_APPROVED_TYPE = 4
 TRAN_CANCEL_TYPE = 5  # deposit / withdraw
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
@@ -442,6 +442,11 @@ RISK_LEVEL = (
     (RISK_LEVEL_E1, 'E1'),
     (RISK_LEVEL_E2, 'E2'),
     (RISK_LEVEL_F, 'F'),
+)
+
+ALLOWED_STATUSES = (
+    (1, "ALL"),
+    (2, "NORMAL")
 )
 
 INTERVAL_PER_DAY = 0
@@ -794,7 +799,7 @@ elif "dev" in os.getenv("ENV"):
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
     
 else:
-    API_DOMAIN = "http://cf61d044.ngrok.io/"
+    API_DOMAIN = "http://339378af.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -1630,6 +1635,7 @@ GB_SPORT_URL = keys["GB"]["SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
 GB_GENERALKEY = keys["GB"]["GeneralKey"]
 GB_SECRETKEY = keys["GB"]["SecretKey"]
+GB_CLIENT_API_URL = keys["GB"]["CLIENT_API_URL"]
 
 
 # QT

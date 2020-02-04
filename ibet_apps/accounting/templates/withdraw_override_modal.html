@@ -1,0 +1,113 @@
+<div class="modal-content">
+    <div class="modal-header">
+        Override Transaction
+    </div>
+    <div class="modal-body">
+        <form action="{% url 'xadmin:override_result' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="type" value="audit_deposit">
+            <input type="hidden" id="dep_trans_no" name="dep_trans_no">
+            <input type="hidden" id="dep_row_index" name="dep_row_index">
+
+            <div class="row deposit-request-word">
+                <div class="col-md-4">TRANSACTION DETAILS</div>
+                <!-- <div class="col-md-4" style="margin-left:20px">BANK DETAILS</div>
+                <div class="col-md-3" style="margin-left:12px">MEMBER DETAILS</div> -->
+            </div>
+
+            <div class="row" style="margin-left:10px; margin-top: 10px">
+                <div class="col-md-12 deposit-request-details" style="width: auto">
+                    <div class="col-md-6 deposit-request-title">
+                        <p>Deposit Slip</p>
+                        <p>Transaction No.</p>
+                        <p>Created Time</p>
+                        <p>Resolved Time</p>
+                        <p>Provider Ref No.</p>
+                        <p>Amount</p>
+                    </div>
+                    <div class="col-md-6 deposit-request-data" id="override-deposit-detail">
+                    </div>
+                </div>
+
+                <!-- <div class="col-md-4 deposit-request-details">
+                    <div class="col-md-6 deposit-request-title">
+                        <p>Bank</p>
+                        <p>Branch</p>
+                        <p>City</p>
+                        <p>Account Name</p>
+                        <p>Account No.</p>
+                    </div>
+                    <div class="col-md-6 deposit-request-data" id="bank_detail">
+                    </div>
+                </div> -->
+
+                <!-- <div class="col-md-3 deposit-request-details" style="padding-bottom: 50px">
+                    <div class="col-md-3 deposit-request-title">
+                        <p>Member ID</p>
+                        <p>Username</p>
+                        <p>First Name</p>
+                        <p>Last Name</p>
+                    </div>
+                    <div class="col-md-4 deposit-request-data" id="member-details">
+                    </div>
+                    <div class="col-md-3 deposit-request-title">
+                        <p>VIP Level</p>
+                        <p>Risk Level</p>
+                        <p>Balance</p>
+                    </div>
+                    <div class="col-md-2 deposit-request-data" id="risk-details">
+                    </div>
+
+                </div> -->
+            </div>
+
+            <div class="row" style="margin-left:10px; margin-top: 10px">
+                <label for="deposit_notes" class="deposit-request-word"
+                style="margin-left: 10px">REASON FOR CHANGING STATUS</label>
+                <textarea id='override-notes' class="form-control" name="deposit_notes"
+                style="width: 70%; height: 100px; margin-bottom: 15px;" placeholder="Please provide a brief explanation" required></textarea>
+                
+                <button type="submit" class="btn btn-danger" id="override-result">Request status change to Failure</button>
+                <button type="button" class="btn btn-primary" id="cancel-override" data-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    // double click result override button
+    $('#override-result').click(function (event) {
+        if (!$("#override-notes").val()) {
+            return;
+        }
+        event.preventDefault();
+        $('#override-notes').prop('disabled', true);
+
+        $(this).attr('id', 'override-result-confirm');
+        $(this).html('Click to request change');
+
+        $('#override-result-confirm').click(function (event) {
+            let thisTransNo = $("#wtd_trans_no").val();
+
+            $.ajax({
+                method: 'POST',
+                url: "{% url 'xadmin:override_result' %}",
+                data: {
+                    'txn_id': thisTransNo,
+                    'reason': $("#override-notes").val(),
+                }
+            })
+            .done(function(data) {
+                alert(data);
+                location.reload();
+            })
+        });
+    });
+
+    // cancel override (enable text area and remove contents)
+    $('#cancel-override').click(function (event) {
+        $('#override-notes').prop('disabled', false);
+        $('#override-notes').val('');
+        $('#override-result-confirm').html('Request status change to Successful');
+        $('#override-result-confirm').attr('id', 'override-result');
+    })
+</script>
