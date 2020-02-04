@@ -809,7 +809,8 @@ class Login(APIView):
                     lang = 'en'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
-                return Response({"login_url":loginUrl})
+                mobile_loginUrl = ONEBOOK_MOBILE_IFRAME_URL + 'token=' + Data + '&lang=' + lang
+                return Response({"login_url":loginUrl, "mobile_login": mobile_loginUrl})
             except NameError as e:
                 logger.error("Cannot find the code for onebook login data.")
                 return Response({"error": "Cannot find the code for onebook login data."})
