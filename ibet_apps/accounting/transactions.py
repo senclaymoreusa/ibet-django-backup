@@ -20,9 +20,7 @@ logger = logging.getLogger('django')
 def addWithdrawAccount(request):
     if request.method == "POST":
         try:
-            print(request.body)
             data = json.loads(request.body)
-            print(data)
             user = CustomUser.objects.get(pk=data["user_id"])
             name = data.get("full_name")
             if (name):
