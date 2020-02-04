@@ -288,7 +288,6 @@ class CreateUserAPI(View):
             req = urllib.parse.urlencode(req_param)
     
             url = GPI_URL + 'createuser' + '?' + req
-            print(url)
 
             res = requests.get(url)
 
