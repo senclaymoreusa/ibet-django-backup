@@ -77,6 +77,7 @@ class Game(models.Model):
     jackpot_size = models.IntegerField(null=True, blank=True)
     smallgame_id = models.CharField(max_length=200, null=True, blank=True)
     is_free = models.NullBooleanField(default=None)
+    mobile_game_id = models.CharField(max_length=200, null=True, blank=True)
 
     created_time = models.DateTimeField(
         _('Created Time'),
