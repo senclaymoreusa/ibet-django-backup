@@ -746,7 +746,7 @@ class GenerateGameURL(APIView):
             mobile = GB_MOBILE_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
-            mobile = GB_MOBILE_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
+            mobile = GB_MOBILE_OTHER_URL + '/{}/index.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
         
         return Response({'game_url': url, 'mobile_url':mobile})
 
@@ -827,8 +827,8 @@ class GenerateFakeUserGameURL(APIView):
             mobile = GB_MOBILE_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res, language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
-            mobile = GB_MOBILE_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
-
+            mobile = GB_MOBILE_OTHER_URL + '/{}/index.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
+            
         return Response({'game_url': url, 'mobile_url':mobile})
 
 @api_view(['POST'])
