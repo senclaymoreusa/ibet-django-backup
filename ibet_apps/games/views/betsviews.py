@@ -149,7 +149,7 @@ def getBetById(request):
                 "outcome": outcome,
                 "event": event,
                 "placed_time": bet_time,
-                "resolved_time": resolved_time
+                "resolved_time": resolved_time,
                 "category": category,
                 "provider": provider,
                 "ref_no": ref_no,
