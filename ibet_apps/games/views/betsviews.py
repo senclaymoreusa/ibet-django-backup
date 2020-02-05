@@ -139,17 +139,20 @@ def getBetById(request):
 
                 if detail.category:
                     category = detail.category.name
+                if detail.game_name:
+                    event = detail.game_name
 
 
             bet_data = {
                 "amount_wagered": amount_won,
                 "amount_won": amount_wagered,
                 "outcome": outcome,
-                "date": bet_time,
+                "event": event,
+                "placed_time": bet_time,
+                "resolved_time": resolved_time
                 "category": category,
                 "provider": provider,
                 "ref_no": ref_no,
-                "resolved_time": resolved_time
             }
 
             return JsonResponse({
