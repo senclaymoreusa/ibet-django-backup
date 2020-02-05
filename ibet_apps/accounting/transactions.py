@@ -44,6 +44,17 @@ def addWithdrawAccount(request):
                 'message': "Parameters incorrect or missing"
             })
 
+def getWithdrawAccounts(request):
+    if request.method == "GET":
+        pk = request.GET.get("id")
+        user = CustomUser.objects.get(pk=pk)
+        all_accs = WithdrawAccounts.objects.filter(user_id=user)
+
+        return JsonResponse({
+            "success": True,
+            "results": list(all_accs.values('id', 'account_no'))
+        })
+
 def get_transactions(request):
     user_id = request.GET.get("user_id")
     trans_type = request.GET.get("type")
