@@ -104,9 +104,6 @@ def getBetHistory(request):
                 'message': "There is something wrong"
             })
 
-
-
-
 def getBetById(request):
 
 
@@ -149,9 +146,10 @@ def getBetById(request):
                 "amount_won": amount_wagered,
                 "outcome": outcome,
                 "date": bet_time,
-                "category": resolved_time,
+                "category": category,
                 "provider": provider,
-                "ref_no": category
+                "ref_no": ref_no,
+                "resolved_time": resolved_time
             }
 
             return JsonResponse({
