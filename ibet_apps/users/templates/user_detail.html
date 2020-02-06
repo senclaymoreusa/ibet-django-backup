@@ -31,7 +31,7 @@
         <div class="detail-title-block" style="background-color: #00a281;">
             <span class="detail-title">Fund status</span>
         </div>
-        <div class="row" style="margin-top:20px;">
+        <div class="row" style="margin-top:20px; min-height: 165px;">
             <div class="col-md-6" >
                     <div class="col-md-2" style="width: 20%; padding-right:5px">
                         <div class="block-title"><span></span></div>
@@ -82,11 +82,14 @@
             <div class="col-md-6">
                 <div class="block-title"><span></span></div>
                 <div class="block-title"><span>BANANCE PER WALLET</span></div>
-                <div class="col-md-3" style="padding-left: 0px;">
-                    <div id="chart5" style="min-height: 135px;"></div>
-                </div>
-                <div class="col-md-9">
-                    <div class="row" id="walletData" style="margin-top: 10px;">
+                <div class="loader"></div>
+                <div id="eachWallet" style="display: none;">
+                    <div class="col-md-3" style="padding-left: 0px;">
+                        <div id="chart5" style="min-height: 135px; "></div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row" id="walletData" style="margin-top: 10px;">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,9 +97,189 @@
 
         </div>
 
-        <div style="margin-top:15px;margin-left: 15px;">
-            <button class="btn btn-primary blockDisable"><span>Make adjustment</span></button>
-            <button class="btn btn-primary blockDisable"><span>Transfer in/ out</span></button>
+        <div style="margin-top:10px;margin-left: 15px;">
+            <button class="btn btn-primary blockDisable" data-toggle="modal" data-target="#make_adjustment"><span>Make adjustment</span></button>
+            <button class="btn btn-primary blockDisable" data-toggle="modal" data-target="#transfer_funds"><span>Transfer funds</span></button>
+        </div>
+
+        <div class="modal fade" id="make_adjustment" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header" style="background-color: #489e24; color:white;">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Player adjustment</h4>
+                        <div class="update-time">Updated {{ time }}</div>
+                    </div>
+                    <div class="modal-body">
+                        <div style="background-color: #f3f3f3; height: 131px;">
+                            <div class="row" style="margin-left:15px; padding-top:15px;">
+                                <div class="col-md-4">
+                                    <div style="margin-top:5px;">Player ID</div>
+                                    <div style="margin-top:5px;">Username</div>
+                                    <div style="margin-top:5px;">Main Balance</div>
+                                    <div style="margin-top:5px;">Withdraw limit</div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div style="margin-top:5px;">{{ customuser.pk }}</div>
+                                    <div style="margin-top:5px;">{{ customuser.username }}</div>
+                                    <div style="margin-top:5px;">{{ customuser.main_wallet|floatformat:2 }}</div>
+                                    <div style="margin-top:5px;">Not set</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="width:30%; margin-top:20px;">
+                            <div for="adjustment_reason" class="edit-member-info-label">Adjustment reason*</div>
+                            <select class="form-control" id="adjustment_reason">
+                                <option value="-1">Select...</option>
+                                <option value="0">Bonus</option>
+                                <option value="1">Error</option>
+                                <option value="2">Resettlement</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-top:20px;">
+                            <label class="radio-inline">
+                                <input type="radio" name="debit-credit" checked value="debit">Debit
+                              </label>
+                              <label class="radio-inline">
+                                <input type="radio" name="debit-credit" value="credit">Credit
+                              </label>
+                        </div>
+
+                        <div class="form-group" style="width:120px; margin-top:20px !important;">
+                            <div class="edit-member-info-label" style="margin-top:0px;">Amount*</div>
+                            <input class="form-control" id='adjust_amount' name="amount">
+                        </div>
+
+                        <div id="wagering_amount_div" class="form-group" style="width:120px; margin-top:20px !important; display: none">
+                            <div class="edit-member-info-label" style="margin-top:0px;">Wagering requirement</div>
+                            <div class="input-group">
+                                <input id="wagering_amount" type="text" class="form-control" name="wagering_amount">
+                                <span class="input-group-addon" style="width: 75px"></span>
+                            </div>
+                        </div>
+
+                        <!-- <div id="wagering_amount_div" class="form-group" style="display: none; width:120px; margin-top:20px !important;">
+                            <input type="text" id="wagering_amount" class="input-front">
+                            <input type="text" id="wagering_amount" class="input-behind" disabled>
+                        </div> -->
+
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="affiliate" value="" id="affiliate">If player is an affiliate’s downline, share the expense with the affiliate.</label>
+                        </div>
+
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="notify-player" value="">Notify player of adjustment</label>
+                        </div>
+                    
+                        <div id="message-player" style="display: none;">
+                            <div class="form-group">
+                                <div class="edit-member-info-label" style="margin-top:20px;">Message subject*</div>
+                                <input type="text" class="form-control" id="adjust_message_subject">
+                            </div>
+                            <div class="form-group">
+                                <div class="edit-member-info-label" style="margin-top:20px;" for="message_to_player">Message to player*</div>
+                                <textarea class="form-control" rows="5" id="message_to_player"></textarea>
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="edit-member-info-label" style="margin-top:20px;" for="message_note">Reason for adjustment*</div>
+                            <textarea class="form-control" rows="3" id="message_note"></textarea>
+                        </div>
+                        <div style="color: red" id="adjustment_error"></div>
+                        <div style="margin-top:20px;" >
+                            <button type="submit" id="adjustment-submit" class="btn btn-primary submit-btn" onclick="submitAdjustment();">Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                       
+
+                    </div>
+                </div> 
+            </div>
+        </div>
+
+        <div class="modal fade" id="transfer_funds" role="dialog">
+            <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header" style="background-color: #489e24; color:white;">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Player adjustment</h4>
+                        <div class="update-time">Updated {{ time }}</div>
+                    </div>
+                    <div class="modal-body">
+                        <div style="background-color: #f3f3f3; height: 120px;">
+                            <div class="row" style="margin-left:15px; padding-top:15px;">
+                                <div class="col-md-4">
+                                    <div style="margin-top:5px;">Player ID</div>
+                                    <div style="margin-top:5px;">Username</div>
+                                    <div style="margin-top:5px;">Main Balance</div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div style="margin-top:5px;">{{ customuser.pk }}</div>
+                                    <div style="margin-top:5px;">{{ customuser.username }}</div>
+                                    <div style="margin-top:5px;">{{ customuser.main_wallet|floatformat:2 }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="width:30%; margin-top:20px; display: inline-block;">
+                            <div for="adjustment_reason" class="edit-member-info-label">Transfer from</div>
+                            <select class="form-control">
+                                <option value="-1">Select...</option>
+                                <option value="0">Bonus</option>
+                                <option value="1">Error</option>
+                                <option value="2">Resettlement</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="width:30%; margin-top:20px; display: inline-block; margin-left:10px;">
+                            <div for="adjustment_reason" class="edit-member-info-label">Transfer to</div>
+                            <select class="form-control">
+                                <option value="-1">Select...</option>
+                                <option value="0">Bonus</option>
+                                <option value="1">Error</option>
+                                <option value="2">Resettlement</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="width:120px; margin-top:20px !important;">
+                            <div class="edit-member-info-label" style="margin-top:0px;">Amount*</div>
+                            <input class="form-control" id='amount' name="amount">
+                        </div>
+
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="notify-player" value="">Notify player of fund transfer</label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="edit-member-info-label" style="margin-top:20px;">Message subject*</div>
+                            <input type="text" class="form-control" id="transfer_message_subject">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="edit-member-info-label" style="margin-top:20px;" for="message_to_player">Message to player*</div>
+                            <textarea class="form-control" rows="5" id="transfer_message_to_player"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="edit-member-info-label" style="margin-top:20px;" for="message_note">Reason for Transfer*</div>
+                            <textarea class="form-control" rows="3" id="transfer_message_note"></textarea>
+                        </div>
+
+                        <div style="margin-top:20px;" >
+                            <button type="submit" id="transfer-submit" class="btn btn-primary submit-btn" onclick="submitTransfer();">Save</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                        </div>
+                       
+
+                    </div>
+                </div> 
+            </div>
         </div>
     </div>
 
@@ -903,7 +1086,7 @@
                                     <td>{{ trans.currency }}</td>
                                     <td id="requestTime">{{ trans.time }}</td>
                                     <td>{{ trans.amount }}</td>
-                                    <td>{{ trans.amount }}</td>
+                                    <td>{{ trans.balance }}</td>
                                     <td>{{ trans.status }}</td>
                                     {% if trans.transTypeCode == 0 %}
                                     <td><button type="button" class="btn btn-primary" onclick='showInitialTransaction("{{ customuser.username }}", "{{ trans }}", "deposit")' data-toggle="modal" data-target="#trans_deposit_detail"><span class="glyphicon glyphicon-search"></span></button></td>
@@ -2097,7 +2280,7 @@
                                 <textarea class="form-control" id="reasonTextarea" name="reasonTextarea" rows="3" placeholder="Please provide a brief explanation."></textarea>
                             </div>
                         </div>
-                        <button type="submit" id="submitButton" class="btn btn-primary" style="margin-top: 20px; width:13%;">Save</button>
+                        <button type="submit" id="limit_submitButton" class="btn btn-primary" style="margin-top: 20px; width:13%;">Save</button>
                         <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal" style="margin-top: 20px;">Cancel</button>
                     </form>
                     <!-- </div> -->
@@ -2687,6 +2870,49 @@ $(document).ready(function() {
         }
     });
 
+
+    $("input[name='debit-credit']").change(function() {
+        // console.log($(this).val());
+        var value = $(this).val();
+        if (value == 'credit') {
+            $("#wagering_amount_div").css('display', 'block');
+        } else {
+            $("#wagering_amount_div").css('display', 'none');
+        }
+    });
+
+    // if($('input[name="notify-player"]').is(":checked")){
+    //     $("#message-player").css('display', 'block');
+    // } else {
+    //     $("#message-player").css('display', 'none');
+    // }
+
+
+    $("input[name='notify-player']").change(function() {
+        if ($('input[name="notify-player"]').is(":checked")) {
+            $("#message-player").css('display', 'block');
+        } else {
+            $("#message-player").css('display', 'none');
+        }
+    });
+
+
+    $('#wagering_amount').mouseleave(function() {
+        var amount = parseInt($('#adjust_amount').val());
+        var wagering_amount = parseInt($('#wagering_amount').val());
+        var sum = amount * wagering_amount;
+        var text = "* " + amount + " = " + sum;
+        $('.input-group-addon').text(text);
+    })
+
+
+    // $('#adjust_amount').on('keydown', function() {
+    //     // var sum = 
+    //     // var text = "* " + adjust_amount + "="
+    //     // $('.input-group-addon').text();
+    //     console.log("....")
+    // });
+
 });
 
 function limitFormValid(value) {
@@ -2945,7 +3171,7 @@ function getTransData(data) {
 
 function getWalletAmount(user_id) {
 
-
+    // setTimeout(showPage, 6000);
     $.ajax({
         type:'GET',
         url:"{% url 'get_each_wallet_amount' %}",
@@ -2953,10 +3179,23 @@ function getWalletAmount(user_id) {
             'user_id': user_id,
         },
         success:function(data) {
+            // console.log(data);
+            $('.loader').css('display', 'none');
+            $('#eachWallet').css('display', 'block');
             renderChart(data);
+        },
+        error: function() {
+            showPage();
         }
     });
 
+}
+
+function showPage() {
+    $('#chart5').text("There is something wrong");
+    $('#chart5').css('width', '300px');
+    $('.loader').css('display', 'none');
+    $('#eachWallet').css('display', 'block');
 }
 
 
@@ -3056,7 +3295,6 @@ function renderChart(data) {
         }
 
         new Chartist.Pie('#chart5', data1, option1);
-        
         var content = '';
         content += '<div class="col-md-2" style="width: 20%; padding-left:0px"><div><span class="dot mainWallet"></span>Main</div><div><span class="dot onebookWallet"></span>Onebook</div><div><span class="dot PTWallet"></span>PT</div><div><span class="dot AGWallet"></span>AG</div><div><span class="dot KYWallet"></span>KY</div></div><div class="col-md-4" style="width: 30%; padding-left:0px">';
         content += '<div>' + amountMap['mainValue'] + ' (' + walletMap['mainValue']  + '%)' + '</div><div>'  + amountMap['OnebookValue'] + ' (' + walletMap['OnebookValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' +'</div><div>' + amountMap['AGValue'] + ' (' + walletMap['AGValue']  + '%)' + '</div></div>';
@@ -3068,6 +3306,86 @@ function renderChart(data) {
 
     }
 }
+
+
+function submitAdjustment() {
+    var affiliate = false;
+    var reason = -1;
+    var debitOrCredit = "";
+    var amount = 0;
+    var notifyPlayer = false;
+    var messageSubject = "";
+    var messageToPlayer = "";
+    var messageNote = "";
+    var wageringAmount = 0;
+    if($('#affiliate').is(":checked")){
+        affiliate = true;
+    } 
+
+    if($('input[name="notify-player"]').is(":checked")){
+        notifyPlayer = true;
+    } 
+
+    debitOrCredit = $("input[name='debit-credit']:checked").val();
+    if (debitOrCredit == 'credit') {
+        wageringAmount = $("input[name='wagering_amount']").val();
+    }
+    reason = $('#adjustment_reason').val();
+    amount = $("#adjust_amount").val();
+    messageSubject = $("#adjust_message_subject").val();
+    messageToPlayer = $("#message_to_player").val();
+    messageNote = $("#message_note").val();
+    
+    // console.log(amount);
+    // console.log(notifyPlayer);
+    console.log(messageSubject);
+    console.log(messageToPlayer);
+    console.log(messageNote);
+    // console.log(wageringAmount);
+
+    if (reason == -1 || amount <= 0 || (debitOrCredit == 'credit' && wageringAmount <= 0) || (notifyPlayer && (messageSubject.length == 0 ||  messageToPlayer.length == 0)) || messageNote.length == 0) {
+        alert("please put the correct information");
+        return;
+    }
+
+    data = {
+        'adjustment_reason': reason,
+        'amount': amount,
+        'debit_or_credit': debitOrCredit,
+        'notify_player': notifyPlayer,
+        'affiliate': affiliate,
+        'message_subject': messageSubject,
+        'message_to_player': messageToPlayer,
+        'message_note': messageNote,
+    }
+
+    if (debitOrCredit == 'credit') {
+        data['wagering_amount'] = wageringAmount;
+    }
+
+    postAdjustmentRequest(data);
+
+}
+
+
+function postAdjustmentRequest(data) {
+    var user_id = $('#hidden_user_id').val();
+    data['user_id'] = user_id
+    $.ajax({
+        type:'POST',
+        url:"{% url 'user_adjustment' %}",
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
+        dataType   : "json",
+        success:function(data) {
+            location.reload();
+        },
+        error: function() {
+            $('#adjustment_error').text("Something wrong");
+        }
+    });
+}
+
 
 
 </script>
