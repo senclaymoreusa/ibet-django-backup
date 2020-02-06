@@ -46,14 +46,43 @@ def addWithdrawAccount(request):
 
 def getWithdrawAccounts(request):
     if request.method == "GET":
-        pk = request.GET.get("id")
-        user = CustomUser.objects.get(pk=pk)
-        all_accs = WithdrawAccounts.objects.filter(user_id=user)
+        try:
+            pk = request.GET.get("id")
+            user = CustomUser.objects.get(pk=pk)
+            all_accs = WithdrawAccounts.objects.filter(user_id=user)
 
-        return JsonResponse({
-            "success": True,
-            "results": list(all_accs.values('id', 'account_no'))
-        })
+            return JsonResponse({
+                "success": True,
+                "results": list(all_accs.values('id', 'account_no'))
+            })
+        except Exception as e:
+            logger.repr(e)
+            return JsonResponse({
+                "success": False,
+                "results": []
+            })
+def removeWithdrawAccount(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            acc_id = data.get("acc_id")
+            user_id = data.get("user_id")
+            
+            deleted = WithdrawAccounts.objects.get(user_id=user_id, id=acc_id).delete()
+
+            return JsonResponse({
+                "success": True,
+                "deleted": deleted,
+                "message": "Deleted the account"
+            })
+        except Exception as e:
+            logger.info(repr(e))
+            return JsonResponse({
+                "success": False,
+                "deleted": [],
+                "message": "Account or User not found"
+            })
+
 
 def get_transactions(request):
     user_id = request.GET.get("user_id")
