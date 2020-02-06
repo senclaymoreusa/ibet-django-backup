@@ -699,7 +699,54 @@ class GenerateGameURL(APIView):
                 ])
             else:
                 temp = '1990-01-01'
+
+            if self.request.user.country:
+
+                country = self.request.user.country
+
+                if country == 'china':
+
+                    CyCode = 'CN'
+                
+                elif country == 'vietnam':
+
+                    CyCode = 'VN'
+
+                elif country == 'thailand':
+
+                    CyCode = 'TH'
+                
+                else:
+
+                    CyCode = 'CN'
+
             
+             if self.request.user.currency:
+
+                 currency = self.request.user.currency
+
+                 if currency == 0:
+
+                     CurCode = "CNY"
+                 
+                 elif currency == 1:
+
+                     CurCode = "USD"
+
+                 elif currency == 2:
+
+                     CurCode = "THB"
+                 
+                 elif currency == 7:
+
+                     CurCode = "VND"
+
+                 else:
+
+                     CurCode = "CNY"
+                 
+
+
             create_user_data = requests.post(GB_URL, json = {
             
             "GB": {
@@ -713,8 +760,8 @@ class GenerateGameURL(APIView):
                     "Nickname": self.request.user.username,
                     "Gender": "2",
                     "Birthdate": temp,
-                    "CyCode": "CN",
-                    "CurCode": "CNY",
+                    "CyCode": CyCode,
+                    "CurCode": CurCode,
                     "LangCode": language,
                     "TPUniqueID": "new"
                     }
