@@ -71,9 +71,9 @@ def removeWithdrawAccount(request):
             deleted = WithdrawAccounts.objects.get(user_id=user_id, id=acc_id).delete()
 
             return JsonResponse({
-                "success": False,
+                "success": True,
                 "deleted": deleted,
-                "message": "Account or User not found"
+                "message": "Deleted the account"
             })
         except Exception as e:
             logger.repr(e)
@@ -82,6 +82,8 @@ def removeWithdrawAccount(request):
                 "deleted": [],
                 "message": "Account or User not found"
             })
+
+
 def get_transactions(request):
     user_id = request.GET.get("user_id")
     trans_type = request.GET.get("type")
