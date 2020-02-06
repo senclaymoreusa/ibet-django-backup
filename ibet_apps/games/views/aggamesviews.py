@@ -677,18 +677,22 @@ def forwardGame(request):
             
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
-           
+            
             param = des_encrypt(s,AG_DES).decode("utf-8") 
             
             key = MD5(param + AG_MD5)
-            
+
+            #mobile:
+            s_mobile = s + "/\\\\/" + "mh5=y"
+            param_mobile = des_encrypt(s_mobile,AG_DES).decode("utf-8") 
+            key_mobile = MD5(param_mobile + AG_MD5)
             
             # r = requests.get(AG_FORWARD_URL ,  data={
             #         "params": param,
             #         "key": key,  
             #     })
             # rdata = r.text
-            return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key})
+            return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key, "mobile_url": AG_FORWARD_URL + '?params=' + param_mobile + '&key=' + key_mobile})
         else:
             logger.critical("AG::Cannot check or create AG game account in AG forwardGame.")
             return Response({"error": "Cannot check or create AG game account in AG forwardGame."})
