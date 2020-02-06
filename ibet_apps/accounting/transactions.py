@@ -76,7 +76,7 @@ def removeWithdrawAccount(request):
                 "message": "Deleted the account"
             })
         except Exception as e:
-            logger.repr(e)
+            logger.info(repr(e))
             return JsonResponse({
                 "success": False,
                 "deleted": [],
