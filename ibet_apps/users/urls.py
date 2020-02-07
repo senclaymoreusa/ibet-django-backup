@@ -95,7 +95,9 @@ urlpatterns += [
     # admin API
     path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
     path('api/admin/get-user-transctions', GetUserTransaction.as_view(), name="get_user_transactions"),
-    path('api/admin/get-bet-history-detail', GetBetHistoryDetail.as_view() ,name="get_bet_history_info")
+    path('api/admin/get-bet-history-detail', GetBetHistoryDetail.as_view(), name="get_bet_history_info"),
+    path('api/admin/user-adjustment', UserAdjustment.as_view(), name="user_adjustment"),
+    path('api/admin/user-transfer', UserTransfer.as_view(), name="user_transfer")
 
 
     

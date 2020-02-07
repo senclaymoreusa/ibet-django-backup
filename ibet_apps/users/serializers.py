@@ -240,7 +240,7 @@ class LoginSerializer(serializers.Serializer):
 
         if 'allauth' in settings.INSTALLED_APPS:
             from allauth.account import app_settings
-
+            print(username, password)
             user = self.custom_check_username_email_phone_password(username, password)
 
         else:
