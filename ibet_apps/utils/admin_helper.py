@@ -430,8 +430,8 @@ BONUS_DELIVERY_VALUE_DICT = {
 
 # hard code for deposit tiered amount setting
 # deposit amount upper bound, bonus rate, max bonus amount, turnover multiple
-DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
-                          [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
+DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12, 15, 5], [10000, 25, 12500, 13, 13, 13, 13, 18, 10],
+                          [50000, 30, 60000, 16, 16, 16, 16, 20, 15], [200000, 35, 100000, 20, 20, 20, 20, 22, 20]]
 
 # game category match
 ## TODO: NEEDS CONFIRM
