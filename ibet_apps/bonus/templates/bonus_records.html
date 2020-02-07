@@ -236,12 +236,35 @@
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div style="margin:20px;">
-                    <!--  category = manual or triggered type = verification  -->
+                    <!--  category = manual  -->
                     <div id="bonus-amount-detail" style="display: none">
                         <label for="bonus-amount"><strong> BONUS AMOUNT* </strong></label><br>
                         <input type="radio" name="bonus-amount" value="same" checked="checked"> Same for all<br>
                         <input type="number" id="bonus-amount" required>
                     </div>
+                    <!--  triggered type = verification -->
+                    <div id="bonus-amount-verification" style="display: none">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label for="verification-amount"> BONUS AMOUNT* </label><br>
+                                <input type="number" id="verification-amount" class="input-front" style="width:128px;padding-left:10px;" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="verification-multiple"> WAGERING MULTIPLE* </label><br>
+                                <input type="text" id="verification-multiple" class="input-front" style="width:137px;padding-left:10px;">
+                                <input type="text" class="input-behind" style="width:33px;text-align:center;" disabled value=" X">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="verification-limit"> WITHDRAW LIMIT* </label><br>
+                                <input type="text" class="input-behind" id="verification-limit" style="width:137px;padding-left:10px;" disabled>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <textarea class="wager-docs" rows="2" style="display:none">Post-wagering takes place before the bonus is issued. Pre-wagering takes place after the bonus is issued. If this bonus only needs one wager type, leave the other wagering multiple field blank.
+                    </textarea>
 
                     <!--  triggered type = deposit  -->
                     <div id="bonus-amount-detail-02" style="display: none">
@@ -265,53 +288,90 @@
 
                         <div id="deposit-percentage" class="deposit-amount-type up-arrow" style="display: none">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     MINIMUM DEPOSIT*
                                 </div>
                                 <div class="col-md-3">
+                                    POST WAGERING MULTIPLE
+                                </div>
+                                <div class="col-md-2" style="margin-left:-20px;">
                                     BONUS AMOUNT*
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-2">
                                     MAX BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-3">
+                                    PRE WAGERING MULTIPLE
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-3">
-                                    <input type="number" id="dp-min" style="width: 115px;" required>
+                                <div class="col-md-2">
+                                    <input type="number" id="dp-min" style="width: 80px;" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="number" id="dp-percentage" style="width:80px;" required>
+                                    <input type="number" id="dp-post-wager" style="width:80px;">
+                                    <input class="disabled-input" disabled value="X">
+                                </div>
+                                <div class="col-md-2" style="margin-left:-20px;">
+                                    <input type="number" id="dp-percentage" style="width:45px;" required>
                                     <input class="disabled-input" disabled value="%">
                                 </div>
+                                <div class="col-md-2">
+                                    <input type="number" id="dp-max-amount" style="width: 80px;" required>
+                                </div>
                                 <div class="col-md-3">
-                                    <input type="number" id="dp-max-amount" style="width: 115px;" required>
+                                    <input type="number" id="dp-pre-wager" style="width:80px;">
+                                    <input class="disabled-input" disabled value="X">
                                 </div>
                             </div>
                         </div>
 
                         <div id="deposit-fixed" class="deposit-amount-type up-arrow" style="display: none">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     MINIMUM DEPOSIT*
                                 </div>
                                 <div class="col-md-3">
+                                    POST WAGERING MULTIPLE
+                                </div>
+                                <div class="col-md-2">
                                     BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-3">
+                                    PRE WAGERING MULTIPLE
+                                </div>
+                                <div class="col-md-2" style="margin-left:-20px;">
+                                    WITHDRAW LIMIT
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-3">
-                                    <input type="number" id="df-min" style="width: 115px;" required>
+                                <div class="col-md-2">
+                                    <input type="number" id="df-min" style="width: 80px;" required>
                                 </div>
                                 <div class="col-md-3">
-                                    <input type="number" id="df-bonus-amount" style="width:115px;" required>
+                                    <input type="number" id="df-post-wager" style="width:80px;">
+                                    <input class="disabled-input" disabled value="X">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" id="df-bonus-amount" style="width: 80px;" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="df-pre-wager" style="width:80px;">
+                                    <input class="disabled-input" disabled value="X">
+                                </div>
+                                <div class="col-md-2" style="margin-left:-20px;">
+                                    <input id="df-withdraw-limit" style="width:110px;" class="disabled-input" disabled>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="deposit-tiered" class="deposit-amount-type up-arrow" style="display: none; width: 1008px; padding: 20px 0 20px 30px;">
+                        <div id="deposit-tiered" class="deposit-amount-type up-arrow" style="display: none; width: 649px; padding: 20px 0 20px 30px;">
                             <div class="row">
                                 <div class="col-md-2" style="width: 110px;">
                                     MINIMUM DEPOSIT*
+                                </div>
+                                <div class="col-md-2" style="width: 150px;">
+                                    POST WAGERING MULTIPLE
                                 </div>
                                 <div class="col-md-2" style="width: 120px;">
                                     BONUS AMOUNT*
@@ -320,22 +380,17 @@
                                     MAX BONUS AMOUNT*
                                 </div>
                                 <div class="col-md-2" style="width: 150px;">
-                                    CASINO WAGERING MULTIPLE*
-                                </div>
-                                <div class="col-md-2" style="width: 150px;">
-                                    LIVE CASINO WAGERING MULTIPLE*
-                                </div>
-                                <div class="col-md-2" style="width: 150px;">
-                                    SPORTS WAGERING MULTIPLE*
-                                </div>
-                                <div class="col-md-2" style="width: 150px;">
-                                    LOTTERY WAGERING MULTIPLE*
+                                    PRE WAGERING MULTIPLE*
                                 </div>
                             </div>
                             {% for i in deposit_tiered_amount %}
                                 <div class="row deposit-tiered-amount" style="margin-bottom: 10px">
                                     <div class="col-md-2" style="width: 110px;">
                                         <input type="number" class="dt-min" style="width: 97px;" value = '{{ i.0 }}' disabled>
+                                    </div>
+                                    <div class="col-md-2" style="width: 150px;">
+                                        <input type="number" style="width:77px;" value = '{{ i.7 }}' disabled>
+                                        <input class="disabled-input" disabled value="X" style="width:33px;">
                                     </div>
                                     <div class="col-md-2" style="width: 120px;">
                                         <input type="number" class="dt-percentage" style="width:77px;" value = '{{ i.1 }}' disabled>
@@ -345,18 +400,24 @@
                                         <input type="number" class="dt-max-amount" style="width: 97px;" value = '{{ i.2 }}' disabled>
                                     </div>
                                     <div class="col-md-2" style="width: 150px;">
+                                        <input type="number" style="width:77px;" value = '{{ i.8 }}' disabled>
+                                        <input class="disabled-input" disabled value="X" style="width:33px;">
+                                    </div>
+
+                                    <!--  invalid-->
+                                    <div class="col-md-2" style="width: 150px;display:none;">
                                         <input type="number" class="dt-casino" style="width:77px;" value = '{{ i.3 }}' disabled>
                                         <input class="disabled-input" disabled value="X" style="width:33px;">
                                     </div>
-                                    <div class="col-md-2" style="width: 150px;">
+                                    <div class="col-md-2" style="width: 150px;display:none;">
                                         <input type="number" class="dt-live-casino" style="width:77px;" value = '{{ i.4 }}' disabled>
                                         <input class="disabled-input" disabled value="X" style="width:33px;">
                                     </div>
-                                    <div class="col-md-1" style="width: 150px;">
+                                    <div class="col-md-1" style="width: 150px;display:none;">
                                         <input type="number" class="dt-sports" style="width:77px;" value = '{{ i.5 }}' disabled>
                                         <input class="disabled-input" disabled value="X" style="width:33px;">
                                     </div>
-                                    <div class="col-md-1" style="width: 150px;">
+                                    <div class="col-md-1" style="width: 150px;display:none;">
                                         <input type="number" class="dt-lottery" style="width:77px;" value = '{{ i.6 }}' disabled>
                                         <input class="disabled-input" disabled value="X" style="width:33px;">
                                     </div>
@@ -460,8 +521,8 @@
                     </div>
 
                     <div id="wager-reqs">
-                        <label for="wager-reqs" class="bonus-label"><strong> WAGERING
-                            REQUIREMENTS* </strong></label><br>
+<!--                        <label for="wager-reqs" class="bonus-label"><strong> WAGERING-->
+<!--                            REQUIREMENTS* </strong></label><br>-->
 
                         <div class="wager-req-01" style="display: none">
                             <p>Define the wagering multiple for the default product for this bonus. Next, define at what
@@ -470,89 +531,124 @@
 
                         <div class="wager-req-02" style="display: none; font-size: 13px; margin-bottom: 50px;">
                             <p>The wagering requirement is calculated using</p>
+                            <div class="row dp-deposit-row">
+                                <input type="radio" name="wager-cal" id="dp-deposit" value="0"> Deposit
+                            </div>
+                            <div class="row dp-bonus-row">
+                                <input type="radio" name="wager-cal" id="dp-bonus" value="1"> Bonus
+                            </div>
+                            <div class="row dp-deposit-bonus-row">
+                                <input type="radio" name="wager-cal" id="dp-deposit-bonus" value="2"> Deposit + bonus
+                            </div>
+                        </div>
+
+                        <!--  Manual Bonus -->
+                        <div id="wager-product-reqs" style="display: none">
                             <div class="row">
-                                <div class="col-md-3">
-                                    <input type="radio" name="wager-cal" value="0"> Deposit + bonus
+                                <label for="post-wager-multiple" class="col-md-5">POST-WAGERING MULTIPLE</label>
+                                <label for="post-wager-turnover" class="col-md-5">TURNOVER REQUIRED</label>
+                            </div>
+                            <div class="row" style="margin-top: 10px;">
+                                <div class="col-md-5">
+                                    <input type="text" id="post-wager-multiple" class="input-front" style="width:133px;padding-left:10px;" required>
+                                    <input type="text" class="input-behind" style="width:33px;text-align:center;" disabled value=" X">
                                 </div>
-                                <div class="col-md-3">
-                                    <input type="radio" name="wager-cal" value="1"> Bonus only
+                                <div class="col-md-5">
+                                    <input type="text" class="input-behind" id="post-wager-turnover" style="width:137px;padding-left:10px;" disabled>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top: 10px;">
+                                <label for="post-wager-multiple" class="col-md-5">PRE-WAGERING MULTIPLE</label>
+                                <label for="post-wager-turnover" class="col-md-5">TURNOVER REQUIRED</label>
+                            </div>
+                            <div class="row" style="margin-top: 10px;">
+                                <div class="col-md-5">
+                                    <input type="text" id="pre-wager-multiple" class="input-front" style="width:133px;padding-left:10px;" required>
+                                    <input type="text" class="input-behind" style="width:33px;text-align:center;" disabled value=" X">
+                                </div>
+                                <div class="col-md-5">
+                                    <input type="text" class="input-behind" id="pre-wager-turnover" style="width:137px;padding-left:10px;" disabled>
                                 </div>
                             </div>
                         </div>
-                        <div id="wager-product-reqs">
-                            <div class="row" style="width:280px;margin-bottom: 5px;">
-                                <div class="col-md-6">
-                                    ALL <input type="checkbox" class="wager-product" id="all-product" name="all" value="all"
-                                               style="margin:0px;">
-                                    PRODUCT
-                                </div>
-                                <div class="col-md-6" style="padding-right:0px;">WAGERING MULTIPLE</div>
-                            </div>
-                            <div class="row wager-reqs">
-                                <div class="col-md-5">
-                                    <input type="checkbox" class="wager-product" id="wager-casino" name="wager-casino"
-                                           value="wager-casino">
-                                    <label>Casino</label>
-                                </div>
-                                <div class="col-md-7" id="casino-unselected">
-                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
-                                           disabled>
-                                </div>
-                                <div class="col-md-7" id="casino-selected" style="display: none">
-                                    <input type="text" id="wager-casino-times" class="input-front">
-                                    <input type="text" id="wager-casino-total" class="input-behind" disabled>
-                                </div>
-                            </div>
-                            <div class="row wager-reqs">
-                                <div class="col-md-5">
-                                    <input type="checkbox" class="wager-product" id="wager-live-casino"
-                                           name="wager-live-casino"
-                                           value="wager-live-casino">
-                                    <label>Live Casino</label>
-                                </div>
-                                <div class="col-md-7" id="live-casino-unselected">
-                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
-                                           disabled>
-                                </div>
-                                <div class="col-md-7" id="live-casino-selected" style="display: none">
-                                    <input type="text" id="wager-live-casino-times" class="input-front">
-                                    <input type="text" id="wager-live-casino-total" class="input-behind" disabled>
-                                </div>
-                            </div>
-                            <div class="row wager-reqs">
-                                <div class="col-md-5">
-                                    <input type="checkbox" class="wager-product" id="wager-sports" name="wager-sports"
-                                           value="wager-sports">
-                                    <label>Sports</label>
-                                </div>
-                                <div class="col-md-7" id="sports-unselected">
-                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
-                                           disabled>
-                                </div>
-                                <div class="col-md-7" id="sports-selected" style="display: none">
-                                    <input type="text" id="wager-sports-times" class="input-front">
-                                    <input type="text" id="wager-sports-total" class="input-behind" disabled>
-                                </div>
-                            </div>
-                            <div class="row wager-reqs">
-                                <div class="col-md-5">
-                                    <input type="checkbox" class="wager-product" id="wager-lottery" name="wager-lottery"
-                                           value="wager-lottery">
-                                    <label>Lottery</label>
-                                </div>
-                                <div class="col-md-7" id="lottery-unselected">
-                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"
-                                           disabled>
-                                </div>
-                                <div class="col-md-7" id="lottery-selected" style="display: none">
-                                    <input type="text" id="wager-lottery-times" class="input-front">
-                                    <input type="text" id="wager-lottery-total" class="input-behind" disabled>
-                                </div>
-                            </div>
-                        </div>
+
+
+
+<!--                        <div id="wager-product-reqs">-->
+<!--                            <div class="row" style="width:280px;margin-bottom: 5px;">-->
+<!--                                <div class="col-md-6">-->
+<!--                                    ALL <input type="checkbox" class="wager-product" id="all-product" name="all" value="all"-->
+<!--                                               style="margin:0px;">-->
+<!--                                    PRODUCT-->
+<!--                                </div>-->
+<!--                                <div class="col-md-6" style="padding-right:0px;">WAGERING MULTIPLE</div>-->
+<!--                            </div>-->
+<!--                            <div class="row wager-reqs">-->
+<!--                                <div class="col-md-5">-->
+<!--                                    <input type="checkbox" class="wager-product" id="wager-casino" name="wager-casino"-->
+<!--                                           value="wager-casino">-->
+<!--                                    <label>Casino</label>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="casino-unselected">-->
+<!--                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"-->
+<!--                                           disabled>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="casino-selected" style="display: none">-->
+<!--                                    <input type="text" id="wager-casino-times" class="input-front">-->
+<!--                                    <input type="text" id="wager-casino-total" class="input-behind" disabled>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="row wager-reqs">-->
+<!--                                <div class="col-md-5">-->
+<!--                                    <input type="checkbox" class="wager-product" id="wager-live-casino"-->
+<!--                                           name="wager-live-casino"-->
+<!--                                           value="wager-live-casino">-->
+<!--                                    <label>Live Casino</label>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="live-casino-unselected">-->
+<!--                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"-->
+<!--                                           disabled>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="live-casino-selected" style="display: none">-->
+<!--                                    <input type="text" id="wager-live-casino-times" class="input-front">-->
+<!--                                    <input type="text" id="wager-live-casino-total" class="input-behind" disabled>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="row wager-reqs">-->
+<!--                                <div class="col-md-5">-->
+<!--                                    <input type="checkbox" class="wager-product" id="wager-sports" name="wager-sports"-->
+<!--                                           value="wager-sports">-->
+<!--                                    <label>Sports</label>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="sports-unselected">-->
+<!--                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"-->
+<!--                                           disabled>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="sports-selected" style="display: none">-->
+<!--                                    <input type="text" id="wager-sports-times" class="input-front">-->
+<!--                                    <input type="text" id="wager-sports-total" class="input-behind" disabled>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            <div class="row wager-reqs">-->
+<!--                                <div class="col-md-5">-->
+<!--                                    <input type="checkbox" class="wager-product" id="wager-lottery" name="wager-lottery"-->
+<!--                                           value="wager-lottery">-->
+<!--                                    <label>Lottery</label>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="lottery-unselected">-->
+<!--                                    <input type="text" class="wager-unselected" value="EXCLUDED FROM BONUS FUND PLAY"-->
+<!--                                           disabled>-->
+<!--                                </div>-->
+<!--                                <div class="col-md-7" id="lottery-selected" style="display: none">-->
+<!--                                    <input type="text" id="wager-lottery-times" class="input-front">-->
+<!--                                    <input type="text" id="wager-lottery-total" class="input-behind" disabled>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+
                         <p>Time period for wagering requirements to be completed within</p>
-                        <input type="number" id="time-period" class="input-front" style="width: 50px;"
-                               placeholder="Infinite">
+                        <input type="number" id="time-period" class="input-front" style="width: 61px;text-align:center;"
+                               placeholder="   Infinite">
                         <input type="text" class="input-behind" style="width: 220px;" disabled
                                value="    Days after being received or claimed">
                     </div>
