@@ -2,7 +2,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.utils import timezone
 from django.utils.timezone import timedelta, localtime, now
 from django.db.models.query import QuerySet
-from django.db.models import Q, ObjectDoesNotExist
+from django.db.models import Q, ObjectDoesNotExist, Sum
 from django.http import HttpResponse
 from dateutil.relativedelta import relativedelta
 from datetime import date
@@ -13,7 +13,9 @@ from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
+from bonus.models import UserBonusEvent
 from utils.constants import *
+import decimal
 
 import logging
 import uuid
@@ -52,7 +54,7 @@ def getCommissionTrans():
 
 '''
 @param affiliates: affiliate object or queryset
-@return: players list(users referred by affiliates)
+@return: players list(users referred by affiliate)
 '''
 
 
@@ -79,7 +81,7 @@ def getPlayers(affiliates):
 
 '''
 @param affiliates: affiliate object or queryset
-@return: downline list(affiliates referred by affiliates)
+@return: downline list(affiliates referred by affiliate)
 '''
 
 
@@ -199,20 +201,27 @@ def calculateNewPlayer(user_group, start_time, end_time, free_bets):
     return new_player_count
 
 
-def getCommissionRate(user, start_time, end_time):
-    if not user:
+'''
+@param: affilliate object, time range
+@return: affilliate's commission rate in the month of end_time
+'''
+
+
+def getCommissionRate(affilliate, start_time, end_time):
+    if not affilliate:
+        logger.info("Error input for getting commission rate !")
         return 0
 
-    downlines = getDownlines(user)
+    downlines = getDownlines(affilliate)
     active_downline = filterActiveUser(downlines, start_time, end_time, True, None).count()
     downline_ftd = calculateFTD(downlines, start_time, end_time)
     ngr = 0
     for downline in downlines:
         ngr += calculateNGR(downline, start_time, end_time, None)
-    if user.commission_setting == 'System':
+    if affilliate.commission_setting == 'System':
         commissions = SystemCommissionLevel.objects.all().order_by('-commission_percentage')
     else:
-        commissions = PersonalCommissionLevel.objects.filter(user_id=user).order_by('-commission_percentage')
+        commissions = PersonalCommissionLevel.objects.filter(user_id=affilliate).order_by('-commission_percentage')
 
     if commissions:
         for level in commissions:
@@ -222,41 +231,43 @@ def getCommissionRate(user, start_time, end_time):
     return 0
 
 
-# TODO: functions need to be updated
-def calculateTurnover(user, start_time, end_time, cate):
+# Sum total of Bet amount within the reporting period
+def calculateTurnover(user, start_time, end_time, product):
     return 0
 
 
-def calculateGGR(user, start_time, end_time, cate):
+def calculateGGR(user, start_time, end_time, product):
     return 0
 
 
-def calculateDeposit(user, start_time, end_time):
-    count = 0
-    amount = 0
+def calculateNGR(user, start_time, end_time, product):
+    return 0
+
+
+def getTransactionAmount(user, start_time, end_time, type, product):
+    if not user:
+        return 0
+
+    trans_filter = Q(user_id=user) & Q(status=TRAN_SUCCESS_TYPE)
+
+    if start_time:
+        trans_filter &= Q(arrive_time__gte=start_time)
+    if end_time:
+        trans_filter &= Q(arrive_time__lte=end_time)
+    if type:
+        trans_filter &= Q(transaction_type=type)
+    if product:
+        try:
+            product = Category.objects.get(name=product)
+            trans_filter &= Q(product=product)
+        except Exception as e:
+            logger.info("Warning cannot find corresponding Game Category" + str(e))
+
+    trans = Transaction.objects.filter(trans_filter)
+    count = trans.count()
+    amount = trans.aggregate(Sum('amount'))['amount__sum']
+
     return count, amount
-
-
-def calculateWithdrawal(user, start_time, end_time):
-    count = 0
-    amount = 0
-    return count, amount
-
-
-def calculateBonus(user, start_time, end_time, cate):
-    return 0
-
-
-def calculateNGR(user, start_time, end_time, cate):
-    return 0
-
-
-def calculateAdjustment(user, start_time, end_time):
-    return 0
-
-
-def getUserBalance(user):
-    return user.main_wallet
 
 
 # USER SYSTEM
@@ -436,16 +447,31 @@ def calBonusCompletion(user, bonus, timestamp):
     return 0
 
 
-# Helper function for file export to csv
-# def exportCSV(body, filename):
-#     response = HttpResponse(content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
-#
-#     writer = csv.writer(response)
-#     for i in body:
-#         writer.writerow(i)
-#
-#     return response
+def calculateContribution(user):  # Contribution: GGR x 85% - Bonus - Adjustment - (Withdrawal + Deposit) x 1.5%
+    sum = 0
+    deposit_withdraw_sum = 0
+    ggr = calculateGGR(user, None, None, None)
+    bonus = getTransactionAmount(user, None, None, TRANSACTION_BONUS, None)[1]
+    adjustment = getTransactionAmount(user, None, None, TRANSACTION_ADJUSTMENT, None)[1]
+    withdraw = getTransactionAmount(user, None, None, TRANSACTION_WITHDRAWAL, None)[1]
+    deposit = getTransactionAmount(user, None, None, TRANSACTION_DEPOSIT, None)[1]
+    if ggr and ggr != 0:
+        sum += ggr * decimal.Decimal(0.85)
+
+    if bonus:
+        sum -= bonus
+    if adjustment:
+        sum -= adjustment
+    if withdraw:
+        deposit_withdraw_sum += withdraw
+    if deposit:
+        deposit_withdraw_sum += deposit
+    if deposit_withdraw_sum > 0:
+        deposit_withdraw_sum * decimal.Decimal(0.015)
+        sum -= deposit_withdraw_sum
+    
+    return sum
+
 
 class Echo:
     """An object that implements just the write method of the file-like
@@ -464,3 +490,11 @@ def streamingExport(body, filename):
                                      content_type="text/csv")
     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
     return response
+
+
+def getUserBonus(user):
+    amount = UserBonusEvent.objects.filter(owner=user).aggregate(Sum('amount'))['amount__sum']
+    if amount:
+        return amount
+    return 0
+    # return UserBonusEvent.objects.filter(owner=user).aggregate(Sum('amount'))['amount__sum']

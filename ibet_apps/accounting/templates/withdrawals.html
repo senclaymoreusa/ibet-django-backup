@@ -81,7 +81,7 @@
         </div>
         <!-- actual transaction table & data -->
         <div id="deposits-section" aria-labelledby="home-tab" class="data-section">
-            <table id="deposits-table" class="table-striped table-bordered hover compact"
+            <table id="withdraw-table" class="table-striped table-bordered hover compact"
                 style="table-layout: fixed; width: 98.5%; margin-bottom: 20px">
                 <colgroup>
                     <col style="width: 60px">  <!-- // player id    -->
@@ -101,7 +101,8 @@
                     <col style="width: 85px">  <!-- // amount -->
                     <col style="width: 100px"> <!--  // reviewer -->
                     <col style="width: 78px">  <!-- // status -->
-                    <col style="width: 80px">  <!-- // button -->
+                    <col style="width: 90px">  <!-- // button -->
+
                 </colgroup>
                 <thead>
                     <tr>
@@ -143,20 +144,29 @@
                         <td>{{ tran.app_time }}</td>
                         <td>{{ tran.arr_time }}</td>
                         <td>{{ tran.bank }}</td>
-                        <td>{{ tran.acc_no }}</td>
                         <td>{{ tran.name }}</td>
+                        <td>{{ tran.acc_no }}</td>
                         <td>{{ tran.amount }}</td>
                         <td>{{ tran.reviewer }}</td>
                         <td>{{ tran.status }}</td>
                         {% if tran.status == 'Review' %}
                             {% if tran.channel == 'Qaicash' or tran.channel == 'Help2Pay' %}
-                                <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
+                                <td><button id="edit-pending-detail-btn" class="blue-btn" type="button" data-toggle="modal"
                                         data-target="#audit_withdraw">Review</button></td>
                             {% endif %}
-                        {% endif %}
-                        {% if tran.status == 'Pending' %}
-                        <td><button id="edit-pending-detail-btn" type="button" data-toggle="modal"
-                            data-target="#audit_withdraw">Confirm</button></td>
+
+                        {% elif tran.status == 'Pending' %}
+                        <td>
+                            <button id="edit-pending-detail-btn" type="button" data-toggle="modal" data-target="#audit_withdraw">
+                                Confirm
+                            </button>
+                        </td>
+                        {% elif tran.status == 'Success' %}
+                        <td class="edit-txn">
+                            <button class="result-override-btn" type="button" data-toggle="modal" data-target="#override-withdraw">
+                                Override
+                            </button>
+                        </td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -193,6 +203,7 @@
             </div>
         </div>
     </div>
+
     <!-- audit popup window -->
     <div class="modal fade" id="audit_withdraw" role="dialog">
         <div id="withdraw_request_pop" class="modal-dialog">
@@ -342,7 +353,13 @@
         </div>
     </div>
 
-
+    <!-- override modal -->
+    <div class="modal fade" id="override-withdraw" role="dialog">
+        <div id="override" class="modal-dialog" style="width: 40%">
+            <!-- Modal content-->
+            {% include "withdraw_override_modal.html" %}
+        </div>
+    </div>
 </div>
 
 
@@ -504,13 +521,15 @@
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export")
 
         // send data to pop-up window
-        $('#deposits-table tbody').on('click', 'button', function () {
+        $('#withdraw-table tbody').on('click', 'button', function () {
             let row = $(this).closest('tr');
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
+
+            let id = $(this).attr("class") == "result-override-btn" ? "#override-deposit-detail" : "#trans_withdraw_detail"
             // transaction pk: data[12]
             // bank account: data[13]
-            showTransactionDetail(data);
+            showTransactionDetail(data, id);
             // showWithdrawDetail(data);
             // showBankDetail(data);
             var user_id = data[0];
@@ -533,15 +552,8 @@
                 })
             ).then(function (data1, data2) {
                 addMemberDetails(data1);
-                addWithdrawRecord(data2, data[12], data[0]);
+                addWithdrawRecord(data2, data[18], data[0]);
             });
-            // var container = $('#withdraw_request_pop');
-            // $(document).mouseup(function (e) {
-            //     // if the target of the click isn't the container nor a descendant of the container
-            //     if (!container.is(e.target) && container.has(e.target).length === 0) {
-            //         location.reload();
-            //     }
-            // });
         });
 
         function addMemberDetails(data) {
@@ -570,7 +582,7 @@
             for (let i = 0; i < data[0].length; i++) {
                 content += '<tr>';
                 // content += '<td>' + (i + 1) + '</td>';
-                content += '<td>' + data[0][i].payment + '</td>';
+                content += '<td>' + data[0][i].channel + '</td>';
                 content += '<td>' + data[0][i].tran_no + '</td>';
                 content += '<td>' + data[0][i].time_app + '' + '</td>';
                 content += '<td>' + (data[0][i].bank || '') + '</td>';
@@ -610,53 +622,53 @@
             $("#withdraw_detail").append(content);
         }
 
-        showTransactionDetail = function (data) {
-            $("#trans_withdraw_detail").empty();
+        showTransactionDetail = function (data, id) {
+            $(id).empty();
             var content = "";
             // tran no.
+            content += "<p>...</p>";
+            // tran no.
             content += "<p id='transaction_id'>" + data[7] + "</p>";
-            // application time
+            // created+resolved time
             content += "<p>" + data[9] + "</p>";
+            content += "<p>" + data[10] + "</p>";
+            // ref no.
+            content += "<p>" + data[8] + "</p>";
             // amount
-            content += "<p>" + data[12] + "</p>";
-            $("#trans_withdraw_detail").append(content);
+            content += "<p>" + data[14] + "</p>";
+            
+            $(id).append(content);
         }
 
         $('#withdraw-review-cancel').click(function () {
             location.reload();
         });
 
-        // $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
-        //     // Get data from the first row
-        //     var wtd_trans_no = $("#wtd_trans_no").val();
-        //     var wtd_row_index = $("#wtd_row_no").val();
-        //     var pagination_num = table.page.len();
-        //     var table_size = table.rows().count();
-        //     var remark = $('#notes').val();
-        //     var id = $('#trans_withdraw_detail p').first().html();
-        //     var userID = $('#member-details p').first().html();
+        // TODO: add withdraw override result logic 
+        // double click button
+        // risk review
+        $('#withdraw-review-a').click(function () {
+            let state = $(this).attr('data-state');
+            if (state == 'unclicked') {
+                $(this).attr('data-state', 'clicked');
+                $(this).html("Click to approve");
+            }
+            else {
+                return sendRiskReview('approve');
+            }
+        });
 
-        //     var audit_result = "Approve";
-        //     var qaicash_api = "{% url 'Qaicash_approve_Payout' %}";
-        //     if (e.target.id == "withdraw-review-rejnext") {
-        //         // reject
-        //         audit_result = "Reject";
-        //         qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
-        //     }
-            
-        //     if (wtd_row_index == table_size) {
-        //         $('#lastwithdraw').text("This is the last one");
-        //         $('#lastwithdraw').css('color', 'red');
-        //     }
-
-        //     if (wtd_row_index % pagination_num == 0) {
-        //         table.page('next').draw('page');
-        //         wtd_row_index = wtd_row_index % pagination_num;
-        //     } else if (wtd_row_index > pagination_num) {
-        //         wtd_row_index = wtd_row_index % pagination_num;
-        //     }
-        //     sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index);            
-        // });
+        $('#withdraw-review-r').click(function () {
+            let state = $(this).attr('data-state');
+            if (state == 'unclicked') {
+                $(this).attr('data-state', 'clicked');
+                $(this).html("Click to reject");
+            }
+            else {
+                return sendRiskReview('reject');
+            }
+        });
+        
         
         function sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index){
             var response = $.ajax({
@@ -688,30 +700,7 @@
             });
         }
     });
-    // double click button
-    // risk review
-    $('#withdraw-review-a').click(function () {
-        let state = $(this).attr('data-state');
-        if (state == 'unclicked') {
-            $(this).attr('data-state', 'clicked');
-            $(this).html("Click to approve");
-        }
-        else {
-            return sendRiskReview('approve');
-        }
-    });
 
-    $('#withdraw-review-r').click(function () {
-        let state = $(this).attr('data-state');
-        if (state == 'unclicked') {
-            $(this).attr('data-state', 'clicked');
-            $(this).html("Click to reject");
-        }
-        else {
-            return sendRiskReview('reject');
-        }
-    });
-    
     function sendRiskReview(decision) {
         let remark = $('#notes').val();
         let txnId = $('#trans_withdraw_detail p').first().html();
@@ -735,6 +724,38 @@
         })
     }
     
+
+    // $('#withdraw-review-appnext, #withdraw-review-rejnext').on('click', function (e) {
+    //     // Get data from the first row
+    //     var wtd_trans_no = $("#wtd_trans_no").val();
+    //     var wtd_row_index = $("#wtd_row_no").val();
+    //     var pagination_num = table.page.len();
+    //     var table_size = table.rows().count();
+    //     var remark = $('#notes').val();
+    //     var id = $('#trans_withdraw_detail p').first().html();
+    //     var userID = $('#member-details p').first().html();
+
+    //     var audit_result = "Approve";
+    //     var qaicash_api = "{% url 'Qaicash_approve_Payout' %}";
+    //     if (e.target.id == "withdraw-review-rejnext") {
+    //         // reject
+    //         audit_result = "Reject";
+    //         qaicash_api = "{% url 'Qaicash_reject_Payout' %}";
+    //     }
+        
+    //     if (wtd_row_index == table_size) {
+    //         $('#lastwithdraw').text("This is the last one");
+    //         $('#lastwithdraw').css('color', 'red');
+    //     }
+
+    //     if (wtd_row_index % pagination_num == 0) {
+    //         table.page('next').draw('page');
+    //         wtd_row_index = wtd_row_index % pagination_num;
+    //     } else if (wtd_row_index > pagination_num) {
+    //         wtd_row_index = wtd_row_index % pagination_num;
+    //     }
+    //     sendDataToThirdParty(qaicash_api, id, userID, remark, wtd_row_index);            
+    // });
 </script>
 
 </body>

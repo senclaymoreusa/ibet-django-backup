@@ -575,6 +575,10 @@ def getBetDetail(request):
 
                             transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                             outcome = rdata["Data"]["BetDetails"][i]["ticket_status"]
+                            
+                            home_id = rdata["Data"]["BetDetails"][i]["home_id"]
+                            away_id = rdata["Data"]["BetDetails"][i]["away_id"]
+
                             if rdata["Data"]["BetDetails"][i]["settlement_time"] == '':
                                     if not GameBet.objects.filter(ref_no=trans_id).exists():
                                     
@@ -582,6 +586,7 @@ def getBetDetail(request):
                                                             category=cate,
                                                             user=user,
                                                             user_name=user.username,
+                                                            game_name=str(home_id) + '/' + str(away_id),
                                                             transaction_id=transid,
                                                             odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                             amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
@@ -605,6 +610,7 @@ def getBetDetail(request):
                                                         transaction_id=transid,
                                                         user=user,
                                                         user_name=user.username,
+                                                        game_name=str(home_id) + '/' + str(away_id),
                                                         odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                         amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                         currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -639,8 +645,39 @@ def getBetDetail(request):
             return Response({'status': 'skip running this time onebook getBetDetail.'}, status=status.HTTP_200_OK)
     
 
+@api_view(['POST'])
+@permission_classes((AllowAny,))         
+def getTeamName(request):
+    team_id = request.POST.get("team_id")
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    try:
+        r = requests.post(ONEBOOK_API_URL + "GetTeamName/", headers=headers, data={
+            "vendor_id": ONEBOOK_VENDORID,
+            "team_id": team_id,
+        })
+        rdata = r.json()
+
+    except requests.RequestException:
+        logger.error("Connectivity error for onebook getTeamName API.")
+        return Response({'error': 'Connectivity error for onebook getTeamName API.'})
+    except ValueError:
+        logger.error("JSON parsing error for onebook getTeamName API.")
+        return Response({'error': 'JSON parsing error for onebook getTeamName API.'})
+    except (IndexError, KeyError):
+        logger.error("JSON format error for onebook getTeamName API.")
+        return Response({'error': 'JSON format error for onebook getTeamName API.'})
+    if r.status_code == 200:
+        error_code = rdata["error_code"]
+        if error_code == 0:
+            names = rdata["Data"]["names"]
+            return Response(names)
+        else:
+            logger.info('ONEBOOK::There was something wrong with the onebook getTeamName result')
+            return Response({'error':'There was something wrong with the onebook getTeamName result'}, status=status.HTTP_200_OK)
+    else:
+        logger.warning('ONEBOOK::There was something wrong with the onebook getTeamName connection')
+        return Response({'error':'There was something wrong with the onebook getTeamName connection'}, status=status.HTTP_400_BAD_REQUEST)
     
- 
 
 @transaction.atomic
 class GetBetDetail(APIView):
@@ -772,7 +809,8 @@ class Login(APIView):
                     lang = 'en'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
-                return Response({"login_url":loginUrl})
+                mobile_loginUrl = ONEBOOK_MOBILE_IFRAME_URL + 'token=' + Data + '&lang=' + lang
+                return Response({"login_url":loginUrl, "mobile_login": mobile_loginUrl})
             except NameError as e:
                 logger.error("Cannot find the code for onebook login data.")
                 return Response({"error": "Cannot find the code for onebook login data."})
@@ -853,7 +891,7 @@ def checkUserBalance(user):
                 "wallet_id": '1'
             })
             rdata = r.json()
-            
+
             if r.status_code == 200:
                 success = True
                 break
@@ -877,7 +915,7 @@ def checkUserBalance(user):
             if balance == None:
                 balance = 0.00
             else: 
-                balance = decimal.Decimal(Data[0]["balance"])
+                balance = float(balance)
             return json.dumps({"balance":balance})
         except:
             balance = 0.00
@@ -889,7 +927,7 @@ def checkUserBalance(user):
         return json.dumps({"balance":balance})
 class test(View):
     def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela06")
+        user = CustomUser.objects.get(username="agtest1")
         
         #response = createMember(user, 13, "2")
         response = checkUserBalance(user)

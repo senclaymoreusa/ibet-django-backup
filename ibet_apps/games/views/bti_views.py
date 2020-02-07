@@ -585,7 +585,7 @@ class DebitCustomer(View):
         
         # check for repeat request
         try:
-            repeat_debit = GameBet.objects.get(other_data__request_id=request_id, other_data__is_debit=True)
+            repeat_debit = GameBet.objects.get(other_data__request_id=request_id, other_data__is_debitcustomer=True)
             res = "error_code=0\r\n"
             res += "error_message=success\r\n"
             res += f"balance={repeat_debit.other_data['ending_balance']}\r\n"
@@ -614,7 +614,7 @@ class DebitCustomer(View):
 
                 user.main_wallet = user.main_wallet - amount
                 xmlJson = {
-                    'is_debit': True,
+                    'is_debitcustomer': True,
                     'is_outcome_correction': True,
                     'debit_data': dict(bet_xml.attrib), 
                     'bet_data': purchaseDict,
@@ -667,7 +667,7 @@ class CreditCustomer(View):
             res = "error_code=0\r\n"
             res += "error_message=NegativeAmount\r\n"
             return HttpResponse(res, content_type='text/plain')
-
+        
         user = findUser(username)
         if not (isinstance(user, CustomUser)):
             return user
@@ -687,30 +687,35 @@ class CreditCustomer(View):
         bet_xml = etree.fromstring(request.body)
         purchases = bet_xml[0]
         purchase = purchases[0]
+        
         reserve_id = purchase.attrib.get('ReserveID')
 
-        purchaseDict = dict()
-
-        for purchase in purchases.getchildren():
-            purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
-            selections = purchase[0]
-            purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))]["selections"] = [
-                dict(selection.attrib) for selection in selections.getchildren()
-            ]
-
-        
         try:
             with transaction.atomic():
                 if amount > 0:
                     user.main_wallet = user.main_wallet + amount
-                
+
+                purchaseDict = dict()
+                isBetCorrection = False
+                for purchase in purchases.getchildren():
+                    purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))] = dict(purchase.attrib)
+                    selections = purchase[0]
+                    for selection in selections.getchildren():
+                        purchaseDict["purchase_id_" + str(purchase.attrib.get("PurchaseID"))]["selections"] = [
+                            dict(selection.attrib)
+                        ]
+                        changes = selections[0]
+                        for change in changes:
+                            if "open" not in change.attrib.get("OldStatus").lower():
+                                isBetCorrection = True
+
                 PROVIDER, CATEGORY = getProviderCategory()
                 
                 outcome = 0 if amount > 0 else 1
-
+                
                 xmlJson = {
                     'is_credit': True,
-                    'is_outcome_correction': False,
+                    'is_outcome_correction': isBetCorrection,
                     'credit_data': dict(bet_xml.attrib), 
                     'bet_data': purchaseDict,
                     'raw_xml': str(request.body, 'utf-8'),

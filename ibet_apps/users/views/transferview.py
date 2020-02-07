@@ -110,24 +110,28 @@ class EachWalletAmount(View):
                 response[provider_name] = Decimal('0.00')
 
             # print(response)
-
+            
+            totalAmount = user.main_wallet
             all_wallets = UserWallet.objects.filter(user=user)
             for wallet in all_wallets:
                 response[wallet.provider.provider_name] =  "%.2f" % wallet.wallet_amount
-            
+                totalAmount += wallet.wallet_amount
 
             data = []
             data.append({
                 "code": "main",
                 "amount":  "%.2f" % user.main_wallet,
-                "isMain": True
+                "isMain": True,
+                "percent": (round(100 * (user.main_wallet / totalAmount))) if user.main_wallet > 0 else 0, 
             })
 
             for code, amount in response.items(): 
+                amount = Decimal(amount)
                 data.append({
                     "code": code,
                     "amount": amount,
-                    "isMain": False
+                    "isMain": False,
+                    "percent": (round (100 * (amount / totalAmount))) if Decimal(amount) > 0 else 0
                 })
 
             return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
