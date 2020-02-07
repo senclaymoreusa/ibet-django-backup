@@ -207,8 +207,17 @@ class DebitReserve(View):
         if amount + running_sum > initial_reserve.amount_wagered:
             res = "error_code=-21\r\n"
             res += "error_message=TotalReserveAmountExceeded\r\n"
-            return HttpResponse(res, content_type='text/plain')        
-
+            return HttpResponse(res, content_type='text/plain')
+            
+        game_name = ""
+        odds = int(bet.attrib.get("Odds"))
+        if not b.getchildren(): # no lines
+            game_name = bet.attrib.get("EventName")
+        else:
+            game_name = ""
+            lines = bet.getchildren()
+            for line in lines:
+                game_name += line.attrib.get("EventName") or line.attrib.get("LeagueName")
         try:
             PROVIDER, CATEGORY = getProviderCategory()
             bet = GameBet(
@@ -220,6 +229,8 @@ class DebitReserve(View):
                 amount_wagered=amount,
                 transaction_id=txn_id,
                 market=MARKET_CN,
+                odds=odds,
+                game_name=bet.attrib.get("EventName"),
                 other_data={
                     'bet_data': dict(bet.attrib), 
                     'line_data': [dict(line.attrib) for line in bet.getchildren()],
