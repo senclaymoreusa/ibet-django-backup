@@ -56,7 +56,7 @@
                         <div class="block-title"><span>WITHDRAWAL</span></div>
                         <div class="fund-block">
                             <div class="status-block-content">
-                                ${{ customuser.main_wallet|floatformat:2  }}
+                                ${{ can_withdraw_balance|floatformat:2  }}
                             </div>
                         </div>
                     </div>
@@ -74,7 +74,7 @@
                         <div class="block-title"><span>BONUS AMOUNT</span></div>
                         <div class="fund-block">
                             <div class="status-block-content">
-                                None
+                                ${{ bonus_amount|floatformat:2 }}
                             </div>
                         </div>
                     </div>
@@ -171,7 +171,7 @@
                         </div>
 
                         <div class="checkbox">
-                            <label><input type="checkbox" name="notify-player" value="">Notify player of adjustment</label>
+                            <label><input type="checkbox" name="adjust-notify-player" value="">Notify player of adjustment</label>
                         </div>
                     
                         <div id="message-player" style="display: none;">
@@ -208,7 +208,7 @@
                 <div class="modal-content">
                     <div class="modal-header" style="background-color: #489e24; color:white;">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Player adjustment</h4>
+                        <h4 class="modal-title">Transfer Fund</h4>
                         <div class="update-time">Updated {{ time }}</div>
                     </div>
                     <div class="modal-body">
@@ -228,44 +228,50 @@
                         </div>
 
                         <div class="form-group" style="width:30%; margin-top:20px; display: inline-block;">
-                            <div for="adjustment_reason" class="edit-member-info-label">Transfer from</div>
-                            <select class="form-control">
+                            <div for="transfer_from" class="edit-member-info-label">Transfer from</div>
+                            <select class="form-control" id="transfer_from">
                                 <option value="-1">Select...</option>
-                                <option value="0">Bonus</option>
+                                <!-- <option value="0">Bonus</option>
                                 <option value="1">Error</option>
-                                <option value="2">Resettlement</option>
+                                <option value="2">Resettlement</option> -->
+                                <option value="main">Main wallet</option>
+                                {% for wallet in trans_wallet %}
+                                    <option value="{{ wallet.provider_name }}">{{ wallet.provider_name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         
                         <div class="form-group" style="width:30%; margin-top:20px; display: inline-block; margin-left:10px;">
-                            <div for="adjustment_reason" class="edit-member-info-label">Transfer to</div>
-                            <select class="form-control">
+                            <div for="transfer_to" class="edit-member-info-label">Transfer to</div>
+                            <select class="form-control" id="transfer_to">
                                 <option value="-1">Select...</option>
-                                <option value="0">Bonus</option>
-                                <option value="1">Error</option>
-                                <option value="2">Resettlement</option>
+                                <option value="main">Main wallet</option>
+                                {% for wallet in trans_wallet %}
+                                    <option value="{{ wallet.provider_name }}">{{ wallet.provider_name }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
                         <div class="form-group" style="width:120px; margin-top:20px !important;">
                             <div class="edit-member-info-label" style="margin-top:0px;">Amount*</div>
-                            <input class="form-control" id='amount' name="amount">
+                            <input class="form-control" id='transfer_amount' name="amount">
                         </div>
 
                         <div class="checkbox">
-                            <label><input type="checkbox" name="notify-player" value="">Notify player of fund transfer</label>
+                            <label><input type="checkbox" name="transfer-notify-player" value="">Notify player of fund transfer</label>
                         </div>
                         
-                        <div class="form-group">
-                            <div class="edit-member-info-label" style="margin-top:20px;">Message subject*</div>
-                            <input type="text" class="form-control" id="transfer_message_subject">
-                        </div>
+                        <div id="transfer-message-player" style="display: none;">
+                            <div class="form-group">
+                                <div class="edit-member-info-label" style="margin-top:20px;">Message subject*</div>
+                                <input type="text" class="form-control" id="transfer_message_subject">
+                            </div>
 
-                        <div class="form-group">
-                            <div class="edit-member-info-label" style="margin-top:20px;" for="message_to_player">Message to player*</div>
-                            <textarea class="form-control" rows="5" id="transfer_message_to_player"></textarea>
+                            <div class="form-group">
+                                <div class="edit-member-info-label" style="margin-top:20px;" for="message_to_player">Message to player*</div>
+                                <textarea class="form-control" rows="5" id="transfer_message_to_player"></textarea>
+                            </div>
                         </div>
-
                         <div class="form-group">
                             <div class="edit-member-info-label" style="margin-top:20px;" for="message_note">Reason for Transfer*</div>
                             <textarea class="form-control" rows="3" id="transfer_message_note"></textarea>
@@ -2881,15 +2887,17 @@ $(document).ready(function() {
         }
     });
 
-    // if($('input[name="notify-player"]').is(":checked")){
-    //     $("#message-player").css('display', 'block');
-    // } else {
-    //     $("#message-player").css('display', 'none');
-    // }
+    $("input[name='transfer-notify-player']").change(function() {
+        if ($('input[name="transfer-notify-player"]').is(":checked")) {
+            $("#transfer-message-player").css('display', 'block');
+        } else {
+            $("#transfer-message-player").css('display', 'none');
+        }
+    });
 
 
-    $("input[name='notify-player']").change(function() {
-        if ($('input[name="notify-player"]').is(":checked")) {
+    $("input[name='adjust-notify-player']").change(function() {
+        if ($('input[name="adjust-notify-player"]').is(":checked")) {
             $("#message-player").css('display', 'block');
         } else {
             $("#message-player").css('display', 'none');
@@ -3322,7 +3330,7 @@ function submitAdjustment() {
         affiliate = true;
     } 
 
-    if($('input[name="notify-player"]').is(":checked")){
+    if($('input[name="adjust-notify-player"]').is(":checked")){
         notifyPlayer = true;
     } 
 
@@ -3378,6 +3386,51 @@ function postAdjustmentRequest(data) {
         contentType: "application/json; charset=utf-8",
         dataType   : "json",
         success:function(data) {
+            location.reload();
+        },
+        error: function() {
+            $('#adjustment_error').text("Something wrong");
+        }
+    });
+}
+
+
+function submitTransfer() {
+    var user_id = $('#hidden_user_id').val();
+    var transfer_to = $('#transfer_to').val();
+    var transfer_from = $('#transfer_from').val();
+    var transfer_amount = $('#transfer_amount').val();
+    var message_note = $('#transfer_message_note').val();
+    var messageSubject = $("#transfer_message_subject").val();
+    var messageToPlayer = $("#transfer_message_to_player").val();
+    var notifyPlayer = false;
+    if($('input[name="transfer-notify-player"]').is(":checked")){
+        notifyPlayer = true;
+    } 
+    data = {
+        'user_id': user_id,
+        'transfer_to': transfer_to,
+        'transfer_from': transfer_from,
+        'transfer_amount': transfer_amount,
+        'message_note': message_note,
+        'message_subject': messageSubject,
+        'message_to_player': messageToPlayer,
+        'notify_player': notifyPlayer
+    }
+    console.log(transfer_to, transfer_from, transfer_amount);
+    postSubmitTransfer(data);
+}
+
+
+function postSubmitTransfer(data) {
+    $.ajax({
+        type:'POST',
+        url:"{% url 'user_transfer' %}",
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
+        dataType   : "json",
+        success:function(data) {
+            console.log(data);
             location.reload();
         },
         error: function() {

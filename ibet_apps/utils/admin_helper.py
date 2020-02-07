@@ -13,6 +13,7 @@ from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
+from bonus.models import UserBonusEvent
 from utils.constants import *
 import decimal
 
@@ -489,3 +490,11 @@ def streamingExport(body, filename):
                                      content_type="text/csv")
     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
     return response
+
+
+def getUserBonus(user):
+    amount = UserBonusEvent.objects.filter(owner=user).aggregate(Sum('amount'))['amount__sum']
+    if amount:
+        return amount
+    return 0
+    # return UserBonusEvent.objects.filter(owner=user).aggregate(Sum('amount'))['amount__sum']

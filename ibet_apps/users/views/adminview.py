@@ -26,9 +26,11 @@ from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
 from users.views.helper import *
-from games.models import GameBet, Category
+from games.models import GameBet, Category, GameProvider
 from utils.admin_helper import *
 from operation.views import send_email
+from games.helper import transferRequest
+
 
 import requests
 import logging
@@ -48,8 +50,11 @@ class UserDetailView(CommAdminView):
         context['time'] = timezone.now()
         customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         context['customuser'] = customUser
+        context['bonus_amount'] = getUserBonus(customUser) if getUserBonus(customUser) else 0
+        context['can_withdraw_balance'] = customUser.main_wallet - customUser.bonus_wallet
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
+        context['trans_wallet'] = GameProvider.objects.filter(is_transfer_wallet=True)
         transaction = Transaction.objects.filter(user_id=customUser)
         context['block'] = False
         temporaryBlockRes = {}
@@ -1485,6 +1490,7 @@ class UserAdjustment(View):
                                 }
                             )
                     user.bonus_wallet += decimal.Decimal(amount)
+                    user.main_wallet += decimal.Decimal(amount)
                     user.save()
 
                     UserActivity.objects.create(
@@ -1527,4 +1533,43 @@ class UserAdjustment(View):
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
         except Exception as e:
             logger.error("Make adjustment error for user {}: {}".format(user.username, str(e)))
+            return HttpResponse(status=400)
+
+
+class UserTransfer(View):
+
+    def post(self, request, *args, **kwargs): 
+
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        customUser = CustomUser.objects.get(pk=user_id)
+        # print(data)
+        try:
+            
+            admin_user = self.request.user
+            transfer_to = data['transfer_to'] if 'transfer_to' in data else ""
+            transfer_from = data['transfer_from'] if 'transfer_from' in data else ""
+            transfer_amount = data['transfer_amount'] if 'transfer_amount' in data else 0
+            notify_player = data['notify_player'] if 'notify_player' in data else False
+            message_subject = data['message_subject'] if 'message_subject' in data else ""
+            message_to_player = data['message_to_player'] if 'message_to_player' in data else ""
+            message_note = data['message_note'] if 'message_note' in data else ""
+            
+            with transaction.atomic():
+                transferRequest(customUser, transfer_amount, transfer_from, transfer_to)
+
+                UserActivity.objects.create(
+                    user=customUser,
+                    admin=admin_user,
+                    message=message_note,
+                    activity_type=ACTIVITY_REMARK,
+                )
+
+            if notify_player:
+                send_email(message_subject, message_to_player, customUser.username)
+            
+            response = {}
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))
             return HttpResponse(status=400)
