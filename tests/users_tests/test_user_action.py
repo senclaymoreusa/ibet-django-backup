@@ -100,7 +100,8 @@ class UserActionModelTest(APITestCase):
             'state': 'CA',
             'over_eighteen': 'true',
             'zipcode': '92929',
-            'language': 'english'
+            'language': 'english',
+            'currency': 2,
 
         }, format='json')
         # print(response.status_code)
