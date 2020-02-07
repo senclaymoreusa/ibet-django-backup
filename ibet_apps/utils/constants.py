@@ -444,6 +444,11 @@ RISK_LEVEL = (
     (RISK_LEVEL_F, 'F'),
 )
 
+ALLOWED_STATUSES = (
+    (1, "ALL"),
+    (2, "NORMAL")
+)
+
 INTERVAL_PER_DAY = 0
 INTERVAL_PER_WEEK = 1
 INTERVAL_PER_MONTH = 2
@@ -794,7 +799,7 @@ elif "dev" in os.getenv("ENV"):
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
     
 else:
-    API_DOMAIN = "http://cf61d044.ngrok.io/"
+    API_DOMAIN = "http://339378af.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -1610,6 +1615,7 @@ ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
 ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
 ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
 ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
+ONEBOOK_MOBILE_IFRAME_URL = keys["ONEBOOK"]["MOBILE_IFRAME_URL"]
 ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
 ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
 
@@ -1627,9 +1633,12 @@ GB_PROVIDER = keys["GB"]["PROVIDER"]
 GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
+GB_MOBILE_SPORT_URL = keys["GB"]["MOBILE_SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
+GB_MOBILE_OTHER_URL = keys["GB"]["MOBILE_OTHER_URL"]
 GB_GENERALKEY = keys["GB"]["GeneralKey"]
 GB_SECRETKEY = keys["GB"]["SecretKey"]
+GB_CLIENT_API_URL = keys["GB"]["CLIENT_API_URL"]
 
 
 # QT

@@ -274,7 +274,7 @@ def png_reserve(data):
 
         # Idempotence - check if bet with transaction_id was already successfully placed.
         try:
-            existing_bet = GameBet.objects.get(ref_no=transaction_id)
+            existing_bet = GameBet.objects.get(ref_no=transaction_id, provider=PROVIDER)
             logger.error("PLAY'nGO: Bet with transaction_id already exists.")
             bet_already_placed = True
         except ObjectDoesNotExist:
@@ -381,7 +381,7 @@ def png_cancel_reserve(data):
         # Attempt to look up previous bet and cancel.
         try:
             with transaction.atomic():
-                existing_bet = GameBet.objects.get(ref_no=transaction_id) # Provider will not send multiple CancelReserve requests with same id.
+                existing_bet = GameBet.objects.get(ref_no=transaction_id, provider=PROVIDER) # Provider will not send multiple CancelReserve requests with same id.
                 
                 user_balance = user_obj.main_wallet
                 amount_to_refund = existing_bet.amount_wagered
@@ -479,7 +479,7 @@ def png_release(data):
 
         # Idempotence - check if release with transaction_id was already successfully resolved.
         try:
-            existing_release = GameBet.objects.get(ref_no=transaction_id)
+            existing_release = GameBet.objects.get(ref_no=transaction_id, provider=PROVIDER)
             logger.error("PLAY'nGO Release Error: Release with transaction_id already exists.")
             release_already_resolved = True
         except ObjectDoesNotExist:

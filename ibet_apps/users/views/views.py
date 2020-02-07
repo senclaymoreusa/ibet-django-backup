@@ -302,6 +302,7 @@ class RegisterView(CreateAPIView):
     @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
+        print(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(user)
         else:
@@ -2131,7 +2132,19 @@ class SetWithdrawPassword(View):
             logger.error("Error setting withdraw password: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-
+def checkWithdrawPassword(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        pk = data.get("user_id")
+        pw = data.get("password")
+        user = CustomUser.objects.get(pk=pk)
+        res = check_password(pw, user.withdraw_password)
+        
+        return JsonResponse({
+            "success": res
+        })
+        
+        
 
 class ResetWithdrawPassword(View):
 

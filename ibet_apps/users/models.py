@@ -14,9 +14,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from utils.constants import *
 from django.contrib.postgres.fields import JSONField
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django_cryptography.fields import encrypt
 
 import logging
 
@@ -495,3 +495,7 @@ class UserBonusWallet(models.Model):
 
     class Meta:
         unique_together = ('user', 'category',)
+
+class WithdrawAccounts(models.Model):
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
+    account_no = encrypt(models.CharField(max_length=50))

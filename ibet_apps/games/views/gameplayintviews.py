@@ -47,8 +47,8 @@ def getGPIBalance(user):
 
         req = urllib.parse.urlencode(req_param)
 
-        url = GPI_URL + 'createuser' + '?' + req
-        res = requests.get(url)
+        # url = GPI_URL + 'createuser' + '?' + req
+        # res = requests.get(url)
 
         url = GPI_URL + 'getbalance' + '?' + req
         res = requests.get(url)

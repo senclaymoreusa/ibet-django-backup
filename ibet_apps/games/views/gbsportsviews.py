@@ -15,7 +15,12 @@ from time import gmtime, strftime, strptime
 from django.utils import timezone
 from datetime import datetime
 from django.db import transaction
-import random
+import random, logging
+from rest_framework.decorators import api_view, permission_classes
+import xml.etree.ElementTree as ET
+
+logger = logging.getLogger('django')
+
 class WalletGeneralAPI(APIView):
 
     permission_classes = (AllowAny, )
@@ -128,28 +133,58 @@ class WalletBetAPIURL(APIView):
                             success    =  1
                             TransData  = current_balance
                             
+
                             if data['GB']['Result']['ReturnSet']['BettingList']['SportList'] != '':
                                 category = 'Sports'
+
+                                try:
+                                    cate = Category.objects.get(name=category)
+                                except:
+                                    logger.error("GB::missing category for WalletBetAPIURL")
+
+                                sport_size = len(data['GB']['Result']['ReturnSet']['BettingList']['SportList'])
+                                for x in range(sport_size):
+                                    teams = data['GB']['Result']['ReturnSet']['BettingList']['SportList'][x]['Team']
+                                    teams_size = len(teams)
+                                    
+                                    teamcode1 = teams[0]['TeamCode']
+                                    teamcode2 = teams[1]['TeamCode']
+
+                                    GameBet.objects.create(
+                                        provider=PROVIDER,
+                                        transaction_id=trans_id,
+                                        category=cate,
+                                        game_name=str(teamcode1) + '/' + str(teamcode2),
+                                        user=user,
+                                        user_name=user.username,
+                                        currency=user.currency,
+                                        market=ibetCN,
+                                        ref_no=BetID,
+                                        amount_wagered=decimal.Decimal(RealBetAmt)/100,
+                                        bet_type=TransType,
+                                        other_data=data,
+                                    )
+
                             else:
                                 category = 'Lotteries'
-                            try:
-                                cate = Category.objects.get(name=category)
-                            except:
-                                logger.error("GB::missing category for WalletBetAPIURL")
-
-                            GameBet.objects.create(
-                                provider=PROVIDER,
-                                transaction_id=trans_id,
-                                category=cate,
-                                user=user,
-                                user_name=user.username,
-                                currency=user.currency,
-                                market=ibetCN,
-                                ref_no=BetID,
-                                amount_wagered=decimal.Decimal(RealBetAmt)/100,
-                                bet_type=TransType,
-                                other_data=data,
-                            )
+                                try:
+                                    cate = Category.objects.get(name=category)
+                                except:
+                                    logger.error("GB::missing category for WalletBetAPIURL")
+                            
+                                GameBet.objects.create(
+                                    provider=PROVIDER,
+                                    transaction_id=trans_id,
+                                    category=cate,
+                                    user=user,
+                                    user_name=user.username,
+                                    currency=user.currency,
+                                    market=ibetCN,
+                                    ref_no=BetID,
+                                    amount_wagered=decimal.Decimal(RealBetAmt)/100,
+                                    bet_type=TransType,
+                                    other_data=data,
+                                )
 
                     else:
                         error      =  'Insufficient_Balance'
@@ -187,7 +222,7 @@ class WalletBetAPIURL(APIView):
                     
                     if temp >= total_amount:
                         current_balance = temp-total_amount
-              
+                        
                         with transaction.atomic():
                             
                             for x in range(len(data['GB']['Result']['ReturnSet']['BettingList'])):
@@ -212,34 +247,60 @@ class WalletBetAPIURL(APIView):
                                 RealBetRate   = data['GB']['Result']['ReturnSet']['BettingList'][x]['RealBetRate']
                                 PreWinAmt     = data['GB']['Result']['ReturnSet']['BettingList'][x]['PreWinAmt']
                                 
-                            
-                                if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
-                                    category = 'Sports'
-                                else:
-                                    category = 'Lotteries'
-                                
-                                try:
-                                    cate = Category.objects.get(name=category)
-                                except:
-                                    logger.error("missing category.")
                                 if BetType == '1':
                                     bet_type = SINGLE
                                 else:
                                     bet_type = OTHER
+                            
+                                if data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] != []:
+                                    
+                                    SportList = data['GB']['Result']['ReturnSet']['BettingList'][x]['SportList'] 
+                                    
+                                    category = 'Sports'
+                                    try:
+                                        cate = Category.objects.get(name=category)
+                                    except:
+                                        logger.error("GB::wallet bet API is missing category.")
+                                    for y in range(len(SportList)):
+                                        teams = SportList[y]['Team']
+                                        
+                                        teamcode1 = teams[0]['TeamCode']
+                                        teamcode2 = teams[1]['TeamCode']
+                                        
+                                        GameBet.objects.create(
+                                            provider=PROVIDER,
+                                            category=cate,
+                                            transaction_id=trans_id,
+                                            user=user,
+                                            game_name=str(teamcode1) + '/' + str(teamcode2),
+                                            user_name=user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=BetID,
+                                            amount_wagered=decimal.Decimal(RealBetAmt/100),
+                                            bet_type=bet_type,
+                                            other_data=data,
+                                        )
+                                else:
+                                    category = 'Lotteries'
+                                    try:
+                                        cate = Category.objects.get(name=category)
+                                    except:
+                                        logger.error("missing category.")
                                 
-                                GameBet.objects.create(
-                                    provider=PROVIDER,
-                                    category=cate,
-                                    transaction_id=trans_id,
-                                    user=user,
-                                    user_name=user.username,
-                                    currency=user.currency,
-                                    market=ibetCN,
-                                    ref_no=BetID,
-                                    amount_wagered=decimal.Decimal(RealBetAmt/100),
-                                    bet_type=bet_type,
-                                    other_data=data,
-                                )
+                                    GameBet.objects.create(
+                                        provider=PROVIDER,
+                                        category=cate,
+                                        transaction_id=trans_id,
+                                        user=user,
+                                        user_name=user.username,
+                                        currency=user.currency,
+                                        market=ibetCN,
+                                        ref_no=BetID,
+                                        amount_wagered=decimal.Decimal(RealBetAmt/100),
+                                        bet_type=bet_type,
+                                        other_data=data,
+                                    )
                             user.main_wallet=current_balance
                             user.save()    
                             error      =  'No_Error'
@@ -274,7 +335,7 @@ class WalletBetAPIURL(APIView):
 class WalletSettleAPIURL(APIView):
 
     permission_classes = (AllowAny, )
-
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
 
         data = json.loads(request.body)
@@ -340,16 +401,6 @@ class WalletSettleAPIURL(APIView):
                 try: 
                     user = CustomUser.objects.get(username = MemberID)
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
-                    if data['GB']['Result']['ReturnSet']['SettleList']['SportList'] != []:
-                        category = 'Sports'
-                    else:
-                        category = 'Lotteries'
-                            
-                    try:
-                        cate = Category.objects.get(name=category)
-                    except:
-                        logger.error("missing category.")
-                        
                     if BetType == '1':
                         bet_type = SINGLE
                     else:
@@ -367,9 +418,49 @@ class WalletSettleAPIURL(APIView):
                         TicketResult = 3 #兑现
                     elif TicketResult == 'R':
                         TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
-
                     
-                    with transaction.atomic():  
+                    if data['GB']['Result']['ReturnSet']['SettleList']['SportList'] != []:
+                        category = 'Sports'
+                        try:
+                            cate = Category.objects.get(name=category)
+                        except:
+                            logger.error("missing category.")
+                        SportList = data['GB']['Result']['ReturnSet']['SettleList']['SportList']
+                        SportList_size = len(SportList)
+                        for x in range(SportList_size):
+                            team = SportList[x]['Team']
+                            teamcode1 = team[0]['TeamCode']
+                            teamcode2 = team[1]['TeamCode']
+
+                            GameBet.objects.create(
+                                provider=PROVIDER,
+                                category=cate,
+                                transaction_id=trans_id,
+                                user=user,
+                                user_name=user.username,
+                                game_name=str(teamcode1) + '/' + str(teamcode2),
+                                currency=user.currency,
+                                market=ibetCN,
+                                ref_no=BetID,
+                                amount_wagered=decimal.Decimal(RealBetAmt/100),
+                                bet_type=bet_type,
+                                amount_won=decimal.Decimal(WLAmt/100), 
+                                outcome=TicketResult,
+                                resolved_time=timezone.now(),
+                                other_data=data,
+                            )
+                        
+                            user.main_wallet += decimal.Decimal(WLAmt/100)
+                            user.save()
+
+
+                    else:
+                        category = 'Lotteries'
+                            
+                        try:
+                            cate = Category.objects.get(name=category)
+                        except:
+                            logger.error("missing category.")
                         
                         GameBet.objects.create(
                             provider=PROVIDER,
@@ -387,7 +478,6 @@ class WalletSettleAPIURL(APIView):
                             resolved_time=timezone.now(),
                             other_data=data,
                         )
-                        
                         
                         user.main_wallet += decimal.Decimal(WLAmt/100)
                         user.save()
@@ -449,17 +539,6 @@ class WalletSettleAPIURL(APIView):
                         SettleDT      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleDT']
                         
                         
-                            
-                        if data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList'] != []:
-                            category = 'Sports'
-                        else:
-                            category = 'Lotteries'
-                            
-                        try:
-                            cate = Category.objects.get(name=category)
-                        except:
-                            logger.error("missing category.")
-                        
                         if BetType == '1':
                             bet_type = SINGLE
                         else:
@@ -477,7 +556,47 @@ class WalletSettleAPIURL(APIView):
                             TicketResult = 3 #兑现
                         elif TicketResult == 'R':
                             TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
-                        with transaction.atomic():
+
+                        if data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList'] != []:
+                            category = 'Sports'
+                            try:
+                                cate = Category.objects.get(name=category)
+                            except:
+                                logger.error("missing category.")
+                            SportList = data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList']
+                            SportList_size = len(SportList)
+                            for y in range(SportList_size):
+                                Team = SportList[y][Team]
+                                teamcode1 = Team[0]['TeamCode']
+                                teamcode2 = Team[1]['TeamCode']
+
+                                GameBet.objects.create(
+                                    provider=PROVIDER,
+                                    category=cate,
+                                    user=user,
+                                    user_name=user.username,
+                                    game_name=str(teamcode1) + '/' + str(teamcode2),
+                                    transaction_id=trans_id,
+                                    currency=user.currency,
+                                    market=ibetCN,
+                                    ref_no=BetID,
+                                    amount_wagered=decimal.Decimal(RealBetAmt/100),
+                                    bet_type=bet_type,
+                                    amount_won=decimal.Decimal(RefundBetAmt/100),
+                                    outcome=TicketResult,
+                                    resolved_time=timezone.now(),
+                                    other_data=data,
+                                )
+                                
+
+                        else:
+                            category = 'Lotteries'
+                            
+                            try:
+                                cate = Category.objects.get(name=category)
+                            except:
+                                logger.error("missing category.")
+                        
                             GameBet.objects.create(
                                 provider=PROVIDER,
                                 category=cate,
@@ -495,9 +614,9 @@ class WalletSettleAPIURL(APIView):
                                 other_data=data,
                             )
                             
-                            if RefundBetAmt != '0' :
-                                user.main_wallet += decimal.Decimal(RefundBetAmt/100)
-                                user.save()
+                        if RefundBetAmt != '0' :
+                            user.main_wallet += decimal.Decimal(RefundBetAmt/100)
+                            user.save()
 
                     error      =  'No_Error'
                     error_code =  0
@@ -580,7 +699,37 @@ class GenerateGameURL(APIView):
                 ])
             else:
                 temp = '1990-01-01'
-            
+
+            if self.request.user.country:
+                country = self.request.user.country
+                if country == 'china':
+                    CyCode = 'CN'    
+                elif country == 'vietnam':
+                    CyCode = 'VN'
+                elif country == 'thailand':
+                    CyCode = 'TH'  
+                else:
+                    CyCode = 'CN'
+            else:
+                CyCode = 'CN'
+
+            if self.request.user.currency:
+                 currency = self.request.user.currency
+                 if currency == 0:
+                     CurCode = "CNY"
+                 elif currency == 1:
+                     CurCode = "USD"
+                 elif currency == 2:
+                     CurCode = "THB"
+                 elif currency == 7:
+                     CurCode = "VND"
+                 else:
+                     CurCode = "CNY"
+            else:
+                CurCode = "CNY"
+
+
+
             create_user_data = requests.post(GB_URL, json = {
             
             "GB": {
@@ -594,8 +743,8 @@ class GenerateGameURL(APIView):
                     "Nickname": self.request.user.username,
                     "Gender": "2",
                     "Birthdate": temp,
-                    "CyCode": "CN",
-                    "CurCode": "CNY",
+                    "CyCode": CyCode,
+                    "CurCode": CurCode,
                     "LangCode": language,
                     "TPUniqueID": "new"
                     }
@@ -621,12 +770,15 @@ class GenerateGameURL(APIView):
         
         if game == 'GB Sports':
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res,language)
+            mobile = GB_MOBILE_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res,language)
         elif game == 'GB ESports':
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
+            mobile = GB_MOBILE_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res,language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
+            mobile = GB_MOBILE_OTHER_URL + '/{}/index.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
         
-        return Response({'game_url': url})
+        return Response({'game_url': url, 'mobile_url':mobile})
 
 class GenerateFakeUserGameURL(APIView):
 
@@ -699,12 +851,58 @@ class GenerateFakeUserGameURL(APIView):
 
         if game == 'GB Sports':
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res, language)
+            mobile = GB_MOBILE_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001'.format(res, language)
         elif game == 'GB ESports':
             url = GB_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res, language)
+            mobile = GB_MOBILE_SPORT_URL + '?tpid=011&token={}&languagecode={}&oddstype=00001&sc=00111'.format(res, language)
         else:
             url = GB_OTHER_URL + '/{}/default.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
+            mobile = GB_MOBILE_OTHER_URL + '/{}/index.aspx?tpid=011&token={}&languagecode={}'.format(dic[game], res, language)
+            
+        return Response({'game_url': url, 'mobile_url':mobile})
 
-        return Response({'game_url': url})
+@api_view(['POST'])
+@permission_classes((AllowAny,)) 
+def getSportTeamInfo(request):
+    teamcode = request.POST.get("teamcode")
+    language = request.POST.get("language")
+    if language == 'en': 
+        language = 'en-us'
+    elif language == 'zh': 
+        language = 'zh-cn'
+    elif language == 'th':
+        language = 'th-th'
+    elif language == 'vi':
+        language = 'vi-vn'
+    else:
+        language = 'zh-cn'
+
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    try:
+        r = requests.post(GB_CLIENT_API_URL + "GetSportTeamInfo", headers=headers, data={
+            "intSportCompetitorCode": teamcode,
+            "strLanguageCode": language   
+        })
+                        
+        rdata = r.text
+    except requests.RequestException:
+        logger.error("Connectivity error for GB getSportTeamInfo API.")
+        return Response({'error': 'Connectivity error for GB getSportTeamInfo API.'})
+    except ValueError:
+        logger.error("JSON parsing error for GB getSportTeamInfo API.")
+        return Response({'error': 'JSON parsing error for GB getSportTeamInfo API.'})
+    except (IndexError, KeyError):
+        logger.error("JSON format error for GB getSportTeamInfo API.")
+        return Response({'error': 'JSON format error for GB getSportTeamInfo API.'})
+        
+    if r.status_code == 200:
+        dic = xmltodict.parse(rdata)
+        TeamName = dic['DataTable']['diffgr:diffgram']['NewDataSet']['Table']['TeamName']
+
+        return Response(TeamName)
+    else:
+        logger.warning('GB::There was something wrong with the GB getSportTeamInfo connection')
+        return Response({'error':'There was something wrong with the GB getSportTeamInfo connection'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
