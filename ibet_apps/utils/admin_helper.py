@@ -13,7 +13,9 @@ from users.models import CustomUser
 from accounting.models import Transaction
 from games.models import GameBet, Category
 from system.models import UserGroup, UserToUserGroup
+from bonus.models import UserBonusEvent
 from utils.constants import *
+import decimal
 
 import logging
 import uuid
@@ -428,8 +430,8 @@ BONUS_DELIVERY_VALUE_DICT = {
 
 # hard code for deposit tiered amount setting
 # deposit amount upper bound, bonus rate, max bonus amount, turnover multiple
-DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12], [10000, 25, 12500, 13, 13, 13, 13],
-                          [50000, 30, 60000, 16, 16, 16, 16], [200000, 35, 100000, 20, 20, 20, 20]]
+DEPOSIT_TIERED_AMOUNTS = [[100, 20, 2000, 12, 12, 12, 12, 15, 5], [10000, 25, 12500, 13, 13, 13, 13, 18, 10],
+                          [50000, 30, 60000, 16, 16, 16, 16, 20, 15], [200000, 35, 100000, 20, 20, 20, 20, 22, 20]]
 
 # game category match
 ## TODO: NEEDS CONFIRM
@@ -445,16 +447,31 @@ def calBonusCompletion(user, bonus, timestamp):
     return 0
 
 
-# Helper function for file export to csv
-# def exportCSV(body, filename):
-#     response = HttpResponse(content_type='text/csv')
-#     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
-#
-#     writer = csv.writer(response)
-#     for i in body:
-#         writer.writerow(i)
-#
-#     return response
+def calculateContribution(user):  # Contribution: GGR x 85% - Bonus - Adjustment - (Withdrawal + Deposit) x 1.5%
+    sum = 0
+    deposit_withdraw_sum = 0
+    ggr = calculateGGR(user, None, None, None)
+    bonus = getTransactionAmount(user, None, None, TRANSACTION_BONUS, None)[1]
+    adjustment = getTransactionAmount(user, None, None, TRANSACTION_ADJUSTMENT, None)[1]
+    withdraw = getTransactionAmount(user, None, None, TRANSACTION_WITHDRAWAL, None)[1]
+    deposit = getTransactionAmount(user, None, None, TRANSACTION_DEPOSIT, None)[1]
+    if ggr and ggr != 0:
+        sum += ggr * decimal.Decimal(0.85)
+
+    if bonus:
+        sum -= bonus
+    if adjustment:
+        sum -= adjustment
+    if withdraw:
+        deposit_withdraw_sum += withdraw
+    if deposit:
+        deposit_withdraw_sum += deposit
+    if deposit_withdraw_sum > 0:
+        deposit_withdraw_sum * decimal.Decimal(0.015)
+        sum -= deposit_withdraw_sum
+    
+    return sum
+
 
 class Echo:
     """An object that implements just the write method of the file-like
@@ -473,3 +490,11 @@ def streamingExport(body, filename):
                                      content_type="text/csv")
     response['Content-Disposition'] = 'attachment; filename=' + filename + '.csv'
     return response
+
+
+def getUserBonus(user):
+    amount = UserBonusEvent.objects.filter(owner=user).aggregate(Sum('amount'))['amount__sum']
+    if amount:
+        return amount
+    return 0
+    # return UserBonusEvent.objects.filter(owner=user).aggregate(Sum('amount'))['amount__sum']

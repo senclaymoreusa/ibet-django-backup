@@ -891,7 +891,7 @@ def checkUserBalance(user):
                 "wallet_id": '1'
             })
             rdata = r.json()
-            
+
             if r.status_code == 200:
                 success = True
                 break
@@ -915,7 +915,7 @@ def checkUserBalance(user):
             if balance == None:
                 balance = 0.00
             else: 
-                balance = decimal.Decimal(Data[0]["balance"])
+                balance = float(balance)
             return json.dumps({"balance":balance})
         except:
             balance = 0.00
@@ -927,7 +927,7 @@ def checkUserBalance(user):
         return json.dumps({"balance":balance})
 class test(View):
     def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela06")
+        user = CustomUser.objects.get(username="agtest1")
         
         #response = createMember(user, 13, "2")
         response = checkUserBalance(user)

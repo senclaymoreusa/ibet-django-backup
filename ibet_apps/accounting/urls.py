@@ -77,6 +77,7 @@ urlpatterns = [
     path('api/transactions/get_transaction_by_id', accounting.transactions.get_transaction_by_id, name="Get_transaction_by_id"),
     path('api/transactions/add_withdraw_acc', csrf_exempt(accounting.transactions.addWithdrawAccount), name="Add_Withdraw_Account"),
     path('api/transactions/get_withdraw_accs', csrf_exempt(accounting.transactions.getWithdrawAccounts), name="Get_Withdraw_Accounts"),
+    path('api/transactions/del_withdraw_acc', csrf_exempt(accounting.transactions.removeWithdrawAccount), name="Delete_Withdraw_Account"),
 ]
 
 
