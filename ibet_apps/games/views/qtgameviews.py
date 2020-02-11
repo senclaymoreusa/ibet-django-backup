@@ -347,6 +347,7 @@ class ProcessTransactions(APIView):
             status_code = 400
             message = 'PLAYER_NOT_FOUND'
             logger.error(message) 
+            print(message)
             
             response = {
                 "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
@@ -354,9 +355,36 @@ class ProcessTransactions(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            #
+            # try to find if the txnId exists
+            #
+            record = GameBet.objects.filter(   provider=prov,
+                                               category=cat,
+                                               user=user,
+                                               user_name = user.username,
+                                               currency=user.currency,
+                                               market=ibetCN,
+                                               ref_no=txnId
+                                               )
             
-        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
+            
+            response = {
+                'balance': round(bal),
+                "referenceId": record.transaction_id
+            }
+            logger.info("ref_no, {}, is an idempotent transaction".format(txnId))
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
+        except:
+            logger.info("ref_no, {}, is a new transaction".format(txnId))
                 
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+        
         if transType == "DEBIT":
             bal = user.main_wallet - amount
             
@@ -564,6 +592,33 @@ class ProcessRollback(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            #
+            # try to find if the txnId exists
+            #
+            record = GameBet.objects.filter(   provider=prov,
+                                               category=cat,
+                                               user=user,
+                                               user_name = user.username,
+                                               currency=user.currency,
+                                               market=ibetCN,
+                                               ref_no=txnId
+                                               )
+            
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
+            
+            response = {
+                'balance': round(bal),
+                "referenceId": record.transaction_id
+            }
+            logger.info("ref_no, {}, is an idempotent transaction".format(txnId))
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
+        except:
+            logger.info("ref_no, {}, is a new transaction".format(txnId))
         
         user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
