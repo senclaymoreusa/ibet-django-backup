@@ -432,16 +432,22 @@ GAME_PRODUCT = (
 )
 
 
-RISK_LEVEL_A = 0
-RISK_LEVEL_E1 = 1
-RISK_LEVEL_E2 = 2
-RISK_LEVEL_F = 3
+VERY_HIGH = 0
+HIGH = 1
+MEDIUM = 2
+LOW = 3
+VERY_LOW = 4
+VIP = 5
+BUSINESS = 6
 
 RISK_LEVEL = (
-    (RISK_LEVEL_A, 'A'),
-    (RISK_LEVEL_E1, 'E1'),
-    (RISK_LEVEL_E2, 'E2'),
-    (RISK_LEVEL_F, 'F'),
+    (VERY_HIGH, 'Very High'),
+    (HIGH, 'High'),
+    (MEDIUM, 'Medium'),
+    (LOW, 'Low'),
+    (VERY_LOW, 'Very Low'),
+    (VIP, 'VIP'),
+    (BUSINESS, 'Business'),
 )
 
 ALLOWED_STATUSES = (

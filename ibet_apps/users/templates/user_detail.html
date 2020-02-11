@@ -33,7 +33,7 @@
         </div>
         <div class="row" style="margin-top:20px; min-height: 165px;">
             <div class="col-md-6" >
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <div class="col-md-3" style="padding-right:2%">
                         <div class="block-title"><span></span></div>
                         <div class="block-title"><span>TOTAL BALANCE</span></div>
                         <div class="fund-block">
@@ -42,7 +42,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <div class="col-md-3" style="padding-right:2%">
                         <div class="block-title"><span>MAIN</span></div>
                         <div class="block-title"><span>WALLET BALANCE</span></div>
                         <div class="fund-block">
@@ -51,7 +51,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <div class="col-md-3" style="padding-right:2%">
                         <div class="block-title"><span>AVAILAVLE FOR</span></div>
                         <div class="block-title"><span>WITHDRAWAL</span></div>
                         <div class="fund-block">
@@ -60,7 +60,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <!-- <div class="col-md-2" style="width: 20%; padding-right:5px">
                         <div class="block-title"><span>MIN/ MAX</span></div>
                         <div class="block-title"><span>WITHDRAW AMOUNT</span></div>
                         <div class="fund-block">
@@ -68,8 +68,8 @@
                                 NO LIMIT
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2" style="width: 20%;">
+                    </div> -->
+                    <div class="col-md-3" >
                         <div class="block-title"><span>&nbsp;</span></div>
                         <div class="block-title"><span>BONUS AMOUNT</span></div>
                         <div class="fund-block">
@@ -88,7 +88,7 @@
                         <div id="chart5" style="min-height: 135px; "></div>
                     </div>
                     <div class="col-md-9">
-                        <div class="row" id="walletData" style="margin-top: 10px;">
+                        <div class="row" id="walletData" style="margin-top: 10px; margin-left: 2%">
                         </div>
                     </div>
                 </div>
@@ -299,25 +299,34 @@
         </div>
         <div class="row" style="margin-top:15px;">
             <div class="col-md-6" >
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>&nbsp;</span></div>
-                    <div class="block-title"><span>MEMBER LEVEL</span></div>
+                    <div class="block-title"><span>Status</span></div>
                     <div class="life-time-value-block">
                         <div class="block-content">
-                            VIP
+                            {{ member_status }}
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
+                    <div class="block-title"><span>&nbsp;</span></div>
+                    <div class="block-title"><span>SEGMENT</span></div>
+                    <div class="life-time-value-block">
+                        <div class="block-content" id="segment_input">
+                            {{ segment }}    
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>&nbsp;</span></div>
                     <div class="block-title"><span>RISK LEVEL</span></div>
                     <div class="life-time-value-block">
-                        <div class="block-content" id="risk_level_input">
+                        <div class="block-content" id="risk_level_input" style="line-height: normal; padding-top:20px;">
                             {{ riskLevel }}    
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>WITHDRAWAL/</span></div>
                     <div class="block-title"><span>DEPOSIT</span></div>
                     <div class="life-time-value-block">
@@ -326,7 +335,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>&nbsp;</span></div>
                     <div class="block-title"><span>BONUS/ DEPOSIT</span></div>
                     <div class="life-time-value-block">
@@ -336,7 +345,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6" style="margin-top:12px;">
+            <!-- <div class="col-md-6" style="margin-top:6px;">
                 <div>
                     <div><span id="contribution-title">CONTRIBUTION PER PRODUCT</span></div>
                 </div>
@@ -347,6 +356,20 @@
                 <div class="col-md-10">
 
                 </div>
+            </div> -->
+            <div class="col-md-6">
+                <div class="block-title"><span>&nbsp;</span></div>
+                <div class="block-title" style="width: 35%;"><span>CONTRIBUTION PER PRODUCT</span></div>
+                <div class="product-loader"></div>
+                <div id="eachProduct" style="display: none;">
+                    <div class="col-md-3" style="padding-left: 0px;">
+                        <div id="chart6" style="min-height: 135px; "></div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row" id="productData" style="margin-top: 10px; margin-left: 2%">
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
@@ -356,11 +379,13 @@
             <div class="col-md-1" style="width: 12.55%; padding-right: 0px;">
                 <div class="live-time-value-text">TOTAL GGR</div>
                 <div class="active-block">
+                    <div class="account-detail">${{ total_ggr }}</div>
                 </div>
             </div>
             <div class="col-md-1" style="width: 12.55%; padding-right:0px;">
                 <div class="live-time-value-text">TOTAL NGR</div>
                 <div class="active-block">
+                    <div class="account-detail">${{ total_ngr }}</div>
                 </div>
             </div>
             <div class="col-md-1" style="width: 12.55%;">
@@ -417,7 +442,7 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Member ID</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.pk }}</span>
                         </div>
                     </div>
@@ -425,15 +450,39 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Username</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.username }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="memeber-detail-label">Status</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">{{ member_status }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="memeber-detail-label">Segment</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">{{ segment }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="memeber-detail-label">Risk level</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">{{ riskLevel }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Is affilate</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">
                                 {% if customuser.user_to_affiliate_time %}
                                 <a href="{% url 'xadmin:agent_detail' customuser.pk %}">Yes</a>
@@ -447,7 +496,7 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">First Name</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.first_name }}</span>
                         </div>
                     </div>
@@ -455,15 +504,23 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Last Name</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.last_name }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="memeber-detail-label">ID number</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">ID number</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Email</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.email }}</span>
                         </div>
                     </div>
@@ -471,7 +528,7 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Phone</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.phone }}</span>
                         </div>
                     </div>
@@ -479,7 +536,7 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Birthday</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.date_of_birth }}</span>
                         </div>
                     </div>
@@ -487,7 +544,7 @@
                         <div class="col-md-6">
                             <span class="memeber-detail-label">Address</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <div><span class="detail-info">{{ customuser.street_address_1 }}</span></div>
                             <div><span class="detail-info">{{ customuser.street_address_2 }}</span></div>
                             <div><span class="detail-info">{{ customuser.city }}</span></div>
@@ -530,28 +587,16 @@
                     <div class="user-info-block">
                         <div id="member-input-container">
                             <div>
-                                <div class="block-title">Time</div>
-                                {% if customuser.last_login_time %}
-                                    <div class="block-text">{{ customuser.last_login_time }}</div>
-                                {% else %}
-                                    <div class="block-text">None</div>
-                                {% endif %}
+                                <div class="block-title bold">Time</div>
+                                <div class="block-text">{{ userLoginObj.time|date:'F d, Y, H:i' }}</div>
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">Location</div>
-                                {% if customuser.id_location %}
-                                    <div class="block-text">{{ customuser.id_location }}</div>
-                                {% else %}
-                                    <div class="block-text">None</div>
-                                {% endif %}
+                            <div style="margin-top:20px;">
+                                <div class="block-title bold">Location</div>
+                                <div class="block-text" style="text-transform: capitalize;">{{ userLoginObj.location }}</div>
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">IP address</div>
-                                {% if userLastIpAddr.ip_addr %}
-                                    <div class="block-text">{{ userLastIpAddr.ip_addr }}</div>
-                                {% else %}
-                                    <div class="block-text">None</div>
-                                {% endif %}
+                            <div style="margin-top:25px;">
+                                <div class="block-title bold">IP address</div>
+                                <div class="block-text">{{ userLoginObj.ip_address }}</div>
                             </div>
                         </div>
                         <button class="popup-btn" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
@@ -562,23 +607,23 @@
                     <div class="user-info-block">
                         <div id="member-input-container">
                             <div>
-                                <div class="block-title">Time</div>
+                                <div class="block-title bold">Time</div>
                                 {% if lastDeposits.time %}
                                     <div class="block-text">{{ lastDeposits.time }}</div>
                                 {% else %}
                                     <div class="block-text">None</div>
                                 {% endif %}
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">Amount</div>
+                            <div style="margin-top:20px;">
+                                <div class="block-title bold">Amount</div>
                                 {% if lastDeposits.amount %}
                                     <div class="block-text">{{ lastDeposits.amount }}</div>
                                 {% else %}
                                     <div class="block-text">None</div>
                                 {% endif %}
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">Status</div>
+                            <div style="margin-top:25px;">
+                                <div class="block-title bold">Status</div>
                                 {% if lastDeposits.status %}
                                     <div class="block-text">{{ lastDeposits.status }}</div>
                                 {% else %}
@@ -594,28 +639,16 @@
                         <div class="user-info-block">
                             <div id="member-input-container">
                                 <div>
-                                    <div class="block-title">Time</div>
-                                    {% if lastWithdraws.time %}
-                                        <div class="block-text">{{ lastWithdraws.time }}</div>
-                                    {% else %}
-                                        <div class="block-text">None</div>
-                                    {% endif %}
+                                    <div class="block-title bold">Time</div>
+                                    <div class="block-text">{{ lastWithdraws.time }}</div>
                                 </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Amount</div>
-                                    {% if lastWithdraws.amount %}
-                                        <div class="block-text">{{ lastWithdraws.amount }}</div>
-                                    {% else %}
-                                        <div class="block-text">None</div>
-                                    {% endif %}
+                                <div style="margin-top:20px;">
+                                    <div class="block-title bold">Amount</div>
+                                    <div class="block-text">{{ lastWithdraws.amount }}</div>
                                 </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Status</div>
-                                    {% if lastWithdraws.status %}
-                                        <div class="block-text">{{ lastWithdraws.status }}</div>
-                                    {% else %}
-                                        <div class="block-text">None</div>
-                                    {% endif %}
+                                <div style="margin-top:25px;">
+                                    <div class="block-title bold">Status</div>
+                                    <div class="block-text">{{ lastWithdraws.status }}</div>
                                 </div>
                             </div>
                             <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraws }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
@@ -631,11 +664,11 @@
                     <div class="col-md-4">
                         <div style="margin-top:28px;">
                             <div class="block-title">Time</div>
-                            <div class="block-text">{{ customuser.time_of_registration }}</div>
+                            <div class="block-text">{{ customuser.time_of_registration|date:'F d, Y, H:i' }}</div>
                         </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">Verification time</div>
-                            <div class="block-text">{{ customuser.verfication_time }}</div>
+                            <div class="block-text">{{ customuser.verification_time|date:'F d, Y, H:i' }}</div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -649,10 +682,14 @@
                         </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">First deposit</div>
-                            <div class="block-text">{{ customuser.ftd_time }}</div>
+                            <div class="block-text">{{ customuser.ftd_time|date:'F d, Y, H:i' }}</div>
                         </div>
                     </div>
                     <div class="col-md-4">
+                        <div style="margin-top:28px;">
+                            <div class="block-title">IP address</div>
+                            <div class="block-text">{{ create_account_ip }}</div>
+                        </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">Source</div>
                             <div class="block-text">{{ customuser.get_user_attribute_display }}</div>
@@ -2376,6 +2413,7 @@ $(document).ready(function() {
 
     var user_id = $('#hidden_user_id').val();
     getWalletAmount(user_id);
+    getProductAmount(user_id);
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -3317,6 +3355,11 @@ function renderChart(data) {
 
 
 function submitAdjustment() {
+
+    if (!confirm("Are you sure you want to make a adjustment!")) {
+        return;
+    }
+
     var affiliate = false;
     var reason = -1;
     var debitOrCredit = "";
@@ -3396,14 +3439,20 @@ function postAdjustmentRequest(data) {
 
 
 function submitTransfer() {
-    var user_id = $('#hidden_user_id').val();
+
     var transfer_to = $('#transfer_to').val();
     var transfer_from = $('#transfer_from').val();
+    if (!confirm("Are you sure you want to make a transfer from " + transfer_to + " wallet to " + transfer_from + " wallet")) {
+        return;
+    }
+
+    var user_id = $('#hidden_user_id').val();
+    
     var transfer_amount = $('#transfer_amount').val();
     var message_note = $('#transfer_message_note').val();
     var messageSubject = $("#transfer_message_subject").val();
     var messageToPlayer = $("#transfer_message_to_player").val();
-    var notifyPlayer = false;
+     var notifyPlayer = false;
     if($('input[name="transfer-notify-player"]').is(":checked")){
         notifyPlayer = true;
     } 
@@ -3417,7 +3466,7 @@ function submitTransfer() {
         'message_to_player': messageToPlayer,
         'notify_player': notifyPlayer
     }
-    console.log(transfer_to, transfer_from, transfer_amount);
+    // console.log(transfer_to, transfer_from, transfer_amount);
     postSubmitTransfer(data);
 }
 
@@ -3438,6 +3487,67 @@ function postSubmitTransfer(data) {
         }
     });
 }
+
+
+
+
+
+// product data
+
+function getProductAmount(user_id) {
+
+    // setTimeout(showPage, 6000);
+    
+    $.ajax({
+        type:'GET',
+        url:"{% url 'product_contribution' %}",
+        data: {
+            'user_id': user_id,
+        },
+        success:function(data) {
+            console.log(data);
+            $('.product-loader').css('display', 'none');
+            $('#eachProduct').css('display', 'block');
+            renderProductChart(data);
+        },
+        error: function() {
+            showWrong();
+        }
+    });
+
+}
+
+function showWrong() {
+    $('#chart6').text("There is something wrong");
+    $('#chart6').css('width', '300px');
+    $('.product-loader').css('display', 'none');
+    $('#eachProduct').css('display', 'block');
+}
+
+
+function renderProductChart(data) {
+
+    var data1 = {
+        series: [{value: data['sport_percent'],  className: "sport"}, {value: data['games_percent'],  className: "games"}, {value: data['live_casino_percent'] , className: "liveCasino"}, {value: data['lottery_percent'],  className: "lottery"}]
+        };
+
+        var option1 = {
+          width: 130,
+          height: 130,
+        showLabel: false
+        }
+
+        new Chartist.Pie('#chart6', data1, option1);
+        var content = '';
+        content += '<div class="col-md-2" style="width: 20%; padding-left:0px"><div><span class="dot sport"></span>Sport</div><div><span class="dot games"></span>Games</div></div><div class="col-md-2" style="width: 20%; padding-left:0px">';
+        content += '<div>' + data['sport_value'] + ' (' + data['sport_percent']  + '%)' + '</div><div>'  + data['games'] + ' (' + data['games_percent']  + '%)' + '</div></div>';
+        
+        content += '<div class="col-md-3" style="width: 26%; padding-left:0px"><div><span class="dot liveCasino"></span>Live Casino</div><div><span class="dot lottery"></span>Lottery</div></div><div class="col-md-4" style="width: 33%; padding-left:0px">';
+        content += '<div>' + data['live_casino'] + ' (' + data['live_casino_percent']  + '%)' + '</div><div>'  + data['lottery'] + ' (' + data['lottery_percent']  + '%)' + '</div></div>';
+
+        $("#productData").empty();
+        $("#productData").append(content);
+    }
 
 
 

@@ -1,7 +1,7 @@
 from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, F
 from datetime import timedelta
 from django.db import transaction
 import boto3
@@ -51,10 +51,14 @@ class UserDetailView(CommAdminView):
         customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         context['customuser'] = customUser
         context['bonus_amount'] = getUserBonus(customUser) if getUserBonus(customUser) else 0
-        context['can_withdraw_balance'] = customUser.main_wallet - customUser.bonus_wallet
+        context['can_withdraw_balance'] = customUser.main_wallet - customUser.bonus_wallet if  customUser.main_wallet - customUser.bonus_wallet > 0 else 0
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
-        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
+        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time')[:20]
         context['trans_wallet'] = GameProvider.objects.filter(is_transfer_wallet=True)
+        context['total_ngr'] = calculateNGR(customUser, None, None, None)
+        context['total_ggr'] = calculateGGR(customUser, None, None, None)
+        context['segment'] = customUser.vip_level.level if  customUser.vip_level else None
+        context['member_status'] = customUser.get_member_status_display()
         transaction = Transaction.objects.filter(user_id=customUser)
         context['block'] = False
         temporaryBlockRes = {}
@@ -304,10 +308,19 @@ class UserDetailView(CommAdminView):
             context['userBetHistory'] = bet_list
 
 
-        userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
+        userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+        login_json_obj = userLastLogin.ip_location
+        # print(login_json_obj)
+        context['userLoginObj'] = {
+            'time': userLastLogin.created_time if userLastLogin else "None",
+            'location': login_json_obj['region'] + ", " + login_json_obj['country'] if login_json_obj else "None",
+            'ip_address': userLastLogin.ip_addr if userLastLogin else "None"
+        }
         context['userLastIpAddr'] = userLastLogin
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
         context['activeTime'] = GameBet.objects.filter(user=customUser, amount_wagered__gte=0).count()
+        create_account_ip =  UserAction.objects.filter(user=customUser, event_type=EVENT_CHOICES_REGISTER)
+        context['create_account_ip'] = create_account_ip.order_by('-created_time').ip_addr if len(create_account_ip) > 0 else ""
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
@@ -360,7 +373,7 @@ class UserDetailView(CommAdminView):
                     time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except:
                     time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
+                time = time.strftime("%B %d, %Y, %H:%M")
                 depositDict = {
                     'transactionId': str(deposit['pk']),
                     'category': str(transTypeMap[deposit['fields']['transaction_type']]),
@@ -378,9 +391,13 @@ class UserDetailView(CommAdminView):
                     'method': deposit['fields']['method'],
                 }
                 lastDeposit.append(depositDict)
-            context['lastDeposits'] = lastDeposit[:1]
+            context['lastDeposits'] = lastDeposit[:1][0]
         else:
-            context['lastDeposits'] = {}
+            context['lastDeposits'] = {
+                'time': "",
+                'amount': "",
+                'status': "",
+            }
 
         withdraws = withdraw_trans.order_by('-request_time').first() 
         if withdraws:
@@ -412,7 +429,11 @@ class UserDetailView(CommAdminView):
                 lastWithdraw.append(withdrawDict)
             context['lastWithdraws'] = lastWithdraw[0]
         else:
-            context['lastWithdraws'] = {}
+            context['lastWithdraws'] = {
+                'time': "",
+                'amount': "",
+                'status': "",
+            }
 
 
         activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
@@ -1569,6 +1590,59 @@ class UserTransfer(View):
                 send_email(message_subject, message_to_player, customUser.username)
             
             response = {}
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))
+            return HttpResponse(status=400)
+
+
+
+class ProductContribution(View):
+
+    def get(self, request, *args, **kwargs):
+
+        user_id = request.GET.get('user_id')
+        customUser = CustomUser.objects.get(pk=user_id)
+        # print(user_id, customUser)
+        
+        try:
+            sport_query = Q(user_name=customUser.username) & (Q(category__name="Sports") | Q(category__parent_id__name="Sports"))
+            sport_contribution = GameBet.objects.filter(sport_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(sport_contribution)
+
+            game_query = Q(user_name=customUser.username) & (Q(category__name="Games") | Q(category__parent_id__name="Games"))
+            games_contribution = GameBet.objects.filter(game_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(games_contribution)
+
+            live_casino_query = Q(user_name=customUser.username) & (Q(category__name="Live Casino") | Q(category__parent_id__name="Live Casino"))
+            live_casino_contribution = GameBet.objects.filter(live_casino_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(live_casino_contribution)
+
+            lottery_query = Q(user_name=customUser.username) & (Q(category__name="Lotteries") | Q(category__parent_id__name="Lotteries"))
+            lottery_contribution = GameBet.objects.filter(lottery_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(lottery_contribution)
+            
+            
+            totalAmount = 0
+            if sport_contribution is not None:
+                totalAmount += sport_contribution
+            if games_contribution is not None:
+                totalAmount += games_contribution
+            if live_casino_contribution is not None:
+                totalAmount += live_casino_contribution
+            if lottery_contribution is not None:
+                totalAmount += lottery_contribution
+
+            response = {
+                'sport_value': "%.2f" % sport_contribution if sport_contribution else 0,
+                'sport_percent': (round(100 * (sport_contribution / totalAmount))) if sport_contribution and sport_contribution > 0 else 0,
+                'games': "%.2f" % games_contribution if games_contribution else 0,
+                'games_percent': (round(100 * (games_contribution / totalAmount))) if games_contribution and games_contribution > 0 else 0,
+                'live_casino': "%.2f" % live_casino_contribution if live_casino_contribution else 0,
+                'live_casino_percent': (round(100 * (live_casino_contribution / totalAmount))) if live_casino_contribution and live_casino_contribution > 0 else 0,
+                'lottery': "%.2f" % lottery_contribution if lottery_contribution else 0,
+                'lottery_percent': (round(100 * (lottery_contribution / totalAmount))) if lottery_contribution and lottery_contribution > 0 else 0,
+            }
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
         except Exception as e:
             logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))

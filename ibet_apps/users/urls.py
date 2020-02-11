@@ -91,6 +91,7 @@ urlpatterns += [
     path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info"),
 
     path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount"),
+    path('api/get-product-contribution/', ProductContribution.as_view(), name="product_contribution"),
 
     # admin API
     path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
