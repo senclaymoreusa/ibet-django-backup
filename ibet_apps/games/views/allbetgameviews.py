@@ -95,7 +95,7 @@ class EncryptionView(View):
         """
         try:
             secure_random_number = secrets.randbits(32) # 32-bit random integer
-            query_string = "random=" + str(secure_random_number) + "&client=kevin" + "&password=a"
+            query_string = "random=" + str(secure_random_number) + "&client=kevin" + "&password=test_pw_123"
 
             data_string = self.threeDES(query_string)
             sign_string = self.md5(data_string)
