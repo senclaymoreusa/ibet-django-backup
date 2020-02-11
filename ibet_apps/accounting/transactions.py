@@ -205,6 +205,34 @@ def save_transaction(request):
                 'transaction_id': None
             })
 
+def save_momopay(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user = CustomUser.objects.get(pk=request.user.pk)
+            txn_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+            txn = Transaction(
+                transaction_id=txn_id,
+                user_id=user,
+                amount=data['amount'],
+                currency=7,
+                method="Momo Pay",
+                transaction_type=data['type'],
+                channel=12, # 11 = LBT
+                status=2
+            )
+            txn.save()
+            return JsonResponse({
+                'success': True,
+                'transaction_id': txn_id
+            })
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'transaction_id': None
+            })
+
 def get_transaction_by_id(request):
     if request.method == "GET":
         transaction_id = request.GET.get("transaction_id")
