@@ -265,7 +265,7 @@ def getTransactionAmount(user, start_time, end_time, type, product):
 
     trans = Transaction.objects.filter(trans_filter)
     count = trans.count()
-    amount = trans.aggregate(Sum('amount'))['amount__sum']
+    amount = trans.aggregate(Sum('amount'))['amount__sum'] or 0
 
     return count, amount
 

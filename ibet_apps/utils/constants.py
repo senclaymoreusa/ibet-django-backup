@@ -77,6 +77,7 @@ FGATE       =   8
 SCRATCHCARD =   9
 PAYMENTIQ   =   10
 LBT         =   11
+MOMOPAY     =   12
 
 CHANNEL_CHOICES = (
     (HELP2PAY, 'Help2Pay'),
@@ -90,7 +91,8 @@ CHANNEL_CHOICES = (
     (FGATE, 'Fgate'),
     (SCRATCHCARD, 'ScratchCard'),
     (PAYMENTIQ, 'PaymentIQ'),
-    (LBT, 'Local Bank Transfer')
+    (LBT, 'Local Bank Transfer'),
+    (MOMOPAY, 'MoMo Pay')
 )
 
 CURRENCY_CNY = 0

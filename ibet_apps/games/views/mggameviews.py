@@ -463,8 +463,13 @@ class MGgame(APIView):
                 timestamp = dd['pkt']['methodcall']['@timestamp']
                 seq = dd['pkt']['methodcall']['call']['@seq']
                 token = dd['pkt']['methodcall']['call']['@token']
-        
-                user = Token.objects.get(key=token).user
+                offline = dd['pkt']['methodcall']['call']['@offline']
+
+                # add offline token.
+                if offline == "true":
+                    user = CustomUser.objects.get(username=token)
+                else:
+                    user = Token.objects.get(key=token).user
                 
                 response = {
                     "pkt" : {
