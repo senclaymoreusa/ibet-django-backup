@@ -11,6 +11,7 @@ REDIS_KEY_PREFIX_EA_BET_HISTORY = 'ea_last_game_file:'
 
 REDIS_KEY_PREFIX_PT_BET_SET = 'pt_starttime: game_bet'
 REDIS_KEY_PREFIX_KY_BET_DETAILS = 'ky_bets:'
+REDIS_KEY_PREFIX_GPI_BET_DETAILS = 'gpi_bets:'
 
 
 
@@ -38,6 +39,9 @@ def getPTStarttimeKey():
 
 def getKYBetDetailsRedisKey():
     return REDIS_KEY_PREFIX_KY_BET_DETAILS
+
+def getGPIBetDetailsRedisKey():
+    return REDIS_KEY_PREFIX_GPI_BET_DETAILS
 
 
 class RedisHelper():
@@ -124,4 +128,10 @@ class RedisHelper():
         ky_bet_details = getKYBetDetailsRedisKey()
         return self.r.get(ky_bet_details)
 
+    def set_gpi_bets_starttime(self, starttime):
+        gpi_bet_starttime = getGPIBetDetailsRedisKey()
+        return self.r.get(gpi_bet_details, starttime)
 
+    def get_gpi_bets_starttime(self):
+        gpi_bet_starttime = getGPIBetDetailsRedisKey()
+        return self.r.get(gpi_bet_details)

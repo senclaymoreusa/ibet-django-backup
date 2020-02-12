@@ -1243,7 +1243,8 @@ class GenerateActivationCode(APIView):
         try:
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
-                phone = data['phone']
+                # phone = data['phone']
+                phone = user[0].phone
                 time = timezone.now() - datetime.timedelta(days=1)
                 event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
                 count = UserAction.objects.filter(event_filter).count()
@@ -1304,6 +1305,7 @@ class GenerateActivationCode(APIView):
                 user.update(activation_code=random_num)
                 send_sms(str(random_num), user[0].pk)
         except Exception as e:
+            print(repr(e))
             logger.error("Error Generating Activation Code: {}".format(str(e)))
             return Response(status=status.HTTP_400_BAD_REQUEST)
 

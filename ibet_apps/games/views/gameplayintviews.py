@@ -33,6 +33,11 @@ import xmltodict
 from decimal import Decimal
 from datetime import date
 
+# from background_task import background
+import redis
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
+
 
 logger = logging.getLogger('django')
 
@@ -41,8 +46,8 @@ def getGPIBalance(user):
         req_param = {}
         req_param["merch_id"] = GPI_MERCH_ID
         req_param["merch_pwd"] = GPI_MERCH_PWD
-        req_param["cust_id"] = user.username
-        req_param["cust_name"] = user.username
+        req_param["cust_id"] = user.pk
+        # req_param["cust_name"] = user.username
         req_param["currency"] = transCurrency(user)
 
         req = urllib.parse.urlencode(req_param)
@@ -75,7 +80,7 @@ def gpiTransfer(user, amount, wallet, method):
         req_param = {}
         req_param["merch_id"] = GPI_MERCH_ID
         req_param["merch_pwd"] = GPI_MERCH_PWD
-        req_param["cust_id"] = user.username
+        req_param["cust_id"] = user.pk
         req_param["currency"] = currency
         req_param["amount"] = amount
         req_param["trx_id"] = trans_id
@@ -582,29 +587,65 @@ class LiveCasinoCreateUserAPI(View):
 class GetNewBetDetailAPI(View):
     def get(self, request, *kw, **args):
         try:
-            # data = json.loads(request.body)
-            # username = data['username']
+            # r = RedisClient().connect()
+            # redis = RedisHelper()
 
-            date_from = request.GET.get("date_from") # yyyy-MM-dd HH:mm:ss
-            date_to = request.GET.get("date_to")
+            # start_time = redis.get_ky_bets_timestamp
+
+            # timestamp = get_timestamp()
+            # if start_time is None:
+            #     start_time = timestamp - 300000 # five minutes before now
+
+            # # Query Bet Order
+            # if type(start_time) == bytes:
+            #     start_time = start_time.decode("utf-8")
+
+            # date_from = request.GET.get("date_from") # yyyy-MM-dd HH:mm:ss
+            # date_to = request.GET.get("date_to")
             # date_from = datetime.datetime.now()
             # date_to = datetime.datetime.now()
 
-            req_param = {}
-            req_param["merch_id"] = GPI_MERCH_ID
-            req_param["merch_pwd"] = GPI_MERCH_PWD
-            req_param["date_from"] = date_from
+            # req_param = {}
+            # req_param["merch_id"] = GPI_MERCH_ID
+            # req_param["merch_pwd"] = GPI_MERCH_PWD
+            # req_param["date_from"] = date_from
+            # req_param["date_to"] = date_to
             # req_param["cust_id"] = user.username
             # req_param["cust_name"] = user.username
             # req_param["currency"] = transCurrency(user)
 
-            req = urllib.parse.urlencode(req_param)
+            # req = urllib.parse.urlencode(req_param)
     
-            url = GPI_LIVE_CASINO_URL + 'newBetDetail.html' + '?' + req
+            # url = GPI_LIVE_CASINO_URL + 'newBetDetail.html' + '?' + req
 
-            res = requests.get(url)
+            # res = requests.get(url)
 
-            res = xmltodict.parse(res.text)
+            # res = xmltodict.parse(res.text)
+
+            res = request.get(data)
+
+            if res["resp"]["error_code"] == "0":
+                res = res["resp"]["items"]
+
+                provider = GameProvider.objects.get(provider_name=GPI_PROVIDER)
+                category = Category.objects.filter(name='Table Games')
+
+                for data in res["item"]:
+                    gamebet = GameBet(provider=provider,
+                            category=category[0],
+                            user=user,
+                            user_name=user.username,
+                            amount_wagered=decimal.Decimal(cell_score[i]),
+                            amount_won=decimal.Decimal(win_amount),
+                            outcome=outcome,
+                            transaction_id=trans_id,
+                            market=ibetCN,
+                            ref_no=game_id[i],
+                            bet_time=bet_time,
+                            resolved_time=resolved_time,
+                            other_data={}
+                        )
+                return HttpResponse(json.dumps(res), content_type="json/application", status=200)
 
             return HttpResponse(json.dumps(res), content_type="json/application", status=200)
 
