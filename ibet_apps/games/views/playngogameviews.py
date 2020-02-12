@@ -83,12 +83,8 @@ def png_authenticate(data):
 
         try:
             existing_ticket = PNGTicket.objects.get(png_ticket=session_token)
-            # user_obj = Token.objects.get(key=session_token).user
             user_obj = existing_ticket.user_obj
-            # print("user_obj.username: " + user_obj.username)
 
-            birthday_array = str(user_obj.date_of_birth).split("/")
-            png_birthday_formatted = birthday_array[2] + "-" + birthday_array[0] + "-" + birthday_array[1]
             user_registration_time = str(user_obj.time_of_registration).split(" ")[0]
 
             external_id = user_obj.username
@@ -96,7 +92,7 @@ def png_authenticate(data):
             status_message = "ok"
             user_currency = CURRENCY_CHOICES[user_obj.currency][1]
             country = user_obj.country
-            birthdate = png_birthday_formatted
+            birthdate = user_obj.date_of_birth
             registration = user_registration_time
             res_language = user_obj.language
             affiliate_id = "" # Placeholder
@@ -151,7 +147,21 @@ def png_authenticate(data):
 
         except Exception as e:
             logger.critical("PLAY'nGO Authentication Error: " + str(e))
-            return HttpResponse(str(e))
+
+            # Invalid session token
+            res_dict = {
+                "authenticate": {
+                    "statusCode": {
+                        "#text": str(PNG_STATUS_WRONGUSERNAMEPASSWORD)
+                    },
+                    "statusMessage": {
+                        "#text": "Wrong Username or Password"
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
+            return HttpResponse(res_msg, content_type='text/xml')
 
     except:
         # Malformed xml, missing tags, or error parsing data
@@ -245,9 +255,26 @@ def png_reserve(data):
         status_code = PNG_STATUS_OK
         bet_already_placed = False
 
+        if checkUserBlock(user_obj):
+            logger.error("PLAY'nGO Reserve Error: Blocked users are not allowed to place bets.")
+
+            res_dict = {
+                "reserve": {
+                    "statusCode": {
+                        "#text": str(PNG_STATUS_ACCOUNTDISABLED)
+                    },
+                    "statusMessage": {
+                        "#text": "Account Disabled"
+                    },
+                }
+            }
+
+            res_msg = xmltodict.unparse(res_dict, pretty=True, full_document=False)
+            return HttpResponse(res_msg, content_type='text/xml')
+
         # Idempotence - check if bet with transaction_id was already successfully placed.
         try:
-            existing_bet = GameBet.objects.get(ref_no=transaction_id)
+            existing_bet = GameBet.objects.get(ref_no=transaction_id, provider=PROVIDER)
             logger.error("PLAY'nGO: Bet with transaction_id already exists.")
             bet_already_placed = True
         except ObjectDoesNotExist:
@@ -354,7 +381,7 @@ def png_cancel_reserve(data):
         # Attempt to look up previous bet and cancel.
         try:
             with transaction.atomic():
-                existing_bet = GameBet.objects.get(ref_no=transaction_id) # Provider will not send multiple CancelReserve requests with same id.
+                existing_bet = GameBet.objects.get(ref_no=transaction_id, provider=PROVIDER) # Provider will not send multiple CancelReserve requests with same id.
                 
                 user_balance = user_obj.main_wallet
                 amount_to_refund = existing_bet.amount_wagered
@@ -452,7 +479,7 @@ def png_release(data):
 
         # Idempotence - check if release with transaction_id was already successfully resolved.
         try:
-            existing_release = GameBet.objects.get(ref_no=transaction_id)
+            existing_release = GameBet.objects.get(ref_no=transaction_id, provider=PROVIDER)
             logger.error("PLAY'nGO Release Error: Release with transaction_id already exists.")
             release_already_resolved = True
         except ObjectDoesNotExist:

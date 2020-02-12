@@ -5,6 +5,7 @@ from rest_framework import routers
 import games.views.eagameviews as eagameviews
 import games.views.inplaygameviews as inplayviews
 import games.views.betsoftviews as betsoftviews
+import games.views.gameplayintviews as gameplayintviews
 import games.views.kygameviews as kygameviews
 import games.views.playngogameviews as playngogameviews
 import games.views.allbetgameviews as allbetgameviews
@@ -34,6 +35,7 @@ urlpatterns = [
     # path('api/testview/', csrf_exempt(eagameviews.TestView.as_view()), name="test_View"),
     path('api/bets/getall', csrf_exempt(bets.getBetHistory), name="get_bet_history"),
     path('api/bets/getprovandcats', csrf_exempt(bets.getProvidersAndCategories), name="get_prov_and_cats"),
+    path('api/bets/getbet', bets.getBetById, name="get_bet_by_id"),
     
     # Inplay Matrix
     path('api/inplay/login/', csrf_exempt(inplayviews.InplayLoginAPI.as_view()), name="inplay_login"),
@@ -87,8 +89,18 @@ urlpatterns = [
     #mg game
     path('api/mg/', mggameviews.MGgame.as_view(), name = 'mg_game'),
    
+    # gpi gaming
+    # path('api/gpi/login/', csrf_exempt(gameplayintviews.LoginAPI.as_view()), name="gpi_login"),
+    path('api/gpi/createuser/', csrf_exempt(gameplayintviews.CreateUserAPI.as_view()), name="gpi_createuser"),
+    path('api/gpi/validation/', gameplayintviews.ValidateUserAPI.as_view(), name="gpi_validation"),
+    path('api/gpi/getbalance/', gameplayintviews.GetBalanceAPI.as_view(), name="gpi_getbalance"),
+    path('api/gpi/debit/', gameplayintviews.DebitAPI.as_view(), name="gpi_debit"),
+    path('api/gpi/credit/', gameplayintviews.CreditAPI.as_view(), name="gpi_credit"),
+    path('api/gpi/check/', gameplayintviews.CheckTransactionAPI.as_view(), name="gpi_check"),
+    path('api/gpi/online_user/', gameplayintviews.GetOnlineUserAPI.as_view(), name="online_user"),
+    path('api/gpi/livecasino_createuser/', csrf_exempt(gameplayintviews.LiveCasinoCreateUserAPI.as_view()), name="gpi_livecasino_createuser"),
+    path('api/gpi/get_bet_detail/', gameplayintviews.GetNewBetDetailAPI.as_view(), name="gpi_get_bet_detail"),
     # playtech
-
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),
     path('api/pt/transfer_test', ptgameviews.PTTransferTest.as_view(), name = 'pt_transfer'),
     path('api/pt/get_record', ptgameviews.GetBetHistory.as_view(), name = 'pt_get_record'),
@@ -106,7 +118,7 @@ urlpatterns = [
     path('api/onebook/check_member_online', csrf_exempt(onebookviews.CheckMemberOnline), name="Check_Member_Online"),
     path('api/onebook/get_bet_detail', csrf_exempt(onebookviews.getBetDetail), name="Get_Bet_Detail"),
     path('api/onebook/test', onebookviews.test.as_view(), name="onebook_test"),
-    
+    path('api/onebook/get_team_name', onebookviews.getTeamName, name="onebook_getTeamName"),
     
     # bti server-to-server endpoints
     path('api/bti/ValidateToken', bti.ValidateToken.as_view(), name="bti_validate_token"),
@@ -146,6 +158,7 @@ urlpatterns = [
     path('api/gb/walletsettle/', gbsports.WalletSettleAPIURL.as_view(), name='wallet_settle'),
     path('api/gb/generategameurl/', gbsports.GenerateGameURL.as_view(), name='generate_game_url'),
     path('api/gb/generatefakeusergameurl/', gbsports.GenerateFakeUserGameURL.as_view(), name='generate_fake_user_game_url'),
+    path('api/gb/getSportTeamInfo', gbsports.getSportTeamInfo, name='get_Sport_Team_Info'),
 
     # QT
     path('api/qt/accounts/<str:playerId>/session', qtgameviews.VerifySession.as_view(), name="verify_session"),

@@ -77,6 +77,7 @@ FGATE       =   8
 SCRATCHCARD =   9
 PAYMENTIQ   =   10
 LBT         =   11
+MOMOPAY     =   12
 
 CHANNEL_CHOICES = (
     (HELP2PAY, 'Help2Pay'),
@@ -90,7 +91,8 @@ CHANNEL_CHOICES = (
     (FGATE, 'Fgate'),
     (SCRATCHCARD, 'ScratchCard'),
     (PAYMENTIQ, 'PaymentIQ'),
-    (LBT, 'Local Bank Transfer')
+    (LBT, 'Local Bank Transfer'),
+    (MOMOPAY, 'MoMo Pay')
 )
 
 CURRENCY_CNY = 0
@@ -127,11 +129,11 @@ CURRENCY_CHOICES = (
     (CURRENCY_TTC, 'TTC')
 )
 
-TRAN_SUCCESS_TYPE = 0  # deposit / withdraw
+TRAN_SUCCESS_TYPE = 0  # deposit / withdraw / bonus / adjustment
 TRAN_FAIL_TYPE = 1  # deposit / withdraw
 TRAN_CREATE_TYPE = 2  # deposit / withdraw
 TRAN_PENDING_TYPE = 3  # deposit / withdraw
-TRAN_APPROVED_TYPE = 4  # not being used 
+TRAN_APPROVED_TYPE = 4
 TRAN_CANCEL_TYPE = 5  # deposit / withdraw
 TRAN_COMPLETED_TYPE = 6
 TRAN_RESEND_TYPE = 7
@@ -444,6 +446,11 @@ RISK_LEVEL = (
     (RISK_LEVEL_F, 'F'),
 )
 
+ALLOWED_STATUSES = (
+    (1, "ALL"),
+    (2, "NORMAL")
+)
+
 INTERVAL_PER_DAY = 0
 INTERVAL_PER_WEEK = 1
 INTERVAL_PER_MONTH = 2
@@ -736,6 +743,7 @@ if "prod" in os.getenv("ENV"):  # fetch prod credentials from s3
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["PRODUCTION"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["PRODUCTION"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["PRODUCTION"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["PRODUCTION"]["FTP_USERNAME"]
@@ -768,6 +776,7 @@ elif "dev" in os.getenv("ENV"):
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["SANDBOX"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
@@ -792,7 +801,7 @@ elif "dev" in os.getenv("ENV"):
     GDCASINO_NAMESPACE = keys["GD_CASINO"]["STAGING"]["NAMESPACE"]
     
 else:
-    API_DOMAIN = "http://cf61d044.ngrok.io/"
+    API_DOMAIN = "http://339378af.ngrok.io/"
     HELP2PAY_SECURITY_THB = keys["HELP2PAY"]["SANDBOX"]["TH"]
     HELP2PAY_SECURITY_VND = keys["HELP2PAY"]["SANDBOX"]["VN"]
     HELP2PAY_URL = "http://api.besthappylife.biz/MerchantTransfer"
@@ -800,6 +809,7 @@ else:
     HELP2PAY_MERCHANT_VND = "M0514"
     HELP2PAY_CONFIRM_PATH = "accounting/api/help2pay/deposit_result"
     HELP2PAY_SUCCESS_PATH = "accounting/api/help2pay/deposit_success"
+    EA_DOMAIN = keys["EAGAME"]["SANDBOX"]["DOMAIN"]
     EA_KEY = keys["EAGAME"]["SANDBOX"]["KEY"]
     EA_FTP_ADDR = keys["EAGAME"]["SANDBOX"]["FTP_ADDR"]
     EA_FTP_USERNAME = keys["EAGAME"]["SANDBOX"]["FTP_USERNAME"]
@@ -1589,6 +1599,12 @@ KY_MD5_KEY = keys["KAIYUAN"]["MD5KEY"]
 KY_API_URL = keys["KAIYUAN"]["KY_API_URL"]
 KY_RECORD_URL = keys["KAIYUAN"]["KY_RECORD_URL"]
 
+# Game Play Int
+GPI_MERCH_ID = keys["GPI"]["MERCH_ID"]
+GPI_MERCH_PWD = keys["GPI"]["MERCH_PWD"]
+GPI_URL = keys["GPI"]["GPI_URL"]
+GPI_LIVE_CASINO_URL = keys["GPI"]["GPI_LIVE_CASINO_URL"]
+
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
 ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
@@ -1601,6 +1617,7 @@ ONEBOOK_MAXTRANSFER = keys["ONEBOOK"]["MAXTRANSFER"]
 ONEBOOK_MINTRANSFER = keys["ONEBOOK"]["MINTRANSFER"]
 ONEBOOK_API_URL = keys["ONEBOOK"]["API_URL"]
 ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
+ONEBOOK_MOBILE_IFRAME_URL = keys["ONEBOOK"]["MOBILE_IFRAME_URL"]
 ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
 ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
 
@@ -1618,9 +1635,12 @@ GB_PROVIDER = keys["GB"]["PROVIDER"]
 GB_URL = keys["GB"]["URL"]
 GB_API_URL = keys["GB"]["API_URL"]
 GB_SPORT_URL = keys["GB"]["SPORT_URL"]
+GB_MOBILE_SPORT_URL = keys["GB"]["MOBILE_SPORT_URL"]
 GB_OTHER_URL = keys["GB"]["OTHER_URL"]
+GB_MOBILE_OTHER_URL = keys["GB"]["MOBILE_OTHER_URL"]
 GB_GENERALKEY = keys["GB"]["GeneralKey"]
 GB_SECRETKEY = keys["GB"]["SecretKey"]
+GB_CLIENT_API_URL = keys["GB"]["CLIENT_API_URL"]
 
 
 # QT
@@ -1653,6 +1673,11 @@ AG_DM = keys["AG"]["DM"]
 AG_FTP_USERNAME = keys["AG"]["FTP_USERNAME"]
 AG_FTP_PASSWORD = keys["AG"]["FTP_PASSWORD"]
 AG_FTP = keys["AG"]["FTP"]
+AG_TRANSFER_URL = "https://ibet-web-apdev.claymoreasia.com/p/fortune-center/transfer"
+AG_REGIS_URL = "https://ibet-web-apdev.claymoreasia.com/register"
+AG_EXIST_URL = "https://ibet-web-apdev.claymoreasia.com/live_casino"
+AG_CS_URL = "https://www.letou.com/cn/chat"
+
 #IMES
 IMES_PROVIDER = "IMES"
 

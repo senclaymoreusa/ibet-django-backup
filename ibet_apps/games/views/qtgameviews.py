@@ -99,6 +99,7 @@ class GetBalance(APIView):
     """
 
     def get(self, request, *args, **kwargs):
+        http_session = request.META.get('HTTP_WALLET_SESSION')
         pass_key = request.META.get('HTTP_PASS_KEY')
         username = self.kwargs.get('playerId')
         status_code = 500
@@ -111,12 +112,27 @@ class GetBalance(APIView):
             message = "The given pass-key is incorrect."
             logger.info("Error given pass key from QT wallet!")
         else:
+            prov = GameProvider.objects.get(provider_name="QTech")
+            cat = Category.objects.get(name='Games')
+            
+            
             try:
                 user = CustomUser.objects.get(username=username)
+                
+                try: 
+                    qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+                    if not qt_session.valid:
+                        message = 'Expired (wallet) session being used for getting balance!'
+                        logger.info(message) 
+                    
+                except Exception as e:
+                    message = 'Player (wallet) session missing but still used for getting balance!'
+                    logger.info(message) 
+                
+                
                 status_code = 200
                 n_float = int(user.main_wallet * 100) / 100.0
                 bal = Decimal(n_float)
-                
                 response = {
                     'balance': round(bal),
                     'currency': CURRENCY_CHOICES[user.currency][1],
@@ -127,7 +143,7 @@ class GetBalance(APIView):
             except Exception as e:
                 status_code = 400
                 code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
-                message = "General error. If request could not be processed."
+                message = "General error. Request could not be processed."
                 logger.error("Error getting user " + str(e))
 
         response = {
@@ -331,6 +347,7 @@ class ProcessTransactions(APIView):
             status_code = 400
             message = 'PLAYER_NOT_FOUND'
             logger.error(message) 
+            print(message)
             
             response = {
                 "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
@@ -338,9 +355,36 @@ class ProcessTransactions(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            #
+            # try to find if the txnId exists
+            #
+            record = GameBet.objects.filter(   provider=prov,
+                                               category=cat,
+                                               user=user,
+                                               user_name = user.username,
+                                               currency=user.currency,
+                                               market=ibetCN,
+                                               ref_no=txnId
+                                               )
             
-        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
+            
+            response = {
+                'balance': round(bal),
+                "referenceId": record.transaction_id
+            }
+            logger.info("ref_no, {}, is an idempotent transaction".format(txnId))
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
+        except:
+            logger.info("ref_no, {}, is a new transaction".format(txnId))
                 
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+        
         if transType == "DEBIT":
             bal = user.main_wallet - amount
             
@@ -488,7 +532,6 @@ class ProcessRollback(APIView):
             playerId = body['playerId']
             txnId = body['txnId']
             gameId = body["gameId"]
-            transType = body["txnType"]
             currency = body["currency"]
             created = body['created'] # timestamp
             completed = body['completed'] # true / false
@@ -510,23 +553,10 @@ class ProcessRollback(APIView):
         
         try:
             user = CustomUser.objects.get(username=playerId)
-            qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
             prov = GameProvider.objects.get(provider_name="QTech")
             cat = Category.objects.get(name='Games')
             
-            if not qt_session.valid:
-                status_code = 400
-                message = 'Missing, invalid or expired player (wallet) session token'
-                logger.error(message) 
-                
-                response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
-                    "message": message
-                }
-                
-                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
-            
-            elif user.block:
+            if user.block:
                 status_code = 403
                 message = "The player account is blocked"
                 logger.error("Blocked user {} trying to access QT Game".format(username))
@@ -537,6 +567,19 @@ class ProcessRollback(APIView):
                 }
                 
                 return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+            try: 
+                qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+                
+                if not qt_session.valid:
+                    message = 'Expired (wallet) session being used for rollback!'
+                    logger.info(message) 
+                
+            except Exception as e:
+                message = 'Player (wallet) session Missing but proceed with rollback!'
+                logger.info(message) 
+            
+            
                 
         except:
             status_code = 400
@@ -549,6 +592,33 @@ class ProcessRollback(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            #
+            # try to find if the txnId exists
+            #
+            record = GameBet.objects.filter(   provider=prov,
+                                               category=cat,
+                                               user=user,
+                                               user_name = user.username,
+                                               currency=user.currency,
+                                               market=ibetCN,
+                                               ref_no=txnId
+                                               )
+            
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
+            
+            response = {
+                'balance': round(bal),
+                "referenceId": record.transaction_id
+            }
+            logger.info("ref_no, {}, is an idempotent transaction".format(txnId))
+            
+            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
+        except:
+            logger.info("ref_no, {}, is a new transaction".format(txnId))
         
         user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  

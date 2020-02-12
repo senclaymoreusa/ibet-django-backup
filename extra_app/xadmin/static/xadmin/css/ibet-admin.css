@@ -132,7 +132,7 @@ table.table-bordered > tbody > tr > td {
     width: 127px;
     height: 13px;
     font-family: Helvetica;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
@@ -449,7 +449,7 @@ table.table-bordered > tbody > tr > td {
 }
 
 
-.block-title {
+/* .block-title {
     width: 148px;
     height: 16px;
     font-family: Helvetica;
@@ -460,7 +460,7 @@ table.table-bordered > tbody > tr > td {
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
-}
+} */
 
 .block-text {
     width: 100%;
@@ -940,4 +940,71 @@ table.table-bordered > tbody > tr > td {
     color: #4a4a4a;
     padding-top: 10px;
     padding-bottom: 10px;
+}
+
+.mainWallet {
+    fill: #50e3c2;
+    background-color: #50e3c2;
+}
+
+.onebookWallet {
+    fill: #00a281;
+    background-color: #00a281;
+}
+
+.PTWallet {
+    fill: #f1e86e;
+    background-color: #f1e86e;
+}
+
+.AGWallet {
+    fill: #ab85cc;
+    background-color: #ab85cc;
+}
+
+.KYWallet {
+    fill: #4a90e2;
+    background-color: #4a90e2;
+}
+
+.GPIWallet {
+    fill: #da3e00;
+    background-color: #da3e00;
+}
+
+
+.EAWallet {
+    fill: #8b572a;
+    background-color: #8b572a;
+}
+
+.OPUSWallet {
+    fill: #fcad1d;
+    background-color: #fcad1d;
+}
+
+.BBINWallet {
+    fill: #0b69bf;
+    background-color: #0b69bf;
+}
+
+
+.dot {
+    height: 10px;
+    width: 10px;
+    /* background-color: red; */
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 3px;
+  }
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 2s linear infinite;
+    margin-top: 15px;
+    max-height: 135px;
 }

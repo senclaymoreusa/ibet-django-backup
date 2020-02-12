@@ -100,6 +100,11 @@
                         <th scope="col">FLAT FEE</th>
                         <th scope="col">% FEE</th>
                         <th scope="col">REQUIRED VERIFICATIONS</th>
+                        <th scope="col">PLAYER SEGMENT</th>
+                        <th scope="col">RISK LEVEL</th>
+                        <th scope="col">PLAYER STATUS</th>
+                        <th scope="col">WHITELIST COUNT</th>
+                        <th scope="col">BLACKLIST COUNT</th>
                         <th scope="col">SCHEDULED DOWNTIME</th>
                         <th scope="col">STATUS</th>
                         <th scope="col">CONFIG</th>
@@ -118,13 +123,14 @@
                         <td>{{ psp.transaction_fee }}</td>
                         <td>{{ psp.transaction_fee_per }}</td>
                         <td>{{ psp.req_ver }}</td>
-                        {% if psp.downtime_start and psp.downtime_end %}
-                        <td>{{ psp.downtime_start }} - {{ psp.downtime_end }}</td>
-                        {% else %}
-                        <td></td> 
-                        {% endif %}
+                        <td>{{ psp.player_segment }}</td>
+                        <td>{{ psp.block_risk_level }}</td>
+                        <td>{{ psp.get_allowed_statuses_display }}</td>
+                        <td>{{ psp.whitelist.whitelist|length }}</td>
+                        <td>{{ psp.blacklist.blacklist|length }}</td>
+                        <td class="downtime" id="dt-{{ psp.pk }}" data-type="deposit"></td>
                         <td>{{ psp.get_status_display }}</td>
-                        <td>                            
+                        <td>                           
                             <button id="{{ psp.pk }}" data-psp="deposit" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
                                 <!-- <span class="glyphicon glyphicon-search"></span> -->
                                 Edit
@@ -144,11 +150,7 @@
                         <td>{{ psp.transaction_fee }}</td>
                         <td>{{ psp.transaction_fee_per }}</td>
                         <td>{{ psp.req_ver }}</td>
-                        {% if psp.downtime_start and psp.downtime_end %}
-                        <td>{{ psp.downtime_start }} - {{ psp.downtime_end }}</td>
-                        {% else %}
-                        <td></td> 
-                        {% endif %}
+                        <td class="downtime" id="dt-{{ psp.pk }}" data-type="withdraw"></td>
                         <td>{{ psp.get_status_display }}</td>
                         <td>                            
                             <button id="{{ psp.pk }}" data-psp="withdraw" class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#edit-psp">
@@ -449,7 +451,38 @@
                 }
             }
         });
+        let rows = $(".downtime");
+        $.ajax({
+            type: 'GET',
+            url: '{% url "xadmin:get_psp" %}',
+            data: {
+                'type': 'deposit'
+            },
+            success: (data) => {
+                console.log(data);
+                data.map(i => { 
+                    all_downtime = i.fields.all_downtime;
+                    monthly = all_downtime.monthly;
+                    console.log(all_downtime.once);
+                    let allDates = "";
+                    // this is rly annoying
+                    // for(let j = 0; j < monthly.length; j++) {
+                    //     allDates+= Date(monthly[j].start).toUTCString();
+                    // }
+                    for(let j = 0; j < all_downtime.once.length; j++) {
+                        console.log("HI");
+                        console.log(all_downtime.once[j].start);
+                        allDates += all_downtime.once[j].start + " - " + all_downtime.once[j].end;
 
+                        // allDates += 
+                    }
+                    
+                    $("#dt-"+i.pk).html(allDates);
+                });
+            }
+        })
+        
+        
         $(".confirm-settlement-btn").on('click', function(event) {
             var psp_id = event.target.id;
 

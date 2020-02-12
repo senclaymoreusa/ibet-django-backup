@@ -277,8 +277,8 @@ class BonusView(View):
                             affiliate_limit=req_data.get('affiliate_limit'),
                             image_s3=req_data.get('image_s3'),
                             status=int(req_data.get('status')),
-                            is_free_bid='free-spin' in req_data.get('master_types') or 'free-bet' in req_data.get(
-                                'master_types'),
+                            is_free_bid='free-spin' in req_data.get('master_type') or 'free-bet' in req_data.get(
+                                'master_type'),
                             type=type,
                             currency=req_data.get('currency') or 0,
                             issued=req_data.get('issued'),

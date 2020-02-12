@@ -26,11 +26,16 @@ from django.utils.translation import LANGUAGE_SESSION_KEY
 from django.urls import reverse
 from django.utils import translation
 from users.views.helper import *
-from games.models import GameBet, Category
+from games.models import GameBet, Category, GameProvider
+from utils.admin_helper import *
+from operation.views import send_email
+from games.helper import transferRequest
+
 
 import requests
 import logging
 import pytz
+import random
 
 
 logger = logging.getLogger('django')
@@ -45,8 +50,11 @@ class UserDetailView(CommAdminView):
         context['time'] = timezone.now()
         customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         context['customuser'] = customUser
+        context['bonus_amount'] = getUserBonus(customUser) if getUserBonus(customUser) else 0
+        context['can_withdraw_balance'] = customUser.main_wallet - customUser.bonus_wallet
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
         context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
+        context['trans_wallet'] = GameProvider.objects.filter(is_transfer_wallet=True)
         transaction = Transaction.objects.filter(user_id=customUser)
         context['block'] = False
         temporaryBlockRes = {}
@@ -179,6 +187,14 @@ class UserDetailView(CommAdminView):
         #     context['permanentBlock'] = permanentBlockRes
         #     # print(temporaryBlock, permanentBlock)
 
+
+        total_balance = customUser.main_wallet
+        each_wallet = UserWallet.objects.filter(user=customUser)
+        for wallet in each_wallet:
+            total_balance += wallet.wallet_amount
+        context['totalBalance'] = total_balance
+
+
         riskLevelMap = {}
         for t in CustomUser._meta.get_field('risk_level').choices:
             riskLevelMap[t[0]] = t[1]
@@ -231,7 +247,7 @@ class UserDetailView(CommAdminView):
                     'currency': currencyMap[tran['fields']['currency']],
                     'time': time,
                     'amount': tran['fields']['amount'],
-                    'balance': tran['fields']['amount'],
+                    'balance': tran['fields']['current_balance'],
                     'status': statusMap[tran['fields']['status']],
                     # 'bank': str(tran['fields']['bank']),
                     'bank': "",
@@ -602,9 +618,9 @@ class UserDetailView(CommAdminView):
                 #     else:
                 #         # oldLimitMap[limitType]['amount'] = limit.amount
                 #         oldLimitMap[limitType][limit.interval] = limit.amount
-                if temporary_time:
+                if int(temporary_time) >= 0:
                     set_temporary_timeout(user_id, temporary_time)
-                if permanent_time:
+                if int(permanent_time) >= 0:
                     set_permanent_timeout(user_id, permanent_time)
                 # print("oldLimitMap: " + str(oldLimitMap))
                 # if bet_limitation:
@@ -723,11 +739,10 @@ class UserDetailView(CommAdminView):
                         user.save()
                         limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
                         logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
-
-                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
         except Exception as e:
             logger.error("User Detail View Error -- {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
     
     def account_by_ip(self, userIp, username):
         relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
@@ -862,26 +877,30 @@ class UserListView(CommAdminView):
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['source'] = str(user.get_user_attribute_display())
+            userDict['manager'] = str(user.vip_managed_by.username) if user.vip_managed_by else ""
             userDict['risk_level'] = ''
             userDict['balance'] = user.main_wallet + user.other_game_wallet
             userDict['product_attribute'] = ''
             userDict['time_of_registration'] = user.time_of_registration
             userDict['ftd_time'] = user.ftd_time
+            userDict['ftd_time_amount'] = user.ftd_time_amount if user.ftd_time_amount != 0 else ""
             userDict['verfication_time'] = user.verfication_time
             userDict['id_location'] = user.id_location
             userDict['phone'] = user.phone
             userDict['address'] = user.get_user_address()
-            # userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
+            deposit_sum = 0
+            turnover_sum = 0
+            bonus_sum = 0
             userDict['deposit_turnover'] = ''
             userDict['bonus_turnover'] = ''
-            userDict['contribution'] = 0
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
             # depositTimes = Transaction.objects.filter(user_id=user, transaction_type=0).count()
             # withdrawTimes = Transaction.objects.filter(user_id=user, transaction_type=1).count()
             betTims = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
             activeDays = int(betTims)
             userDict['active_days'] = activeDays
             userDict['member_status'] = user.get_member_status_display() if user.get_member_status_display() else ""
-            userDict['status_changed'] = ''
+            userDict['status_changed'] = user.member_changed_time if user.member_changed_time else ""
             userDict['changed_by'] = ''
             userDict['closure_reason'] = ''
 
@@ -1179,7 +1198,7 @@ class GetUserInfo(View):
                 'name': name,
                 'idNumber': '',
                 'birthday': user.date_of_birth,
-                'status': user.member_status if user.member_status else '',
+                'status': user.member_status,
                 'playerSegment': user.vip_level.level if user.vip_level else '',
                 'riskLevel': user.risk_level,
                 'manager': user.vip_managed_by.username if user.vip_managed_by else '',
@@ -1293,7 +1312,7 @@ class GetUserTransaction(View):
                         'currency': str(dict(CURRENCY_CHOICES).get(tran['fields']['currency'])),
                         'time': time,
                         'amount': tran['fields']['amount'],
-                        'balance': tran['fields']['amount'],
+                        'balance': tran['fields']['current_balance'],
                         'status': str(dict(STATE_CHOICES).get(tran['fields']['status'])),
                         
                         # 'bank': str(tran['fields']['bank']),
@@ -1425,3 +1444,132 @@ class GetBetHistoryDetail(View):
         except Exception as e:
             logger.error("Admin getting user bet deatil: ", e)
             return HttpResponse(status=404)
+
+
+
+class UserAdjustment(View):
+
+    def post(self, request, *args, **kwargs): 
+
+        data = json.loads(request.body)
+
+        
+        user_id = data['user_id']
+        user = CustomUser.objects.get(pk=user_id)
+        try:
+            reason = data['adjustment_reason'] if 'adjustment_reason' in data else ""
+            amount = data['amount'] if 'amount' in data else 0
+            wagering_amount = data['wagering_amount'] if 'wagering_amount' in data else 0
+            debit_or_credit = data['debit_or_credit'] if 'debit_or_credit' in data else ""
+            notify_player = data['notify_player'] if 'notify_player' in data else False
+            affiliate = data['affiliate'] if 'affiliate' in data else False
+            message_subject = data['message_subject'] if 'message_subject' in data else ""
+            message_to_player = data['message_to_player'] if 'message_to_player' in data else ""
+            message_note = data['message_note'] if 'message_note' in data else ""
+
+
+            # print(reason, amount, debit_or_credit, notify_player, affiliate, message_subject, message_to_player, message_note)
+            
+            admin_user = self.request.user
+            if debit_or_credit == 'credit':
+                balance = user.main_wallet + decimal.Decimal(amount)
+                with transaction.atomic():
+                    ref_no = user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+                    obj, created = Transaction.objects.get_or_create(
+                                user_id=user,
+                                transaction_id=ref_no,
+                                amount=decimal.Decimal(amount),
+                                method="Admin adjustment (credit)",
+                                currency=user.currency,
+                                transaction_type=TRANSACTION_ADJUSTMENT,
+                                current_balance = balance,
+                                status=TRAN_SUCCESS_TYPE,
+                                remark=message_note,
+                                other_data={
+                                    "wagering_amount": str(decimal.Decimal(wagering_amount) * decimal.Decimal(amount))
+                                }
+                            )
+                    user.bonus_wallet += decimal.Decimal(amount)
+                    user.main_wallet += decimal.Decimal(amount)
+                    user.save()
+
+                    UserActivity.objects.create(
+                        user=user,
+                        admin=admin_user,
+                        message=message_note,
+                        activity_type=ACTIVITY_REMARK,
+                    )
+            elif debit_or_credit == 'debit':
+                balance = user.main_wallet - decimal.Decimal(amount)
+                with transaction.atomic():
+                    ref_no = user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+                    obj, created = Transaction.objects.get_or_create(
+                                user_id=user,
+                                transaction_id=ref_no,
+                                amount=decimal.Decimal(amount),
+                                method="Admin adjustment (debit)",
+                                currency=user.currency,
+                                transaction_type=TRANSACTION_ADJUSTMENT,
+                                current_balance = balance,
+                                status=TRAN_SUCCESS_TYPE,
+                                remark=message_note,
+                            )
+                    user.main_wallet -= decimal.Decimal(amount)
+                    user.save()
+
+                    UserActivity.objects.create(
+                        user=user,
+                        admin=admin_user,
+                        message=message_note,
+                        activity_type=ACTIVITY_REMARK,
+                    )
+
+
+            if notify_player:
+                send_email(message_subject, message_to_player, user.username)
+            
+
+            response = {}
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Make adjustment error for user {}: {}".format(user.username, str(e)))
+            return HttpResponse(status=400)
+
+
+class UserTransfer(View):
+
+    def post(self, request, *args, **kwargs): 
+
+        data = json.loads(request.body)
+        user_id = data['user_id']
+        customUser = CustomUser.objects.get(pk=user_id)
+        # print(data)
+        try:
+            
+            admin_user = self.request.user
+            transfer_to = data['transfer_to'] if 'transfer_to' in data else ""
+            transfer_from = data['transfer_from'] if 'transfer_from' in data else ""
+            transfer_amount = data['transfer_amount'] if 'transfer_amount' in data else 0
+            notify_player = data['notify_player'] if 'notify_player' in data else False
+            message_subject = data['message_subject'] if 'message_subject' in data else ""
+            message_to_player = data['message_to_player'] if 'message_to_player' in data else ""
+            message_note = data['message_note'] if 'message_note' in data else ""
+            
+            with transaction.atomic():
+                transferRequest(customUser, transfer_amount, transfer_from, transfer_to)
+
+                UserActivity.objects.create(
+                    user=customUser,
+                    admin=admin_user,
+                    message=message_note,
+                    activity_type=ACTIVITY_REMARK,
+                )
+
+            if notify_player:
+                send_email(message_subject, message_to_player, customUser.username)
+            
+            response = {}
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))
+            return HttpResponse(status=400)

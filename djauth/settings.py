@@ -207,7 +207,7 @@ s3_bucket = "ibet-admin-" + os.environ["ENV"]
 ### This is a hack as we have to use the redshift on apdev for local.
 if 'local' in s3_bucket:
     s3_bucket = "ibet-admin-apdev"
-redshift_data = getKeys(s3_bucket, 'config/ibetadmin_redshift.json')
+REDSHIFT_DATA = getKeys(s3_bucket, 'config/ibetadmin_redshift.json')
 
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
@@ -254,15 +254,15 @@ elif "ENV" in os.environ:
     }
 
 try:
-    redshift_connection = psycopg2.connect(user=redshift_data['REDSHIFT_USERNAME'],
-                                           password=redshift_data['REDSHIFT_PASSWORD'],
-                                           host=redshift_data['REDSHIFT_HOSTNAME'],
-                                           port=redshift_data['REDSHIFT_PORT'],
-                                           database=redshift_data['REDSHIFT_DB_NAME'])
-    redshift_cursor = redshift_connection.cursor()
+    REDSHIFT_CONNECTION = psycopg2.connect(user=REDSHIFT_DATA['REDSHIFT_USERNAME'],
+                                           password=REDSHIFT_DATA['REDSHIFT_PASSWORD'],
+                                           host=REDSHIFT_DATA['REDSHIFT_HOSTNAME'],
+                                           port=REDSHIFT_DATA['REDSHIFT_PORT'],
+                                           database=REDSHIFT_DATA['REDSHIFT_DB_NAME'])
+    REDSHIFT_CURSOR = REDSHIFT_CONNECTION.cursor()
     print('Successfully established Redshift connection.')
 
-except exception as e:
+except Exception as e:
     print ("FATAL__ERROR: cannot establish Redshift connection: ", e)
 
 

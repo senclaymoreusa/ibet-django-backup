@@ -90,7 +90,7 @@
                         <th style="width:300px;">4 CODE ADDRESS</th>
                         <th style="word-break: break-word; width:399px;">DEPOSIT/ TURNOVER</th>
                         <th style="word-break: break-word; width:600px;">BONUS/ TURNOVER</th>
-                        <th style="width:126px;">COUNTRIBUTION</th>
+                        <th style="width:126px;">CONTRIBUTION</th>
                         <th style="width:126px;">ACTIVE DAYS</th>
                         <th style="width:126px;">STATUS</th>
                         <th style="width:126px;">STATUS CHANGED</th>
@@ -106,7 +106,7 @@
                         <td><a href="{% url 'xadmin:user_detail' user.id %}">{{ user.username }}</a></td>
                         <!-- <td>{{ trans }}</td> -->
                         <td>{{ user.source }}</td>
-                        <td></td>
+                        <td>{{ user.manager }}</td>
                         {% if user.time_of_registration %}
                             <td>{{ user.time_of_registration }}</td>
                         {% else %}
@@ -190,7 +190,7 @@
                                 <div class="modal-content">
                                     <div class="modal-header" style="background-color: #ffa313; color:white">
                                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                        <h4 class="modal-title">Edit member details</h4>
+                                        <h4 class="modal-title">Overview member details</h4>
                                         <!-- <h6 style="float: right;">Update Time:</h6> -->
                                     </div>
                                     <div class="modal-body">
@@ -398,7 +398,6 @@ function viewUserInfo(userId) {
                 day = list[1]
                 year = list[2]
             }
-            
             $("input[name*='member_id']").val(response.userId);
             $("input[name*='member_username']").val(response.username);
             $("input[name*='member_name']").val(response.name);
@@ -406,8 +405,7 @@ function viewUserInfo(userId) {
             $("input[name*='member_birthday_day']").val(day);
             $("input[name*='member_birthday_month']").val(month);
             $("input[name*='member_birthday_year']").val(year);
-
-            $("input[name*='member_status']").val(response.status);
+            $("select[name*='member_status']").val(response.status);
             $("input[name*='member_segment']").val(response.playerSegment);
             $("input[name*='risk_level']").val(response.riskLevel);
             $("input[name*='manger']").val(response.manger);

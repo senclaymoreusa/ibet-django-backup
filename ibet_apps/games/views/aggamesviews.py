@@ -128,11 +128,13 @@ def agftp(request):
                             xml = '<root>'+rdata+'</root>'
 
                             writeToS3(rdata, AWS_BET_S3_BUCKET, 'AG-game-history/{}'.format(file))
-                            redis.set_ag_added_file(file)
+                            
                             logger.info('finished writting AG last file {} to s3'.format(file))
                             root = ET.fromstring(xml)
+                            gamebets_list = []
                             for child in root:
                                 dataType = child.attrib['dataType']
+                                
                                 
                                 if dataType == 'HSR': #捕鱼王場景的下注记录
                                     ID = child.attrib['ID']
@@ -176,8 +178,8 @@ def agftp(request):
                                         outcome = 2
                                     else:
                                         outcome = 1
-
-                                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                    
+                                    gamebet = GameBet(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
                                                             user=user,
                                                             user_name=user.username,
@@ -205,6 +207,7 @@ def agftp(request):
                                                                     "flag": flag
                                                                 }
                                                             )
+                                    gamebets_list.append(gamebet)
                                 
 
                                 
@@ -249,7 +252,7 @@ def agftp(request):
                                     
                                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                    gamebet = GameBet(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
                                                             user=user,
                                                             user_name=user.username,
@@ -277,6 +280,7 @@ def agftp(request):
                                                                     "deviceType": deviceType
                                                                 }
                                                             )
+                                    gamebets_list.append(gamebet)
 
                                 elif dataType == 'EBR': #电子游戏的下注记录
                                     playerName = child.attrib['playerName']
@@ -320,7 +324,7 @@ def agftp(request):
                                     recalcuTime = datetime.datetime.strptime(recalcuTime, '%Y-%m-%d %H:%M:%S')
                                     recalcuTime = recalcuTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
                                     
-                                    GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                    gamebet = GameBet(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
                                                             user=user,
                                                             user_name=user.username,
@@ -346,6 +350,7 @@ def agftp(request):
                                                                     "betAmountBase": betAmountBase
                                                                 }
                                                             )
+                                    gamebets_list.append(gamebet)
                                 elif dataType == 'TR': #TIP
                                     agentCode = child.attrib['agentCode'] 
                                     ID = child.attrib['ID'] 
@@ -377,7 +382,7 @@ def agftp(request):
                                         creationTime = datetime.datetime.strptime(creationTime, '%Y-%m-%d %H:%M:%S')
                                         creationTime = creationTime.astimezone(pytz.timezone(GameProvider.objects.get(provider_name=AG_PROVIDER).timezone))
 
-                                        GameBet.objects.create(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
+                                        gamebet = GameBet(provider=GameProvider.objects.get(provider_name=AG_PROVIDER),
                                                             category=Category.objects.get(name='Live Casino'),
                                                             user=user,
                                                             user_name=user.username,
@@ -402,12 +407,17 @@ def agftp(request):
                                                                     "platformType": platformType
                                                                 }
                                                             )
+                                        gamebets_list.append(gamebet)
+                            GameBet.objects.bulk_create(gamebets_list)
+                            redis.set_ag_added_file(file)
                         else:
+                            logger.info("AG:: No new file from ftp.")
                             continue
                     
                     ftp.ftp_session.cwd('..')
                         
                 else:
+                    logger.info("AG:: No new folder from ftp.")
                     continue
 
                 
@@ -511,12 +521,16 @@ def getBalance(user):
     rdata = r.text
     if r.status_code == 200:
         tree = ET.fromstring(rdata)
-        info = tree.get('info')
-        msg =  tree.get('msg')
-        return json.dumps({'balance': info})
+        try:
+            info = decimal.Decimal(tree.get('info'))
+            msg =  tree.get('msg')
+            return json.dumps({'balance': info})
+        except Exception as e:
+            logger.info("AG::cannot get the user's balance.")
+            return json.dumps({'balance': 0.00})
     else:
         logger.critical("AG::The request is failed for AG get balance api.")
-        return json.dumps({"error":"The request is failed for AG get balance"}) 
+        return json.dumps({'balance': 0.00}) 
     
 
 class test(APIView):
@@ -667,14 +681,18 @@ def forwardGame(request):
             param = des_encrypt(s,AG_DES).decode("utf-8") 
             
             key = MD5(param + AG_MD5)
-            
+
+            #mobile:
+            s_mobile = s + "/\\\\/" + "mh5=y"
+            param_mobile = des_encrypt(s_mobile,AG_DES).decode("utf-8") 
+            key_mobile = MD5(param_mobile + AG_MD5)
             
             # r = requests.get(AG_FORWARD_URL ,  data={
             #         "params": param,
             #         "key": key,  
             #     })
             # rdata = r.text
-            return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key})
+            return Response({"url": AG_FORWARD_URL + '?params=' + param + '&key=' + key, "mobile_url": AG_FORWARD_URL + '?params=' + param_mobile + '&key=' + key_mobile})
         else:
             logger.critical("AG::Cannot check or create AG game account in AG forwardGame.")
             return Response({"error": "Cannot check or create AG game account in AG forwardGame."})
@@ -833,7 +851,14 @@ def agService(request):
         try:
             user = CustomUser.objects.get(username=username)
             if feature == MD5(username + ag_type + stamp + AG_MD5):
-                return HttpResponse("Success")
+                if ag_type == "6": #deposit
+                    return HttpResponseRedirect(AG_TRANSFER_URL)
+                elif ag_type == '9': #register real account
+                    return HttpResponseRedirect(AG_REGIS_URL)
+                elif ag_type == '12': #exit game
+                    return HttpResponseRedirect(AG_EXIST_URL)
+                elif ag_type == '13': #customer service page
+                    return HttpResponseRedirect(AG_CS_URL)
             else:
                 logger.error("AG::error, invalid invoking agService api")
                 return HttpResponse("error, invalid invoking api")

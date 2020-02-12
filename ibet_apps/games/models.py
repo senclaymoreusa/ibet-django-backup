@@ -77,6 +77,7 @@ class Game(models.Model):
     jackpot_size = models.IntegerField(null=True, blank=True)
     smallgame_id = models.CharField(max_length=200, null=True, blank=True)
     is_free = models.NullBooleanField(default=None)
+    mobile_game_id = models.CharField(max_length=200, null=True, blank=True)
 
     created_time = models.DateTimeField(
         _('Created Time'),
@@ -116,7 +117,7 @@ class GameBet(models.Model):
     amount_won = models.DecimalField(max_digits=12, decimal_places=4, null=True) # if amount_won = 0, outcome is also 0 (false)
     # outcome = models.BooleanField() # true = win, false = lost
     outcome = models.SmallIntegerField(choices=OUTCOME_CHOICES, null=True, blank=True)
-    odds = models.DecimalField(null=True, blank=True,max_digits=12, decimal_places=4) # payout odds (in american odds), e.g. +500, -110, etc.
+    odds = models.DecimalField(null=True, blank=True, max_digits=12, decimal_places=4) # payout odds (in american odds), e.g. +500, -110, etc.
     bet_type = models.CharField(max_length=6, choices=BET_TYPES_CHOICES, null=True, blank=True)
     line = models.CharField(max_length=50, null=True, blank=True) # examples: if bet_type=spread: <+/-><point difference> | bet_type=moneyline: name of team | bet_type=total: <over/under> 200
     transaction_id = models.CharField(max_length=200, verbose_name=_("Transaction id"), default=random_string, unique=True)

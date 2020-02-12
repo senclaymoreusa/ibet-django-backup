@@ -73,7 +73,12 @@ urlpatterns = [
     path('api/scratchcard/deposit', csrf_exempt(scratchcard.create_deposit), name="Scratch_Card_Deposit"),
     path('api/scratchcard/confirm', csrf_exempt(scratchcard.confirm_transaction), name="Scratch_Card_Confirm"),
     path('api/transactions/get_transactions', accounting.transactions.get_transactions, name="Get_Transactions"),
-    path('api/transactions/save_transaction', csrf_exempt(accounting.transactions.save_transaction), name="Save_Transaction")
+    path('api/transactions/save_transaction', csrf_exempt(accounting.transactions.save_transaction), name="Save_Transaction"),
+    path('api/transactions/save_momopay', csrf_exempt(accounting.transactions.save_momopay), name="Save_Momo_Pay"),
+    path('api/transactions/get_transaction_by_id', accounting.transactions.get_transaction_by_id, name="Get_transaction_by_id"),
+    path('api/transactions/add_withdraw_acc', csrf_exempt(accounting.transactions.addWithdrawAccount), name="Add_Withdraw_Account"),
+    path('api/transactions/get_withdraw_accs', csrf_exempt(accounting.transactions.getWithdrawAccounts), name="Get_Withdraw_Accounts"),
+    path('api/transactions/del_withdraw_acc', csrf_exempt(accounting.transactions.removeWithdrawAccount), name="Delete_Withdraw_Account"),
 ]
 
 
