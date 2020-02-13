@@ -262,11 +262,17 @@ class RegisterView(CreateAPIView):
         try:
             with transaction.atomic():
                 # add time of registration and register event
+                rr = requests.get("https://ipapi.co/json/")
+                rrdata = rr.json()
+                try :
+                    ip = rrdata["ip"]
+                except:
+                    ip = helpers.get_client_ip(request)
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=helpers.get_client_ip(request),
+                    ip_addr=ip,
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
