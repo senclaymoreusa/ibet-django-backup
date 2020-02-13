@@ -1113,6 +1113,60 @@ class GenerateForgetPasswordCode(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class CheckRetrievePasswordMethod(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get('username')
+
+        res = {}
+        res["question"] = False
+        res["phone"] = False
+        res["email"] = False
+        
+        try:
+            user = CustomUser.objects.get(username=username)
+    
+            if user.security_answer is not None:
+                res["question"] = True
+            if user.phone is not None:
+                res["phone"] = True
+            if user.email is not None:
+                res["email"] = True
+            # if user.phone_verified:
+            #     res["phone"] = True
+            # if user.email_verified:
+            #     res["email"] = True
+
+            return Response(res)
+        except ObjectDoesNotExist:
+            logger.info("Retrieve Password Method API -- User: {} not exist".format(username))
+            return Response(res)
+        except Exception as e:
+            logger.error("Retrieve Password Method API Error: {}".format(repr(e)))
+            return Response(res)
+
+
+# class ConfirmRetrieveMethodAPI(APIView):
+#     permission_classes = (AllowAny, )
+
+#     def get(self, request, *args, **kwargs):
+#         method = request.GET.get("method")
+
+#         try:
+#             if method == "question":
+#                 pass
+#             if method == "phone":
+#                 pass
+#             if method == "email":
+#                 pass
+
+#         except Exception as e:
+#             logger.error("ConfirmRetrieveMethodAPI error: {}".format(repr(e)))
+#             return Response(status)
+
+
 class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
@@ -1305,8 +1359,7 @@ class GenerateActivationCode(APIView):
                 user.update(activation_code=random_num)
                 send_sms(str(random_num), user[0].pk)
         except Exception as e:
-            print(repr(e))
-            logger.error("Error Generating Activation Code: {}".format(str(e)))
+            logger.error("Error Generating Activation Code: {}".format(repr(e)))
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)

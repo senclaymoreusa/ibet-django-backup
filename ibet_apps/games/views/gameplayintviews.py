@@ -304,7 +304,7 @@ class CreateUserAPI(View):
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
             logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse(status=200)
 
 
 class GetBalanceAPI(View):
@@ -331,11 +331,11 @@ class GetBalanceAPI(View):
 
         except ObjectDoesNotExist:
             logger.warning("Error: can not find user -- {}".format(str(username)))
-            return HttpResponse(status=404)
+            return HttpResponse(status=200)
         
         except Exception as e:
             logger.error("Error: GPI GetBalanceAPI error -- {}".format(repr(e)))
-            return HttpResponse(status=500)
+            return HttpResponse(status=200)
 
 
 # multiple requests with the same “trx_id” will only be executed once and no error message will be responded on the latter requests.
@@ -580,7 +580,7 @@ class LiveCasinoCreateUserAPI(View):
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
+            logger.error("Error: GPI LiveCasinoCreateUserAPI error -- {}".format(repr(e)))
             return HttpResponse(repr(e))
 
 
@@ -679,5 +679,5 @@ class GetNewBetDetailAPI(View):
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
         except Exception as e:
-            logger.error("Error: GPI CreateUserAPI error -- {}".format(repr(e)))
+            logger.error("Error: GPI GetNewBetDetailAPI error -- {}".format(repr(e)))
             return HttpResponse(repr(e))
