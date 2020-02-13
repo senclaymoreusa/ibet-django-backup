@@ -360,29 +360,32 @@ class ProcessTransactions(APIView):
             #
             # try to find if the txnId exists
             #
-            record = GameBet.objects.filter(   provider=prov,
-                                               category=cat,
-                                               user=user,
-                                               user_name = user.username,
-                                               currency=user.currency,
-                                               market=ibetCN,
-                                               ref_no=txnId
-                                               )
+            rows = GameBet.objects.filter(  provider=prov,
+                                            category=cat,
+                                            user=user,
+                                            user_name = user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=txnId
+                                            )
             
-            n_float = int(user.main_wallet * 100) / 100.0
-            bal = Decimal(n_float)
-            
-            response = {
-                'balance': round(bal),
-                "referenceId": record.transaction_id
-            }
-            logger.info("ref_no, {}, is an idempotent transaction".format(txnId))
-            
-            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+            if rows.count() > 0:
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                record = rows[0]
+                
+                response = {
+                    'balance': round(bal),
+                    "referenceId": record.transaction_id
+                }
+                logger.info("No transaction for ref_no, {}, for reason of idempotency".format(txnId))
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=201)
         
         except:
-            logger.info("ref_no, {}, is a new transaction".format(txnId))
-                
+            logger.warning('Filter gamebet exception: ' + str(e))
+        
+        logger.info("ref_no, {}, is a new transaction".format(txnId))        
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
         
         if transType == "DEBIT":
@@ -438,7 +441,7 @@ class ProcessTransactions(APIView):
                 }
                 status_code = 400
                 
-            
+            logger.info("Done processing DEBIT")
         elif transType == "CREDIT":
             user.main_wallet += amount
             
@@ -485,13 +488,13 @@ class ProcessTransactions(APIView):
                     "message": "CREDIT unexpected error"
                 }
                 
+            logger.info("Done processing CREDIT")
         else:
             response = {
                 "code": "REQUEST_DECLINED",
                 "message": "Invalid transaction type: " + transType
             }
             status_code = 400
-                    
             
         return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
     
@@ -579,8 +582,6 @@ class ProcessRollback(APIView):
                 message = 'Player (wallet) session Missing but proceed with rollback!'
                 logger.info(message) 
             
-            
-                
         except:
             status_code = 400
             message = 'PLAYER_NOT_FOUND'
@@ -597,63 +598,82 @@ class ProcessRollback(APIView):
             #
             # try to find if the txnId exists
             #
-            record = GameBet.objects.filter(   provider=prov,
-                                               category=cat,
-                                               user=user,
-                                               user_name = user.username,
-                                               currency=user.currency,
-                                               market=ibetCN,
-                                               ref_no=txnId
-                                               )
-            
-            n_float = int(user.main_wallet * 100) / 100.0
-            bal = Decimal(n_float)
-            
-            response = {
-                'balance': round(bal),
-                "referenceId": record.transaction_id
-            }
-            logger.info("ref_no, {}, is an idempotent transaction".format(txnId))
-            
-            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+            rows = GameBet.objects.filter(  provider=prov,
+                                            category=cat,
+                                            user=user,
+                                            user_name = user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=txnId
+                                            )
+            if rows.count() > 0:
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                record = rows[0]
+                
+                response = {
+                    'balance': round(bal),
+                    "referenceId": record.transaction_id
+                }
+                logger.info("No transaction for ref_no, {}, for reason of idempotency".format(txnId))
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=201)
         
-        except:
-            logger.info("ref_no, {}, is a new transaction".format(txnId))
+        except Exception as e:
+            logger.warning('Filter gamebet exception: ' + str(e))
+            
+        logger.info("ref_no, {}, is a new transaction".format(txnId))
         
-        user.main_wallet += amount
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
         
-        n_float = int(user.main_wallet * 100) / 100.0
-        bal = Decimal(n_float)
         
         try:
             #
             # try to find the original QT txnId for rollback
             #
-            record = GameBet.objects.filter(  provider=prov,
-                                           category=cat,
-                                           user=user,
-                                           user_name = user.username,
-                                           currency=user.currency,
-                                           market=ibetCN,
-                                           ref_no=orig_txnId
-                                           )
+            rows = GameBet.objects.filter(  provider=prov,
+                                            category=cat,
+                                            user=user,
+                                            user_name = user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=orig_txnId
+                                            )
             
+            if rows.count() > 0:
+                logger.info("Rollback from original txnId=" + orig_txnId)
+                
+                user.main_wallet += amount
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
+                response = {
+                    'balance': round(bal),
+                    "referenceId": trans_id
+                }
+            else:
+                logger.warning("No rollback due to original txnId, {}, NOT found".format(orig_txnId))
+                
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                response = {
+                    'balance': round(bal)
+                }
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+                 
             
-            response = {
-                'balance': round(bal),
-                "referenceId": trans_id
-            }
+        except Exception as e:
+            logger.warning('No rollback: Filter gamebet exception: ' + str(e))
             
-        except:
-            logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
             response = {
                 "balance": round(bal)
             }
             
-        #
-        # it proceeds with rollback regardless the orig_txnId
-        #
+            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
         try:
             with transaction.atomic():
                 bet = GameBet(
