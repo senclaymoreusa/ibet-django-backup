@@ -258,8 +258,11 @@ class MGgame(APIView):
                     # same win package exist
                     try:
                         bet = GameBet.objects.filter(other_data=actionid, ref_no=gameid)
-                        wallet = user.main_wallet
-                        sameWin = True
+                        if bet.count() > 0:
+                            wallet = user.main_wallet
+                            sameWin = True
+                        else :
+                            wallet = user.main_wallet + decimal.Decimal(amount)/100
                     except:
                         wallet = user.main_wallet + decimal.Decimal(amount)/100
                 
