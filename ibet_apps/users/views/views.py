@@ -847,7 +847,7 @@ class Activation(APIView):
         email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
-        user.update(verfication_time=timezone.now(), modified_time=timezone.now())
+        user.update(verification_time=timezone.now(), modified_time=timezone.now())
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code, modified_time=timezone.now())
         def timeout():

@@ -668,7 +668,11 @@
                         </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">Verification time</div>
-                            <div class="block-text">{{ customuser.verification_time|date:'F d, Y, H:i' }}</div>
+                            {% if user_image_log_obj %}
+                                <div class="block-text">{{ user_image_log_obj.created_time|date:'F d, Y, H:i' }}</div>
+                            {% else %}
+                                <div></div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -1073,7 +1077,7 @@
             <div class="form-group" style="padding:20px 0px 20px 0px; margin-left:25px;">
                 <div><span class="block-title">ACTIVITY TYPE</span></div>
                 <div style="width:165px;"><select class="form-control" id="activity-select">
-                        <option value="all">All activity</option>
+                        <option value="-1">All activity</option>
                         <option value="0">Operation</option>
                         <option value="1">Remark</option>
                         <option value="2">Chat</option>
@@ -3163,7 +3167,7 @@ function getActivityfilter(activity) {
             'activity_type': activity
         },
         success:function(data) {
-            // console.log(data);
+            console.log(data);
             getActivityData(data);
         }
     });
@@ -3176,8 +3180,16 @@ function getActivityData(data) {
     $("#select-filter").empty();
     content = "";
     for(var i = 0; i < data.length; i++) {
-        content += '<div class="note-author">' + data[i].adminUser + '</div>';
-        content += '<div class="note-block">' + data[i].message + '</div>';
+        if (data[i].activity_type == 0) {
+            content += '<div class="note-author"><i class="fas fa-cog" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        } else if (data[i].activity_type == 1) {
+            content += '<div class="note-author"><i class="fas fa-edit" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        } else if (data[i].activity_type == 2) {
+            content += '<div class="note-author"><i class="fas fa-envelope" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        } else if (data[i].activity_type == 3) {
+            content += '<div class="note-author"><i class="fas fa-comments" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        }
+        content += '<div class="note-block"><div style="padding: 14px 28px;"><div>' + data[i].system_message + '</div>' + '<div>' + data[i].message + '</div></div></div>';
     }
     $("#select-filter").append(content);
 }

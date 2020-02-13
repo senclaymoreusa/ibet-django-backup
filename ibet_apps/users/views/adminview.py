@@ -621,29 +621,23 @@ class UserDetailView(CommAdminView):
                 user = CustomUser.objects.get(pk=user_id)
                 # print(str(activity_type))
                 
-                if activity_type == 'all':
-                    activitys = UserActivity.objects.filter(user=user).order_by('-created_time')
+                if activity_type == '-1':
+                    activities = UserActivity.objects.filter(user=user, activity_type_in=[0,1,2,3]).order_by('-created_time')
                 else:
-                    activitys = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
-                
-                activitys = serializers.serialize('json', activitys)
-                activitys = json.loads(activitys)
-                response = []
-                for act in activitys:
-                    actDict = {}
-                    try:
-                        time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    except:
-                        time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
-                    time = time.strftime("%B %d, %Y, %I:%M %p")
-                    actDict['time'] = time
-                    adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
-                    actDict['adminUser'] = str(adminUser.username)
-                    actDict['message'] = act['fields']['message']
-                    response.append(actDict)
-                # print(str(response))
+                    activities = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
 
-                return HttpResponse(json.dumps(response), content_type='application/json')
+                response = []
+                for act in activities:
+                    data = {
+                        'created_time': act.created_time.strftime("%B %d, %Y, %I:%M %p"),
+                        'adminUser': act.admin.username,
+                        'activity_type': act.activity_type,
+                        'message': act.message if act.message else "",
+                        'system_message': act.system_message if act.system_message else "",
+                    }
+                    response.append(data)
+
+                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
 
             elif post_type == 'limitation_setting':
                 
@@ -971,7 +965,7 @@ class UserListView(CommAdminView):
             userDict['time_of_registration'] = user.time_of_registration
             userDict['ftd_time'] = user.ftd_time
             userDict['ftd_time_amount'] = user.ftd_time_amount if user.ftd_time_amount != 0 else ""
-            userDict['verfication_time'] = user.verfication_time
+            userDict['verification_time'] = user.verification_time
             userDict['id_location'] = user.id_location
             userDict['phone'] = user.phone
             userDict['address'] = user.get_user_address()
@@ -1087,7 +1081,7 @@ class UserListView(CommAdminView):
                 userDict['product_attribute'] = ''
                 userDict['time_of_registration'] = str(user.time_of_registration)
                 userDict['ftd_time'] = str(user.ftd_time)
-                userDict['verfication_time'] = str(user.verfication_time)
+                userDict['verification_time'] = str(user.verification_time)
                 userDict['id_location'] = user.id_location
                 userDict['phone'] = user.phone
                 userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
@@ -1295,8 +1289,8 @@ class GetUserInfo(View):
                 'city': user.city,
                 'zipcode': user.zipcode,
                 'country': user.country,
-                'idApplicationTime': user.verfication_time if user.verfication_time else "",
-                'idReviewTime': user.verfication_time if  user.verfication_time else "",
+                'idApplicationTime': user.verification_time if user.verification_time else "",
+                'idReviewTime': user.verification_time if  user.verification_time else "",
                 'idReviewer': '',
             }
             return HttpResponse(json.dumps(response), content_type="application/json")
