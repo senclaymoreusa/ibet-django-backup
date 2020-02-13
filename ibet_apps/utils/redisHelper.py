@@ -130,8 +130,8 @@ class RedisHelper():
 
     def set_gpi_bets_starttime(self, starttime):
         gpi_bet_starttime = getGPIBetDetailsRedisKey()
-        return self.r.get(gpi_bet_details, starttime)
+        return self.r.set(gpi_bet_starttime, starttime)
 
     def get_gpi_bets_starttime(self):
         gpi_bet_starttime = getGPIBetDetailsRedisKey()
-        return self.r.get(gpi_bet_details)
+        return self.r.get(gpi_bet_starttime)

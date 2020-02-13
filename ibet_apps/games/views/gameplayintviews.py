@@ -585,69 +585,96 @@ class LiveCasinoCreateUserAPI(View):
 
 
 class GetNewBetDetailAPI(View):
-    def get(self, request, *kw, **args):
+    def post(self, request, *kw, **args):
         try:
-            # r = RedisClient().connect()
-            # redis = RedisHelper()
+            r = RedisClient().connect()
+            redis = RedisHelper()
 
-            # start_time = redis.get_ky_bets_timestamp
+            start_time = redis.get_gpi_bets_starttime()
 
-            # timestamp = get_timestamp()
-            # if start_time is None:
-            #     start_time = timestamp - 300000 # five minutes before now
+            if start_time is None:
+                start_time = datetime.datetime.now() - datetime.timedelta(minutes=10) # 10 minutes before now
+                start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
 
-            # # Query Bet Order
-            # if type(start_time) == bytes:
-            #     start_time = start_time.decode("utf-8")
+            # Query Bet Order
+            if type(start_time) == bytes:
+                start_time = start_time.decode("utf-8")
 
-            # date_from = request.GET.get("date_from") # yyyy-MM-dd HH:mm:ss
-            # date_to = request.GET.get("date_to")
-            # date_from = datetime.datetime.now()
-            # date_to = datetime.datetime.now()
+            end_time = datetime.datetime.now() - datetime.timedelta(minutes=1) # 1 minutes before now
+            end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
 
-            # req_param = {}
-            # req_param["merch_id"] = GPI_MERCH_ID
-            # req_param["merch_pwd"] = GPI_MERCH_PWD
-            # req_param["date_from"] = date_from
-            # req_param["date_to"] = date_to
-            # req_param["cust_id"] = user.username
-            # req_param["cust_name"] = user.username
-            # req_param["currency"] = transCurrency(user)
+            req_param = {}
+            req_param["merch_id"] = GPI_MERCH_ID
+            req_param["merch_pwd"] = GPI_MERCH_PWD
+            req_param["date_from"] = start_time
+            req_param["date_to"] = end_time
+            req_param["page_size"] = 999 # Max
 
-            # req = urllib.parse.urlencode(req_param)
+
+            req = urllib.parse.urlencode(req_param)
     
-            # url = GPI_LIVE_CASINO_URL + 'newBetDetail.html' + '?' + req
+            url = GPI_LIVE_CASINO_URL + 'newBetDetail.html' + '?' + req
 
-            # res = requests.get(url)
+            res = requests.get(url)
 
-            # res = xmltodict.parse(res.text)
-
-            res = request.get(data)
+            res = xmltodict.parse(res.text)
 
             if res["resp"]["error_code"] == "0":
                 res = res["resp"]["items"]
+                if res["@total_row"] == '0':
+                    return HttpResponse("No bet record at this time", status=200)
+                else:
+                    provider = GameProvider.objects.get(provider_name=GPI_PROVIDER)
+                    category = Category.objects.filter(name='Live Casino')
 
-                provider = GameProvider.objects.get(provider_name=GPI_PROVIDER)
-                category = Category.objects.filter(name='Table Games')
+                    gamebets_list = []
 
-                for data in res["item"]:
-                    gamebet = GameBet(provider=provider,
-                            category=category[0],
-                            user=user,
-                            user_name=user.username,
-                            amount_wagered=decimal.Decimal(cell_score[i]),
-                            amount_won=decimal.Decimal(win_amount),
-                            outcome=outcome,
-                            transaction_id=trans_id,
-                            market=ibetCN,
-                            ref_no=game_id[i],
-                            bet_time=bet_time,
-                            resolved_time=resolved_time,
-                            other_data={}
-                        )
-                return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+                    for data in res["item"]:
+                        user = data["@user_id"]
+                        user = CustomUser.objects.get(pk=user)
 
-            return HttpResponse(json.dumps(res), content_type="json/application", status=200)
+                        resolved_time = data["@trans_date"]
+
+                        outcome = Decimal(data["@winlose"])
+
+                        if outcome > 0:
+                            outcome = 0 # Win
+                        elif outcome < 0:
+                            outcome = 1 # Lose
+                        else:
+                            outcome = 2 # Tie
+
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+
+                        # 2020-01-24 06:08:16
+                        resolved_time = datetime.datetime.strptime(data["@trans_date"], '%Y-%m-%d %H:%M:%S')
+                        resolved_time = resolved_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        resolved_time = resolved_time.astimezone(pytz.utc)
+
+                        gamebet = GameBet(provider=provider,
+                                category=category[0],
+                                user=user,
+                                user_name=user.username,
+                                amount_wagered=Decimal(data["@bet"]),
+                                amount_won=Decimal(data["@winlose"]),
+                                outcome=outcome,
+                                transaction_id=trans_id,
+                                market=ibetCN,
+                                ref_no=data["@bet_id"],
+                                # bet_time=bet_time,
+                                resolved_time=resolved_time,
+                                other_data={}
+                            )
+
+                        gamebets_list.append(gamebet)
+
+                    GameBet.objects.bulk_create(gamebets_list)
+                    redis.set_gpi_bets_starttime(end_time)
+                    
+                    return HttpResponse("You have add {} records".format(len(gamebets_list)), status=200)
+            else:
+                logger.warning(json.dumps(res))
+                return HttpResponse(json.dumps(res), type="json/application", status=200)
 
         except ObjectDoesNotExist:
             logger.error("Error: can not find user -- {}".format(str(username)))
