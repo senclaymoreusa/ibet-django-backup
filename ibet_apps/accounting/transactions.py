@@ -23,7 +23,7 @@ def addWithdrawAccount(request):
             data = json.loads(request.body)
             user = CustomUser.objects.get(pk=data["user_id"])
             name = data.get("full_name")
-            bank_code = data.get("bank_code")
+            bank_code = data.get("bank_code") if data.get("bank_code") else None
             if (name):
                 user.first_name = name.split(" ")[0]
                 user.last_name = name.split(" ")[1]
@@ -34,6 +34,7 @@ def addWithdrawAccount(request):
                 account_no=data["acc_no"],
                 bank_code=bank_code
             )
+
             new_acc.save()
             return JsonResponse({
                 'success': True,
