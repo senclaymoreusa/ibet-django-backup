@@ -436,7 +436,7 @@ class UserDetailView(CommAdminView):
             }
 
 
-        activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
+        activity = UserActivity.objects.filter(user=customUser, activity_type__in=[0,1,2,3]).order_by("-created_time")
         if activity:
             context['activity'] = activity
         else:
@@ -504,6 +504,13 @@ class UserDetailView(CommAdminView):
         context['limitation'] = limitationDict
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
+        context['segment_level'] = Segmentation.objects.all()
+
+        log_obj = UserActivity.objects.filter(user=customUser, activity_type=ACTIVITY_UPLOAD_IMAGE).order_by('-created_time')
+        if len(log_obj) > 0:
+            log_obj = log_obj[0]
+            context['user_image_log_obj'] = log_obj
+
 
         # userJson = serializers.serialize('json', [customUser])
         # userJson = json.loads(userJson)
@@ -522,34 +529,85 @@ class UserDetailView(CommAdminView):
                 last_name = request.POST.get('last_name')
                 email = request.POST.get('email')
                 phone = request.POST.get('phone')
-                birthday = request.POST.get('birthday')
-                address = request.POST.get('address')
+                date_of_birth = request.POST.get('date_of_birth')
+                address = request.POST.get('street_address_1')
                 city = request.POST.get('city')
                 zipcode = request.POST.get('zipcode')
                 country = request.POST.get('country')
                 user_id_img = request.POST.get('user_id_img')
-                # upload image to S3
-                self.upload_user_photo_id(username, user_id_img)
+                reason_text = request.POST.get('reason_text')
+                update_fields = request.POST.get('update_fields')
+                update_fields = json.loads(update_fields)
 
-                CustomUser.objects.filter(pk=user_id).update(
-                    username=username, first_name=first_name, 
-                    last_name=last_name, email=email, 
-                    phone=phone, date_of_birth=birthday, 
-                    street_address_1=address, city=city,
-                    zipcode=zipcode, country=country)
-                
+                if len(update_fields) <= 0:
+                    response = {
+                        "status": True,
+                        "message": 'Nothing change for user: ' + str(username) + 'info'
+                    }
+                    return HttpResponse(json.dumps(response), content_type='application/json')
+
+                query = {}
+                system_message = ""
+                first_image_upload = False
+                for i in update_fields:
+                    if i['name'] == 'reason_text':
+                        continue
+                    elif i['name'] == 'user_id_img':
+                        continue
+                    elif i['name'] == 'user_id_img_first' and i['value'] == "true":
+                        first_image_upload = True
+                        # print(first_image_upload)
+                        continue
+
+                    query[i['name']] = i['value']
+                    system_message += i['name'] + " change to " + i['value']
+
+                    
+                with transaction.atomic():
+                # # upload image to S3
+                    if user_id_img and first_image_upload:
+                        self.upload_user_photo_id(username, user_id_img)
+                        UserActivity.objects.create(
+                            user = CustomUser.objects.get(pk=user_id),
+                            admin = request.user,
+                            system_message = "Upload user ID image",
+                            message = reason_text,
+                            activity_type = ACTIVITY_UPLOAD_IMAGE,
+                        )
+                    elif not user_id_img and not first_image_upload:
+                        UserActivity.objects.create(
+                            user = CustomUser.objects.get(pk=user_id),
+                            admin = request.user,
+                            system_message = "Delete user ID image",
+                            message = reason_text,
+                            activity_type = ACTIVITY_REMOVE_IMAGE,
+                        )
+                        self.remove_user_photo_id(username)
+
+                 
+                    UserActivity.objects.create(
+                        user = CustomUser.objects.get(pk=user_id),
+                        admin = request.user,
+                        system_message = system_message.replace("_", " ") if system_message else None,
+                        message = reason_text,
+                        activity_type = ACTIVITY_SYSTEM,
+                    )
+                    CustomUser.objects.filter(pk=user_id).update(**query)
                 logger.info('Finished update user: ' + str(username) + 'info to DB')
                 # print(CustomUser.objects.get(pk=user_id).id_image)
-
-                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+                response = {
+                    "status": True,
+                    "message": 'Finished update user: ' + str(username) + 'info to DB'
+                }
+                return HttpResponse(json.dumps(response), content_type='application/json')
         
             elif post_type == 'update_message':
                 admin_user = request.POST.get('admin_user')
                 message = request.POST.get('message')
 
                 UserActivity.objects.create(
-                    user = CustomUser.objects.filter(pk=user_id).first(),
-                    admin = CustomUser.objects.filter(username=admin_user).first(),
+                    user = CustomUser.objects.get(pk=user_id),
+                    admin = request.user,
                     message = message,
                     activity_type = 3,
                 )
@@ -791,7 +849,15 @@ class UserDetailView(CommAdminView):
             accounts.append(userDict)
         return accounts
 
+    
+    def remove_user_photo_id(self, username):
+        # print(username)
+        aws_session = boto3.Session()
+        s3_client = aws_session.client('s3')
+        file_name = self.get_user_photo_file_name(username)
+        s3_client.delete_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
 
+        logger.info('Finished remove username: ' + username + ' and file: ' + file_name + ' from S3!!!')
 
 
     def download_user_photo_id(self, username):

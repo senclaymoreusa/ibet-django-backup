@@ -303,7 +303,7 @@
                     <div class="block-title"><span>&nbsp;</span></div>
                     <div class="block-title"><span>Status</span></div>
                     <div class="life-time-value-block">
-                        <div class="block-content">
+                        <div class="block-content" style=" padding-top:25px;">
                             {{ member_status }}
                         </div>
                     </div>
@@ -321,7 +321,7 @@
                     <div class="block-title"><span>&nbsp;</span></div>
                     <div class="block-title"><span>RISK LEVEL</span></div>
                     <div class="life-time-value-block">
-                        <div class="block-content" id="risk_level_input" style="line-height: normal; padding-top:20px;">
+                        <div class="block-content" id="risk_level_input" style="line-height: normal; padding-top: 25%;">
                             {{ riskLevel }}    
                         </div>
                     </div>
@@ -440,7 +440,7 @@
                     <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Member ID</span>
+                            <span class="member-detail-label">Member ID</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.pk }}</span>
@@ -448,7 +448,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Username</span>
+                            <span class="member-detail-label">Username</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.username }}</span>
@@ -456,7 +456,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Status</span>
+                            <span class="member-detail-label">Status</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ member_status }}</span>
@@ -464,7 +464,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Segment</span>
+                            <span class="member-detail-label">Segment</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ segment }}</span>
@@ -472,7 +472,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Risk level</span>
+                            <span class="member-detail-label">Risk level</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ riskLevel }}</span>
@@ -480,7 +480,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Is affilate</span>
+                            <span class="member-detail-label">Is affilate</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">
@@ -494,7 +494,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">First Name</span>
+                            <span class="member-detail-label">First Name</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.first_name }}</span>
@@ -502,7 +502,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Last Name</span>
+                            <span class="member-detail-label">Last Name</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.last_name }}</span>
@@ -510,7 +510,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">ID number</span>
+                            <span class="member-detail-label">ID number</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">ID number</span>
@@ -518,7 +518,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Email</span>
+                            <span class="member-detail-label">Email</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.email }}</span>
@@ -526,7 +526,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Phone</span>
+                            <span class="member-detail-label">Phone</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.phone }}</span>
@@ -534,7 +534,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Birthday</span>
+                            <span class="member-detail-label">Birthday</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.date_of_birth }}</span>
@@ -542,7 +542,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Address</span>
+                            <span class="member-detail-label">Address</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
                             <div><span class="detail-info">{{ customuser.street_address_1 }}</span></div>
@@ -714,8 +714,9 @@
                             <!-- <h6 style="float: right;">Update Time:</h6> -->
                         </div>
                         <div class="modal-body">
-                            <div class='row'>
-                                <form action="{% url 'xadmin:user_detail' %}" method="POST">
+                            <form action="{% url 'xadmin:user_detail' %}" method="POST" id="edit-member-form">
+                                <div class='row'>
+                                
                                     {% csrf_token %}
                                     <div class='col-md-6'>
                                         <input type="hidden" name="type" value="edit_user_detail"></input>
@@ -729,25 +730,6 @@
                                             <input class="form-control" id='username' name="username" value="{{ customuser.username }}">
                                         </div>
                                         <div class="form-group">
-                                            <div for="member_level" class="edit-member-info-label">MEMBER LEVEL</div>
-                                            <select class="form-control">
-                                                <option value="VIP">VIP</option>
-                                                <option value="0">Operation</option>
-                                                <option value="1">Remark</option>
-                                                <option value="2">Chat</option>
-                                                <option value="3">Note</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <div for="risk_level" class="edit-member-info-label">RISK LEVEL</div>
-                                            <select class="form-control">
-                                                <option value="0" {% if customuser.risk_level == 0 %} selected=“selected”{% endif %}>A</option>
-                                                <option value="1" {% if customuser.risk_level == 1 %} selected=“selected”{% endif %}>E1</option>
-                                                <option value="2" {% if customuser.risk_level == 2 %} selected=“selected”{% endif %}>E2</option>
-                                                <option value="3" {% if customuser.risk_level == 3 %} selected=“selected”{% endif %}>F</option>
-                                            </select>
-                                            </div>
-                                        <div class="form-group">
                                             <div for="first_name" class="edit-member-info-label">FIRST NAME</div>
                                             <input class="form-control" name="first_name" value="{{ customuser.first_name }}">
                                         </div>
@@ -756,20 +738,79 @@
                                             <input class="form-control" name="last_name" value="{{ customuser.last_name }}">
                                         </div>
                                         <div class="form-group">
-                                            <div for="email" class="edit-member-info-label">EMAIL</div>
+                                            <div for="last_name" class="edit-member-info-label">ID NUMBER</div>
+                                            <input class="form-control" name="id_number" value="{{ customuser.id_number }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="date_of_birth" class="edit-member-info-label">BIRTHDAY</div>
+                                            <input class="form-control" name="date_of_birth" value="{{ customuser.date_of_birth }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="member_status" class="edit-member-info-label">STATUS</div>
+                                            <select class="form-control" name="member_status">
+                                                <option {% if customuser.member_status == 0 %} selected="selected"{% endif %} value="0">Normal</option>
+                                                <option {% if customuser.member_status == 1 %} selected="selected"{% endif %} value="1">Suspicious</option>
+                                                <option {% if customuser.member_status == 2 %} selected="selected"{% endif %} value="2">Restricted</option>
+                                                <option {% if customuser.member_status == 3 %} selected="selected"{% endif %} value="3">Closed</option>
+                                                <option {% if customuser.member_status == 4 %} selected="selected"{% endif %} value="3">Blacklist</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="player_segment" class="edit-member-info-label">PLAYER SEGMENT</div>
+                                            <select class="form-control">
+                                                <option value="-1"  {% if segment == None %} selected="selected"{% endif %}>Select....</option>
+                                                {% for i in segment_level %}
+                                                    <option value="{{ i.pk }}" {% if segment == i.level %} selected="selected"{% endif %}>{{ i.level }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="risk_level" class="edit-member-info-label" name="risk_level">RISK LEVEL</div>
+                                            <select class="form-control">
+                                                <option value="0" {% if customuser.risk_level == 0 %} selected="selected"{% endif %}>Very High</option>
+                                                <option value="1" {% if customuser.risk_level == 1 %} selected="selected"{% endif %}>High</option>
+                                                <option value="2" {% if customuser.risk_level == 2 %} selected="selected"{% endif %}>Medium</option>
+                                                <option value="3" {% if customuser.risk_level == 3 %} selected="selected"{% endif %}>Low</option>
+                                                <option value="4" {% if customuser.risk_level == 4 %} selected="selected"{% endif %}>Very Low</option>
+                                                <option value="5" {% if customuser.risk_level == 5 %} selected="selected"{% endif %}>VIP</option>
+                                                <option value="6" {% if customuser.risk_level == 6 %} selected="selected"{% endif %}>Business</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="email" class="edit-member-info-label" style="display: inline-table;">
+                                                <div style="float: left;">EMAIL</div>
+                                                {% if customuser.email_verified %}
+                                                <div style="float: right;">Verified</div>
+                                                {% else %}
+                                                <div style="float: right;">Not Verified</div>
+                                                {% endif %}
+                                            </div>
                                             <input type='email' id='email' class="form-control" name="email" value="{{ customuser.email }}">
                                         </div>
                                         <div class="form-group">
-                                            <div for="phone" class="edit-member-info-label">PHONE</div>
+                                            <!-- <div for="phone" class="edit-member-info-label">PHONE</div> -->
+                                            <div for="phone" class="edit-member-info-label" style="display: inline-table;">
+                                                <div style="float: left;">PHONE</div>
+                                                {% if customuser.phone_verified %}
+                                                <div style="float: right;">Verified</div>
+                                                {% else %}
+                                                <div style="float: right;">Not Verified</div>
+                                                {% endif %}
+                                            </div>
                                             <input class="form-control" id='phone' name="phone" value="{{ customuser.phone }}">
                                         </div>
+                                        
                                         <div class="form-group">
-                                            <div for="birthday" class="edit-member-info-label">BIRTHDAY</div>
-                                            <input class="form-control" name="birthday" value="{{ customuser.date_of_birth }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <div for="address" class="edit-member-info-label">ADDRESS</div>
-                                            <input class="form-control" name="address" style="height: 140px;" value="{{ customuser.street_address_1 }}">
+                                            <!-- <div for="address" class="edit-member-info-label">ADDRESS</div> -->
+                                            <div for="address" class="edit-member-info-label" style="display: inline-table;">
+                                                <div style="float: left;">ADDRESS</div>
+                                                {% if customuser.address_verified %}
+                                                <div style="float: right;">Verified</div>
+                                                {% else %}
+                                                <div style="float: right;">Not Verified</div>
+                                                {% endif %}
+                                            </div>
+                                            <input class="form-control" name="street_address_1" style="height: 140px;" value="{{ customuser.street_address_1 }}">
                                             <div class="row" style="margin-top: 8px;">
                                                 <div class="col-md-7" style="padding-right: 0px;">
                                                     <input class="form-control" name="city" value="{{ customuser.city }}">
@@ -782,30 +823,28 @@
                                                 <input class="form-control" name="country" value="{{ customuser.country }}">
                                             </div>
                                         </div>
-                                        {% if customuser.block == False %}
-                                        <div>
-                                            <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
-                                                <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
-                                            </button>
-                                        </div>
-                                        {% else %}
-                                        <div>
-                                            <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
-                                                Open account
-                                            </button>
-                                        </div>
-                                        {% endif %}
-                                        <p id='errorMessage'>&nbsp;</p>
-                                        <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
-                                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                                     </div>
                                     <div class="col-md-6">
                                         <input id='hidden_input_img' type='file' accept='image/*' style='display: none;' onchange="chooseFile(event);">
                                         {% if userPhotoId %}
                                         <img id="user-photo-img" src="{{ userPhotoId }}">
+                                        <!-- user_image_log_obj -->
+                                        <div class="row" style="margin: 0px;">
+                                            <div class='col-md-6 edit-member-image-label bold'>Time of application</div>
+                                            <div class='col-md-6 edit-member-image-label'>{{ user_image_log_obj.created_time }}</div>
+                                        </div>
+                                        <div class="row" style="margin: 0px;">
+                                            <div class='col-md-6 edit-member-image-label bold'>Time of review</div>
+                                            <div class='col-md-6 edit-member-image-label'>{{ user_image_log_obj.created_time }}</div>
+                                        </div>
+                                        <div class="row" style="margin: 0px;">
+                                            <div class='col-md-6 edit-member-image-label bold'>Reviewer</div>
+                                            <div class='col-md-6 edit-member-image-label'>{{ user_image_log_obj.admin.username }}</div>
+                                        </div>
                                         {% else %}
                                         <img id="user-photo-img" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
                                         {% endif %}
+                                        <input type="hidden" name='user_id_img_first' value="false">
                                         <input type="hidden" name='user_id_img' id="hidden_user_id_url">
                                         <div>&nbsp;</div>
                                         <div class="row">
@@ -818,9 +857,32 @@
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>                          
+                                </div>
+                                <div>
+                                    <div class="form-group">
+                                        <div class="edit-member-info-label">REASON FOR CHANGES*</div>
+                                        <textarea class="form-control" id="reasonTextarea" name="reason_text" rows="3" placeholder="Please provide a brief explanation."></textarea>
                                     </div>
-                                </form>
-                            </div>
+
+                                    {% if customuser.block == False %}
+                                    <div>
+                                        <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
+                                            <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div>
+                                        <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
+                                            Open account
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                    <p id='errorMessage'>&nbsp;</p>
+                                    <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                </div>  
+                            </form>
                         </div>
                         <!-- <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -1019,10 +1081,34 @@
                     </select>
                 </div>
             </div>
-            <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:807px;">
+            <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:898px;">
                 {% for act in activity %}
-                    <div class="note-author">{{ act.admin }}</div>
-                    <div class="note-block">{{ act.message }}</div>
+                    <div class="note-author">
+                        {% if act.activity_type == 0 %}
+                            <i class="fas fa-cog" style="margin-right: 10px;"></i>
+                        {% elif act.activity_type == 1 %}
+                            <i class="far fa-edit" style="margin-right: 10px;"></i>
+                        {% elif act.activity_type == 2 %}
+                            <i class="far fa-envelope" style="margin-right: 10px;"></i>
+                        {% elif act.activity_type == 3 %}
+                            <i class="far fa-comments" style="margin-right: 10px;"></i>
+                        {% endif %}
+                        {{ act.admin }} {{ act.created_time }} 
+                    </div>
+                    <div class="note-block">
+                        <div style="padding: 14px 28px;">
+                            {% if act.system_message and act.system_message|length > 0  %}
+                            <div>
+                                {{ act.system_message }}
+                            </div>
+                            {% endif %}
+                            {% if act.message and act.message|length > 0  %}
+                            <div>
+                                Reason: {{ act.message }}
+                            </div>
+                            {% endif %}
+                        </div> 
+                    </div>
                 {% endfor %}
             </div>
             <div id="note-input-container">
@@ -2434,6 +2520,7 @@ $(document).ready(function() {
             var output = document.getElementById('user-photo-img');
             output.src = dataURL;
             $('#hidden_user_id_url').attr('value', dataURL);
+            $('input[name="user_id_img_first"]').attr('value', true);
         };
         reader.readAsDataURL(input.files[0]);
         
@@ -2447,6 +2534,8 @@ $(document).ready(function() {
 
    clearImg = function() {
         $('#user-photo-img').attr('src', 'https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png');
+        $('#hidden_user_id_url').attr('value', '');
+        $('input[name="user_id_img_first"]').attr('value', false);
    }
 
     $.ajaxSetup({
@@ -2951,15 +3040,49 @@ $(document).ready(function() {
         $('.input-group-addon').text(text);
     })
 
+    var arrBefore = $("#edit-member-form").serializeArray();
+    // console.log(arrBefore);
+    $("#edit-member-form").submit(function(e) {
 
-    // $('#adjust_amount').on('keydown', function() {
-    //     // var sum = 
-    //     // var text = "* " + adjust_amount + "="
-    //     // $('.input-group-addon').text();
-    //     console.log("....")
-    // });
-
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var reason_input = $("textarea[name='reason_text']").val();
+        if (!reason_input) {
+            alert("please give the reason for changing request");
+            return;
+        }
+        var url = "{% url 'xadmin:user_detail' %}";
+        var arrAfter = form.serializeArray();
+        var update_fields = checkDiff(arrBefore, arrAfter);
+        // console.log(update_fields);
+        var data = form.serialize() + "&update_fields=" + JSON.stringify(update_fields);
+        // // console.log(data);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function(data)
+            {
+                // console.log(data);
+                window.location.reload();
+            }
+        });
+    });
 });
+
+function checkDiff(before, after) {
+    var whatsChanged = [];
+
+    for (i = 0; i < before.length; i++) {
+        if (after[i].name == 'user_id_img' || before[i].name == 'user_id_img') {
+            continue;
+        } else if (after[i].value !== before[i].value) {
+            whatsChanged.push(after[i]);
+        }
+    }
+    return whatsChanged;
+}
+
 
 function limitFormValid(value) {
     var isValid = true;

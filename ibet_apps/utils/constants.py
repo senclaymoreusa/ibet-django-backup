@@ -333,12 +333,16 @@ ACTIVITY_SYSTEM = 0     # System Change
 ACTIVITY_REMARK = 1     # Remark in form
 ACTIVITY_MESSAGE = 2    # Inbox message
 ACTIVITY_NOTE= 3        # Note in activity
+ACTIVITY_UPLOAD_IMAGE = 4
+ACTIVITY_REMOVE_IMAGE = 5
 
 ACTIVITY_TYPE = (
     (0, 'System'),
     (1, 'Remark'),
     (2, 'Message'),
     (3, 'Note'),
+    (4, 'Upload ID image'),
+    (5, 'Remove ID image'),
 )
 
 
