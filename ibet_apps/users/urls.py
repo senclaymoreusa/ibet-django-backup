@@ -52,6 +52,7 @@ urlpatterns += [
     path('api/updateemail/', views.UpdateEmail.as_view(), name='update_email'),
     path('api/checkemailexist/', views.CheckEmailExixted.as_view(), name='email_exist'),
     path('api/generatepasswordcode/', views.GenerateForgetPasswordCode.as_view(), name='generate_code'),
+    path('api/retrievepasswordmethod/', views.CheckRetrievePasswordMethod.as_view(), name='retrieve_password_method'),
     path('api/sendresetpasswordcode/', views.SendResetPasswordCode.as_view(), name='send_code'),
     path('api/verifyresetpasswordcode/', views.VerifyResetPasswordCode.as_view(), name='verify_resetpassword_code'),
     path('api/changeandresetpassword/', views.ChangeAndResetPassword.as_view(),name='change_reset_password'),

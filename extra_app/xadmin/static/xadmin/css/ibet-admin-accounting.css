@@ -195,7 +195,10 @@ label {
     padding-left: 0px;
     padding-top: 15px;
     padding-bottom: 20px;
-    height: 123px;
+    /* height: 123px; */
+}
+.withdraw-request-details  p { 
+    /* padding-top: 10px; */
 }
 
 

@@ -66,7 +66,8 @@ class EALiveCasinoClientLoginView(View):
         # print(action, request_id, properties_user_id, properties_password)
 
         status_code = 0
-        currency_code = ""
+        currency = 156
+        vendor = 2
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
@@ -122,7 +123,7 @@ class EALiveCasinoClientLoginView(View):
                         },
                         {
                             "@name": "currencyid",
-                            "#text": str(currency_code)
+                            "#text": str(currency)
                         }, 
                         {
                             "@name": "status",
@@ -694,7 +695,7 @@ class EASingleLoginValidation(View):
         # print(action, request_id, properties_user_id, properties_UUID, properties_ip_address)
 
         status_code = 0
-        currency = "156" # change the default
+        currency = 156 # change the default
         vendor = 2
         error_message = "Successfully login"
         try: 

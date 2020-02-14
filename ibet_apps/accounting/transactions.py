@@ -23,6 +23,7 @@ def addWithdrawAccount(request):
             data = json.loads(request.body)
             user = CustomUser.objects.get(pk=data["user_id"])
             name = data.get("full_name")
+            bank_code = data.get("bank_code") if data.get("bank_code") else None
             if (name):
                 user.first_name = name.split(" ")[0]
                 user.last_name = name.split(" ")[1]
@@ -30,8 +31,10 @@ def addWithdrawAccount(request):
 
             new_acc = WithdrawAccounts(
                 user=user,
-                account_no=data["acc_no"]
+                account_no=data["acc_no"],
+                bank_code=bank_code
             )
+
             new_acc.save()
             return JsonResponse({
                 'success': True,
@@ -53,7 +56,7 @@ def getWithdrawAccounts(request):
 
             return JsonResponse({
                 "success": True,
-                "results": list(all_accs.values('id', 'account_no'))
+                "results": list(all_accs.values('id', 'account_no', 'bank_code'))
             })
         except Exception as e:
             logger.repr(e)
@@ -192,6 +195,34 @@ def save_transaction(request):
                 bank_info=bank_info,
                 channel=11, # 11 = LBT
                 status=status
+            )
+            txn.save()
+            return JsonResponse({
+                'success': True,
+                'transaction_id': txn_id
+            })
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'transaction_id': None
+            })
+
+def save_momopay(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user = CustomUser.objects.get(pk=request.user.pk)
+            txn_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+            txn = Transaction(
+                transaction_id=txn_id,
+                user_id=user,
+                amount=data['amount'],
+                currency=7,
+                method="Momo Pay",
+                transaction_type=data['type'],
+                channel=12, # 11 = LBT
+                status=2
             )
             txn.save()
             return JsonResponse({

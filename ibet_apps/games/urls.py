@@ -99,7 +99,7 @@ urlpatterns = [
     path('api/gpi/check/', gameplayintviews.CheckTransactionAPI.as_view(), name="gpi_check"),
     path('api/gpi/online_user/', gameplayintviews.GetOnlineUserAPI.as_view(), name="online_user"),
     path('api/gpi/livecasino_createuser/', csrf_exempt(gameplayintviews.LiveCasinoCreateUserAPI.as_view()), name="gpi_livecasino_createuser"),
-    path('api/gpi/get_bet_detail/', gameplayintviews.GetNewBetDetailAPI.as_view(), name="gpi_get_bet_detail"),
+    path('api/gpi/get_bet_detail/', csrf_exempt(gameplayintviews.GetNewBetDetailAPI.as_view()), name="gpi_get_bet_detail"),
     # playtech
     path('api/pt/get_player', ptgameviews.GetPlayer.as_view(), name= 'pt_get_player'),
     path('api/pt/transfer_test', ptgameviews.PTTransferTest.as_view(), name = 'pt_transfer'),
