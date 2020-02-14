@@ -499,3 +499,4 @@ class UserBonusWallet(models.Model):
 class WithdrawAccounts(models.Model):
     user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE)
     account_no = encrypt(models.CharField(max_length=50))
+    bank_code = models.CharField(max_length=20, null=True, blank=True)
