@@ -32,6 +32,8 @@ def checkAvailable(txn_type, market):
                 downtime = True
                 psp.save()
                 break
+            # else:
+            #     del psp.all_downtime["once"]
         for dt in psp.all_downtime["daily"]:
             start_hour = getHour(dt["start"])
             start_min = getMinute(dt["start"])
@@ -62,8 +64,8 @@ def getActivePSP(request):
     txn_type = request.GET.get("txn_type")
     market = request.GET.get("market_code")
     available = checkAvailable(txn_type, market)
-    print(available)
-    return HttpResponse("Hi")
+    
+    return HttpResponse(serializers.serialize('json', available), content_type='application/json')
 
 
 
