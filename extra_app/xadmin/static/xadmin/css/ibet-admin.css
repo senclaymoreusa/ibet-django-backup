@@ -245,6 +245,9 @@ table.table-bordered > tbody > tr > td {
     width: 30px;
     height: 33px;
     background-color: #428bca;
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
 .active-block i, #note-btn i{

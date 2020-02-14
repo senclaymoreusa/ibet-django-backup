@@ -65,76 +65,79 @@ class UserDetailView(CommAdminView):
         permanentBlockRes = {}
         context['temperaryBlock'] = temporaryBlockRes
         context['permanentBlock'] = permanentBlockRes
-        if customUser.block is True:
-            blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
+        if checkUserBlock(customUser):
+            act_obj = UserActivity.objects.filter(user=customUser, activity_type=ACTIVITY_CLOSE_ACCOUNT).order_by('-created_time').first()
+            # blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
             data = {
-                'date': blockLimitationDeatil.created_time,
-                'admin': blockLimitationDeatil.admin,
+                'date': act_obj.created_time,
+                'admin': act_obj.admin,
+                'reason_options': act_obj.system_message,
+                'reason': act_obj.message,
             }
             context['blockDetail'] = data
             context['block'] = True
 
-        elif checkUserBlock(customUser):
-            expired_time = ""
-            blocked_time = ""
-            temporaryStr = ""
-            temporaryCode = ""
-            permanentStr = ""
-            permanentCode = ""
-            blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
-            if customUser.temporary_block_time:
-                expired_time = customUser.temporary_block_time
-                if customUser.temporary_block_interval == INTERVAL_PER_DAY:
-                    expired_time = expired_time + datetime.timedelta(days=1)
-                    temporaryStr = "one day"
-                    temporaryCode = customUser.temporary_block_interval
-                elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
-                    expired_time = expired_time + datetime.timedelta(days=7)
-                    temporaryStr = "one week"
-                    temporaryCode = INTERVAL_PER_WEEK
-                elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
-                    expired_time = expired_time + datetime.timedelta(days=30)
-                    temporaryStr = "one month"
-                    temporaryCode = INTERVAL_PER_MONTH
+        # elif checkUserBlock(customUser):
+        #     expired_time = ""
+        #     blocked_time = ""
+        #     temporaryStr = ""
+        #     temporaryCode = ""
+        #     permanentStr = ""
+        #     permanentCode = ""
+        #     blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
+        #     if customUser.temporary_block_time:
+        #         expired_time = customUser.temporary_block_time
+        #         if customUser.temporary_block_interval == INTERVAL_PER_DAY:
+        #             expired_time = expired_time + datetime.timedelta(days=1)
+        #             temporaryStr = "one day"
+        #             temporaryCode = customUser.temporary_block_interval
+        #         elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
+        #             expired_time = expired_time + datetime.timedelta(days=7)
+        #             temporaryStr = "one week"
+        #             temporaryCode = INTERVAL_PER_WEEK
+        #         elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
+        #             expired_time = expired_time + datetime.timedelta(days=30)
+        #             temporaryStr = "one month"
+        #             temporaryCode = INTERVAL_PER_MONTH
                 
-            elif customUser.permanent_block_time:
-                expired_time = customUser.permanent_block_time
-                if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
-                    expired_time = expired_time + datetime.timedelta(6*365/12)
-                    permanentStr = "six months"
-                    permanentCode = INTERVAL_PER_SIX_MONTH
-                elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
-                    expired_time = expired_time + datetime.timedelta(365)
-                    permanentStr = "one year"
-                    permanentCode = INTERVAL_PER_ONE_YEAR
-                elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
-                    expired_time = expired_time + datetime.timedelta(365*3)
-                    permanentStr = "three years"
-                    permanentCode = INTERVAL_PER_THREE_YEAR
-                elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
-                    expired_time = expired_time + datetime.timedelta(365*5)
-                    permanentStr = "five years"
-                    permanentCode = INTERVAL_PER_FIVE_YEAR
+        #     elif customUser.permanent_block_time:
+        #         expired_time = customUser.permanent_block_time
+        #         if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
+        #             expired_time = expired_time + datetime.timedelta(6*365/12)
+        #             permanentStr = "six months"
+        #             permanentCode = INTERVAL_PER_SIX_MONTH
+        #         elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
+        #             expired_time = expired_time + datetime.timedelta(365)
+        #             permanentStr = "one year"
+        #             permanentCode = INTERVAL_PER_ONE_YEAR
+        #         elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
+        #             expired_time = expired_time + datetime.timedelta(365*3)
+        #             permanentStr = "three years"
+        #             permanentCode = INTERVAL_PER_THREE_YEAR
+        #         elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
+        #             expired_time = expired_time + datetime.timedelta(365*5)
+        #             permanentStr = "five years"
+        #             permanentCode = INTERVAL_PER_FIVE_YEAR
                 
-            temporaryBlockRes = {
-                'temporaryStr': temporaryStr,
-                'temporaryCode': temporaryCode
-            }
+        #     temporaryBlockRes = {
+        #         'temporaryStr': temporaryStr,
+        #         'temporaryCode': temporaryCode
+        #     }
 
-            permanentBlockRes = {
-                'permanentStr': permanentStr,
-                'permanentCode': permanentCode
-            }
+        #     permanentBlockRes = {
+        #         'permanentStr': permanentStr,
+        #         'permanentCode': permanentCode
+        #     }
 
-            data = {
-                "expired_time": expired_time,
-                "date": blocked_time,
-                "admin": "User themselve"
-            }
-            context['blockDetail'] = data
-            context['block'] = True
-            context['temperaryBlock'] = temporaryBlockRes
-            context['permanentBlock'] = permanentBlockRes
+        #     data = {
+        #         "expired_time": expired_time,
+        #         "date": blocked_time,
+        #         "admin": "User themselve"
+        #     }
+        #     context['blockDetail'] = data
+        #     context['block'] = True
+        #     context['temperaryBlock'] = temporaryBlockRes
+        #     context['permanentBlock'] = permanentBlockRes
 
         #     temporaryBlockRes = {}
         # if customUser.temporary_block_interval is not None:
@@ -780,11 +783,18 @@ class UserDetailView(CommAdminView):
 
             elif post_type == 'block_user':
                 action = request.POST.get('action')
-                adminUsername = request.POST.get('admin_user')
-                admin = CustomUser.objects.get(username=adminUsername)
-                adminId = admin.pk
+                admin_user = request.user
+                user_id = request.POST.get('user_id')
+                block_time = request.POST.get('block_time')
+                reason_option = request.POST.get('reason_option')
+                reason = request.POST.get('reason')
+
+                # print(action, admin_user, user_id, block_time, reason_option, reason)
+                # block vicky 30 None None 0
+                # set_temporary_timeout(user, lock_timespan)
                 user = CustomUser.objects.get(pk=user_id)
-                    
+                sys_message = dict(CLOSE_REASON).get(int(reason_option)) if reason_option else ""
+                # print(sys_message)
                 if action == 'block':
 
                     if user.is_admin == True:
@@ -796,23 +806,75 @@ class UserDetailView(CommAdminView):
                         }
                         # print(json.dumps(error))
                         return HttpResponse(json.dumps(error), content_type="application/json")
+                    
+                    if block_time != '-1':
+                        with transaction.atomic():
+                            if int(block_time) >= 0 and int(block_time) <= 2:
+                                set_temporary_timeout(user, block_time)
+                            else:
+                                set_permanent_timeout(user, block_time)
 
-                    with transaction.atomic():
-                        user.block = True
-                        user.temporary_block_time = datetime.datetime.now()
-                        # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
-                        user.save()
-                        limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
-                        logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                            )
+                            # user.temporary_block_time = datetime.datetime.now()
+                            user.save()
+                            # limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin_user)
+                            logger.info("Block user: " + str(user.username) + " by admin user: " + str(admin_user))
+                    else:
+                        with transaction.atomic():
+                            user.block = True
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                            )
+
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_SYSTEM,
+                            )
+                            # user.temporary_block_time = datetime.datetime.now()
+                            user.save()
+                            # limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin_user)
+                            logger.info("Block user: " + str(user.username) + " by admin user: " + str(admin_user))
+                    return HttpResponse(json.dumps({"message": "finished block"}), content_type="application/json")
                 else:
                     with transaction.atomic():
                         # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
-                        user.block = False
                         user.temporary_block_time = None
+                        user.block = False
                         user.save()
-                        limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
-                        logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
-                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
+
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = "Open account",
+                            message = reason,
+                            activity_type = ACTIVITY_OPEN_ACCOUNT,
+                        )
+
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = "Open account",
+                            message = reason,
+                            activity_type = ACTIVITY_SYSTEM,
+                        )
+
+                        # limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin_user)
+                        logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(admin_user))
+                    return HttpResponse(json.dumps({"message": "finished open"}), content_type="application/json")
+                # return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
         except Exception as e:
             logger.error("User Detail View Error -- {}".format(repr(e)))
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))

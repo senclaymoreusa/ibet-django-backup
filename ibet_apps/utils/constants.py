@@ -335,6 +335,8 @@ ACTIVITY_MESSAGE = 2    # Inbox message
 ACTIVITY_NOTE= 3        # Note in activity
 ACTIVITY_UPLOAD_IMAGE = 4
 ACTIVITY_REMOVE_IMAGE = 5
+ACTIVITY_CLOSE_ACCOUNT = 6
+ACTIVITY_OPEN_ACCOUNT = 7
 
 ACTIVITY_TYPE = (
     (0, 'System'),
@@ -343,6 +345,8 @@ ACTIVITY_TYPE = (
     (3, 'Note'),
     (4, 'Upload ID image'),
     (5, 'Remove ID image'),
+    (6, 'Close Account'),
+    (7, 'Open Account'),
 )
 
 
@@ -1497,6 +1501,13 @@ BRAND_OPTIONS = (
     ('ibet', 'iBet')
 )
 
+
+CLOSE_REASON = (
+    (0, 'Closed by player request'),
+    (1, 'Temporary self-exclusion'),
+    (2, 'AML'),
+    (3, 'Fraud'),
+)
 
 SECURITY_QUESTION = (
     (0, _('What is your’s father birthday?')),
