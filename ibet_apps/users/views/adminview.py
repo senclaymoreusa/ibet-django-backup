@@ -30,6 +30,8 @@ from games.models import GameBet, Category, GameProvider
 from utils.admin_helper import *
 from operation.views import send_email
 from games.helper import transferRequest
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
 
 
 import requests
@@ -508,6 +510,7 @@ class UserDetailView(CommAdminView):
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
         context['segment_level'] = Segmentation.objects.all()
+        context['related_user_data'] = getRelatedDevice(customUser.username)
 
         log_obj = UserActivity.objects.filter(user=customUser, activity_type=ACTIVITY_UPLOAD_IMAGE).order_by('-created_time')
         if len(log_obj) > 0:
@@ -1768,4 +1771,80 @@ class ProductContribution(View):
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
         except Exception as e:
             logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))
+            return HttpResponse(status=400)
+
+
+
+
+
+
+def getRelatedDevice(user):
+    r = RedisClient().connect()
+    redis = RedisHelper()
+    device = redis.get_devices_by_user(user)
+    related_user_use_same_device = []
+    related_user_data = []
+    if device:
+        related_user_use_same_device += redis.get_users_by_device(device.pop().decode('utf-8'))
+    while related_user_use_same_device:
+        username = related_user_use_same_device.pop().decode('utf-8')
+        if username == user:
+            continue
+        related_user = CustomUser.objects.get(username=username)
+
+        if related_user.is_admin:
+            continue
+        
+        related_user_info = {
+            'user_id': related_user.pk,
+            'username': related_user.username,
+            'member_status': related_user.get_member_status_display(),
+            'risk_level': related_user.get_risk_level_display(),
+            'balance': related_user.main_wallet
+        }
+        related_user_data.append(related_user_info)
+
+    return related_user_data
+
+
+
+
+class BlackListUser(View):
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        try:
+            user_list = data['user_list']
+            reason = data['reason']
+            admin = request.user
+
+            with transaction.atomic():
+                for user in user_list:
+                    blacklist_user = CustomUser.objects.get(pk=user)
+                    blacklist_user.block = True
+                    blacklist_user.member_status = MEMBER_STATUS_BLACKLISTED
+                    blacklist_user.save()
+                    UserActivity.objects.create(
+                        user = blacklist_user,
+                        admin = admin,
+                        system_message = "The user is being blacklist",
+                        message = reason,
+                        activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                    )
+
+                    UserActivity.objects.create(
+                        user = blacklist_user,
+                        admin = admin,
+                        system_message = "The user is being blacklist",
+                        message = reason,
+                        activity_type = ACTIVITY_SYSTEM,
+                    )
+
+            response = {
+                "message": "finished blacklist user"
+            }
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except:
+            logger.error("Blacklist user error: {}".format(str(e)))
             return HttpResponse(status=400)

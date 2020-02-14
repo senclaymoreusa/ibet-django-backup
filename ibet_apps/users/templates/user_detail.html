@@ -944,7 +944,7 @@
                     <div class="modal-content">
                         <div class="modal-header" style="background-color: #ffa313; color:white;">
                             <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            <h4 class="modal-title">Login history</h4>
+                            <h4 class="modal-title">Close account</h4>
                             <div class="update-time">Updated {{ time }}</div>
                         </div>
                         <div class="modal-body">
@@ -985,6 +985,63 @@
                     </div> 
                 </div>
             </div>
+
+            <!-- blacklist account -->
+            <div class="modal fade" id="black_list_window" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #ffa313; color:white;">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Blacklist account</h4>
+                            <div class="update-time">Updated {{ time }}</div>
+                        </div>
+                        <div class="modal-body">
+                            <div style="width:100%; border-radius: 4px; border: solid 2px #d9534f; margin-left: 3px; margin-bottom: 10px; background-color: rgb(249, 225, 225); padding: 15px;">
+                                These access points are associated with the account you are about to blacklist. Select the ones you want to blacklist. Be careful with blocking devices used by normal players.
+                            </div>
+                            <!-- related_user_data -->
+
+                            <table id="transaction-table" class="blacklistRadio" >
+                                <thead>
+                                    <tr>
+                                    <th scope="col">ALL<input type="radio" id="radioAll" value="all"></th>
+                                    <th scope="col">Player's ID</th>
+                                    <th scope="col">Player's username</th>
+                                    <th scope="col">Player's status</th>
+                                    <th scope="col">Player's risk level</th>
+                                    <th scope="col">Player's balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in related_user_data %}
+                                    <tr>
+                                    <td><input type="radio" class="radioBox" value="{{ user.user_id }}" name="radio{{ user.user_id }}"></td>
+                                    <td>{{ user.user_id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.member_status }}</td>
+                                    <td>{{ user.risk_level }}</td>
+                                    <td>{{ user.balance}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <div class="form-group">
+                                <div class="bet-limit-text">REASON FOR BlACKLISTING ACCOUNT*</div>
+                                <textarea class="form-control" id="blacklistReason" name="blacklistReason" rows="3" placeholder="Please provide a brief explanation."></textarea>
+                            </div>
+
+                            <div style="margin-top: 5px;">
+                                <!-- <button type="button" id="closeAccountBtn1" class="btn btn-danger"><span class="glyphicon glyphicon-trash" style='color:white'></span>Close Account</button> -->
+                                <button type="button" id="blacklistAccountBtn" class="btn btn-danger" >Blacklist account</button>
+                                <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>  
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
 
             <!-- login history window -->
             <div class="modal fade" id="login_history" role="dialog">
@@ -3078,13 +3135,35 @@ $(document).ready(function() {
     $('#close-account-btn').on('click', function () {
         $('#edit_details').modal('hide');
         $('#close_account').modal('show');
-        // $('#edit_details').on('hidden.bs.modal', function () {
-        // // Load up a new modal...
-        //     $('#close_account').modal('show');
-        // })
-        // $('#close-account-btn').html('Click to Close account');
-        // $('#close-account-btn').attr('id', 'close-account');
-        // $('#close-account').attr('onclick', 'userBlockAction("block")');
+    });
+
+    $('#blacklist').on('click', function () {
+        $('#edit_details').modal('hide');
+        $('#black_list_window').modal('show');
+    });
+
+
+    $('.blacklistRadio input[type="radio"]').on('click', function () {
+
+        if ($(this).attr('checked')){
+            $( this ).attr( 'checked', false);
+        } else {
+            $( this ).attr( 'checked', true);
+        }
+        
+        
+    });
+
+
+    $('#radioAll').click(function(){
+        if ($('#radioAll').attr("checked")) {
+            $('.blacklistRadio input[type="radio"]').prop('checked', true);
+            // $('.radio1ALL input').prop('checked', true);
+        } else {
+            $('.blacklistRadio input[type="radio"]').prop('checked', false);
+            // $('.radio1ALL input').prop('checked', false);
+        }
+        
     });
 
 
@@ -3113,6 +3192,54 @@ $(document).ready(function() {
         
     });
 
+
+    $('#blacklistAccountBtn').click(function() {
+
+        if (!confirm("Are you sure you want to blacklist those people!")) {
+            return;
+        }
+        
+        var array = [];
+        $('.radioBox:checked').each(function(){
+            array.push($(this).val());
+        }); 
+    
+        var reason = $('#blacklistReason').val();
+        if (array.length == 0) {
+            alert("please select the user");
+            return;
+        }
+
+        if (!reason) {
+            alert("please provide a explanation");
+            return;
+        }
+
+        data = {
+            "user_list": array,
+            "reason": reason
+        }
+        
+        var url = "{% url 'blacklist_user' %}";
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(data),
+            success: function(data)
+            {
+                // console.log(data);
+                window.location.reload();
+            }
+        });
+    
+    });
+
+    var clientHeight = $(".member-detail-rectangle").height();
+    $(".activity-rectangle").css('height', clientHeight+1);
+    $("#select-filter").css('height', clientHeight-200);
+
+    // var clientHeight = document.getElementById('.member-detail-rectangle').clientHeight;
     $('#limitForm').on('submit', function(e) {
         // e.preventDefault();
         // var form = $(this);
