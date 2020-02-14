@@ -253,21 +253,30 @@ class MGgame(APIView):
                 provider = GameProvider.objects.get(provider_name=MG_PROVIDER)
                 category = Category.objects.get(name='Games')
                 transactionId = re.sub("[^0-9]", "", timestamp)
-                sameWin = False
+                samePack = False
                 if (playtype == "win" or playtype == "progressivewin" or playtype == "refund" or playtype == "transferfrommgs") :
                     # same win package exist
                     try:
                         bet = GameBet.objects.filter(other_data=actionid, ref_no=gameid)
                         if bet.count() > 0:
                             wallet = user.main_wallet
-                            sameWin = True
+                            samePack = True
                         else :
                             wallet = user.main_wallet + decimal.Decimal(amount)/100
                     except:
                         wallet = user.main_wallet + decimal.Decimal(amount)/100
                 
                 else :
-                    wallet = user.main_wallet - decimal.Decimal(amount)/100
+                    # same bet package exist
+                    try:
+                        bet = GameBet.objects.filter(other_data=actionid, ref_no=gameid)
+                        if bet.count() > 0:
+                            wallet = user.main_wallet
+                            samePack = True
+                        else :
+                            wallet = user.main_wallet - decimal.Decimal(amount)/100
+                    except:
+                        wallet = user.main_wallet - decimal.Decimal(amount)/100
                     
                 if (wallet > 0):
                     with transaction.atomic():
@@ -276,7 +285,7 @@ class MGgame(APIView):
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                         
                         if (playtype == "win" or playtype == "progressivewin") :
-                            if (not sameWin):
+                            if (not samePack):
                                 GameBet.objects.get_or_create(provider=provider,
                                                                 category=category,
                                                                 user=user,
@@ -293,7 +302,7 @@ class MGgame(APIView):
                                                                 other_data=actionid
                                                                 )
                         elif (playtype == "refund" or playtype == "transferfrommgs") :
-                            if (not sameWin):
+                            if (not samePack):
                                 GameBet.objects.get_or_create(provider=provider,
                                                                 category=category,
                                                                 user=user,
@@ -311,18 +320,19 @@ class MGgame(APIView):
                                                                 )
 
                         else :
-                            GameBet.objects.get_or_create(provider=provider,
-                                                            category=category,
-                                                            user=user,
-                                                            user_name=user.username,
-                                                            amount_wagered=decimal.Decimal(amount)/100,
-                                                            currency=user.currency,
-                                                            market=ibetCN,
-                                                            ref_no=gameid,
-                                                            transaction_id=trans_id,
-                                                            # game_name=gameref,
-                                                            other_data=actionid
-                                                            )
+                            if (not samePack):
+                                GameBet.objects.get_or_create(provider=provider,
+                                                                category=category,
+                                                                user=user,
+                                                                user_name=user.username,
+                                                                amount_wagered=decimal.Decimal(amount)/100,
+                                                                currency=user.currency,
+                                                                market=ibetCN,
+                                                                ref_no=gameid,
+                                                                transaction_id=trans_id,
+                                                                # game_name=gameref,
+                                                                other_data=actionid
+                                                                )
 
                     response = {
                     "pkt" : {
