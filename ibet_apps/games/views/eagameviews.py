@@ -66,7 +66,8 @@ class EALiveCasinoClientLoginView(View):
         # print(action, request_id, properties_user_id, properties_password)
 
         status_code = 0
-        currency_code = ""
+        currency_code = "156"
+        vendor = 2
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
