@@ -274,7 +274,7 @@ class MGgame(APIView):
                             wallet = user.main_wallet
                             samePack = True
                         else :
-                            wallet = user.main_wallet + decimal.Decimal(amount)/100
+                            wallet = user.main_wallet - decimal.Decimal(amount)/100
                     except:
                         wallet = user.main_wallet - decimal.Decimal(amount)/100
                     
