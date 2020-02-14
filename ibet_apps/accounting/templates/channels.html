@@ -115,7 +115,7 @@
                     <tr>
                         <td>{{ psp.method }}</td>
                         <td>{{ psp.channel }}</td>
-                        <td>{{ psp.supplier|default:'' }}</td>
+                        <td>{{ psp.get_thirdParty_name_display|default:'' }}</td>
                         <td>{{ psp.type }}</td>
                         <td>{{ psp.get_market_display }}</td>
                         <td>{{ psp.min_amount|intcomma }}</td>
@@ -142,7 +142,7 @@
                     <tr>
                         <td>{{ psp.method }}</td>
                         <td>{{ psp.channel }}</td>
-                        <td>{{ psp.supplier|default:'' }}</td>
+                        <td>{{ psp.get_thirdParty_name_display|default:'' }}</td>
                         <td>{{ psp.type }}</td>
                         <td>{{ psp.get_market_display }}</td>
                         <td>{{ psp.min_amount|intcomma }}</td>
@@ -150,6 +150,11 @@
                         <td>{{ psp.transaction_fee }}</td>
                         <td>{{ psp.transaction_fee_per }}</td>
                         <td>{{ psp.req_ver }}</td>
+                        <td>{{ psp.player_segment }}</td>
+                        <td>{{ psp.block_risk_level }}</td>
+                        <td>{{ psp.get_allowed_statuses_display }}</td>
+                        <td>{{ psp.whitelist.whitelist|length }}</td>
+                        <td>{{ psp.blacklist.blacklist|length }}</td>
                         <td class="downtime" id="dt-{{ psp.pk }}" data-type="withdraw"></td>
                         <td>{{ psp.get_status_display }}</td>
                         <td>                            

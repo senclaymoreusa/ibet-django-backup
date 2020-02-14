@@ -167,6 +167,12 @@
                                 Override
                             </button>
                         </td>
+                        {% else %}
+                        <td class="edit-txn">
+                            <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_withdraw">
+                                    <span class="glyphicon glyphicon-search"></span>
+                            </button>
+                        </td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -231,7 +237,9 @@
                             <div class="col-md-3 withdraw-request-details">
                                 <div class="col-md-6 withdraw-request-title">
                                     <p>Transaction No.</p>
-                                    <p>Application time</p>
+                                    <p>Application Time</p>
+                                    <p>Resolved Time</p>
+                                    <p>Ref No.</p>
                                     <p>Amount</p>
                                 </div>
                                 <div class="col-md-6 withdraw-request-data" id="trans_withdraw_detail">
@@ -327,7 +335,7 @@
 
                         <!-- notes -->
 
-                        <div class="form-group">
+                        <div class="form-group" id="confirm-reject-section" hidden>
                             <p id='lastwithdraw'>&nbsp;</p>
                             <p id='reviewError'>&nbsp;</p>
                             <label for="withdraw_notes" class="withdraw-request-word"
@@ -611,7 +619,7 @@
             content += "<p>" + data[13] + "</p>";
             $("#bank_detail").append(content);
         }
-
+        
         showWithdrawDetail = function (data) {
             $("#withdraw_detail").empty();
             var content = "";
@@ -625,26 +633,30 @@
         showTransactionDetail = function (data, id) {
             $(id).empty();
             var content = "";
-            // tran no.
-            content += "<p>...</p>";
+            let resolvedTime = data[10] || "Unresolved";
+            let refNo = data[8] || "N/A";
+            // content += "<p>...</p>";
             // tran no.
             content += "<p id='transaction_id'>" + data[7] + "</p>";
             // created+resolved time
             content += "<p>" + data[9] + "</p>";
-            content += "<p>" + data[10] + "</p>";
+            content += "<p>" + resolvedTime + "</p>";
             // ref no.
-            content += "<p>" + data[8] + "</p>";
+            content += "<p>" + refNo + "</p>";
             // amount
             content += "<p>" + data[14] + "</p>";
             
             $(id).append(content);
+            if (data[16] == "Pending" && data[5] == "Local Bank Transfer") {
+                console.log("SHOW");
+                $("#confirm-reject-section").attr("hidden", false)
+            }
         }
 
         $('#withdraw-review-cancel').click(function () {
             location.reload();
         });
 
-        // TODO: add withdraw override result logic 
         // double click button
         // risk review
         $('#withdraw-review-a').click(function () {
