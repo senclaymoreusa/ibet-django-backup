@@ -151,15 +151,16 @@ table.table-bordered > tbody > tr > td {
 .block-content {
     height: 38px;
     font-family: Helvetica;
-    font-size: 32px;
+    font-size: 26px;
     font-weight: bold;
     font-style: normal;
     font-stretch: normal;
     letter-spacing: normal;
     text-align: center;
     color: #4a4a4a;
-    line-height: 100px;
-
+    line-height: normal;
+    word-wrap: break-word;
+    padding-top:39px;
 }
 
 .status-block-content {
@@ -229,7 +230,7 @@ table.table-bordered > tbody > tr > td {
     width: 100%;
     height: 13px;
     font-family: Helvetica;
-    font-size: 11px;
+    font-size: 8px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
@@ -241,9 +242,12 @@ table.table-bordered > tbody > tr > td {
 
 #login-btn {
     float:right;
-    width: 20%;
+    width: 30px;
     height: 33px;
     background-color: #428bca;
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
 .active-block i, #note-btn i{
@@ -274,12 +278,11 @@ table.table-bordered > tbody > tr > td {
     padding:0px;
     margin-right: 0.5%;
     min-height: 1030px;
-    height: 1035px;
 }
 
 .activity-rectangle {
     width: 49%;
-    height: 1035px;
+    min-height: 1030px;
     border-radius: 4px;
     border: solid 1px #bdbdbd;
     background-color: #ffffff;
@@ -295,7 +298,7 @@ table.table-bordered > tbody > tr > td {
 
 
 
-.memeber-detail-label {
+.member-detail-label {
     width: 75px;
     height: 16px;
     font-family: Helvetica;
@@ -309,7 +312,7 @@ table.table-bordered > tbody > tr > td {
 }
 
 .edit-member-info-label {	
-    width: 219px;	
+    width: 250px;	
     font-family: Helvetica;	
     font-size: 11px;	
     font-weight: normal;	
@@ -347,7 +350,7 @@ table.table-bordered > tbody > tr > td {
     line-height: normal;
     letter-spacing: normal;
     color: #4a4a4a;
-    margin:15px 15px 0px 15px;
+    margin:15px 15px 5px 15px;
 
 }
 
@@ -359,13 +362,13 @@ table.table-bordered > tbody > tr > td {
 #notes-input {
     display: inline-block;
     margin-left:5px;
-    width:80%;
+    width: 76%;
 
 }
 
 #post-btn{
     margin-left: 1%;
-    width:9%;
+    width:11%;
 }
 
 #note-btn {
@@ -446,6 +449,7 @@ table.table-bordered > tbody > tr > td {
     width: 101%;
     height: 175px;
     background-color: #f3f3f3;
+    position: relative;
 }
 
 
@@ -466,7 +470,7 @@ table.table-bordered > tbody > tr > td {
     width: 100%;
     height: 16px;
     font-family: Helvetica;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: normal;
     font-style: normal;
     font-stretch: normal;
@@ -479,7 +483,7 @@ table.table-bordered > tbody > tr > td {
 
 
 #member-input-container {
-    padding-left: 20px;
+    padding-left: 5%;
     padding-top: 20px;
 }
 
@@ -489,6 +493,9 @@ table.table-bordered > tbody > tr > td {
     background-color: #428bca;
     float: right;
     margin-top:-5px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
 
@@ -502,14 +509,14 @@ table.table-bordered > tbody > tr > td {
     height: 155px;
     background-color: #f3f3f3;
     margin-left:4%;
-    margin-top:20px;
+    margin-top: 15px;
 
 }
 
 #edit-detail-btn {
     margin-left: 5%;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 
@@ -1007,4 +1014,45 @@ table.table-bordered > tbody > tr > td {
     animation: spin 2s linear infinite;
     margin-top: 15px;
     max-height: 135px;
+}
+
+
+
+.sport {
+    fill: #b8e986;
+    background-color: #b8e986;
+}
+
+.games {
+    fill: #e98686;
+    background-color: #e98686;
+}
+
+.liveCasino {
+    fill: #f1e86e;
+    background-color: #f1e86e;
+}
+
+.lottery {
+    fill: #ab85cc;
+    background-color: #ab85cc;
+}
+
+
+.bold {
+    font-weight: bold;
+}
+
+
+.edit-member-image-label {	
+    font-family: Helvetica;	
+    font-size: 11px;	
+    font-weight: normal;	
+    font-style: normal;	
+    font-stretch: normal;	
+    line-height: normal;	
+    letter-spacing: normal;	
+    color: #4a4a4a;	
+    margin-top: 13px;
+    padding: 0px;	
 }
