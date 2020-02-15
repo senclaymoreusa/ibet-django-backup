@@ -32,6 +32,7 @@ from operation.views import send_email
 from games.helper import transferRequest
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+from operation.views import send_sms
 
 
 import requests
@@ -1845,6 +1846,39 @@ class BlackListUser(View):
                 "message": "finished blacklist user"
             }
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
-        except:
+        except Exception as e:
             logger.error("Blacklist user error: {}".format(str(e)))
+            return HttpResponse(status=400)
+
+
+
+
+
+class SendSMS(View):
+
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        try:
+            message = data['message']
+            user_id = data['user_id']
+
+            customUser = CustomUser.objects.get(pk=user_id)
+
+            send_sms(message, customUser, customUser.phone)
+
+            UserActivity.objects.create(
+                user = CustomUser.objects.get(pk=user_id),
+                admin = request.user,
+                system_message = "Send SMS message to " + customUser.username,
+                activity_type = ACTIVITY_MESSAGE,
+            )
+
+            response = {
+                "message": "finished send sms to user"
+            }
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Blacklist send sms to user: {}".format(str(e)))
             return HttpResponse(status=400)
