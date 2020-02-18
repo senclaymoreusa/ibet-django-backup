@@ -432,12 +432,10 @@ def cancel_cashout_card(request):
         }
 
         for attempt in range(3):
-            response = requests.post(requestURL, json=params)
-            # responseJSON = response.json()
+            response = requests.post(astroPayEndpoint, json=params)
+            responseJSON = response.json()
             logger.info(response)
-            if (response.status_code == 200): # if successfully created temp transaction, store temp transaction into db with status of created/pending
-                logger.info("created?: " + str(created))
-                logger.info("transaction data: " + str(obj))
+            if (response.status_code == 200):
                 break
             else:
                 sleep(5)
@@ -518,7 +516,7 @@ def capture_transaction(request):
                     'status':0,
                     'method':"AstroPay",
                     'arrive_time': timezone.now(),
-                    'product': "None",
+                    'product': "None"
                 }
                 # loop = asyncio.new_event_loop()
                 # asyncio.set_event_loop(loop)            

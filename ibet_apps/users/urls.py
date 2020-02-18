@@ -52,6 +52,7 @@ urlpatterns += [
     path('api/updateemail/', views.UpdateEmail.as_view(), name='update_email'),
     path('api/checkemailexist/', views.CheckEmailExixted.as_view(), name='email_exist'),
     path('api/generatepasswordcode/', views.GenerateForgetPasswordCode.as_view(), name='generate_code'),
+    path('api/retrievepasswordmethod/', views.CheckRetrievePasswordMethod.as_view(), name='retrieve_password_method'),
     path('api/sendresetpasswordcode/', views.SendResetPasswordCode.as_view(), name='send_code'),
     path('api/verifyresetpasswordcode/', views.VerifyResetPasswordCode.as_view(), name='verify_resetpassword_code'),
     path('api/changeandresetpassword/', views.ChangeAndResetPassword.as_view(),name='change_reset_password'),
@@ -84,17 +85,22 @@ urlpatterns += [
     path('api/user-security-question/', csrf_exempt(views.UserSecurityQuestion.as_view()), name="user_security_question"),
     path('api/setting-withdraw-password/', csrf_exempt(views.SetWithdrawPassword.as_view()), name="withdraw_password"),
     path('api/reset-withdraw-password/', csrf_exempt(views.ResetWithdrawPassword.as_view()), name="reset_withdraw_password"),
+    path('api/check-withdraw-password/', csrf_exempt(views.checkWithdrawPassword), name="check_withdraw_password"),
     path('api/transfer/', csrf_exempt(transferview.Transfer.as_view()), name="transfer_view"),
     path('api/favorite-payment-setting/', csrf_exempt(paymentsettingview.PaymentSetting.as_view()), name="favorite_deposit_setting"),
 
     path('api/login-device-info', iovationviews.LoginDeviceInfo.as_view(), name="login_device_info"),
 
     path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount"),
+    path('api/get-product-contribution/', ProductContribution.as_view(), name="product_contribution"),
 
     # admin API
     path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
     path('api/admin/get-user-transctions', GetUserTransaction.as_view(), name="get_user_transactions"),
-    path('api/admin/get-bet-history-detail', GetBetHistoryDetail.as_view() ,name="get_bet_history_info")
+    path('api/admin/get-bet-history-detail', GetBetHistoryDetail.as_view(), name="get_bet_history_info"),
+    path('api/admin/user-adjustment', UserAdjustment.as_view(), name="user_adjustment"),
+    path('api/admin/user-transfer', UserTransfer.as_view(), name="user_transfer"),
+    path('api/admin/blacklist-user', BlackListUser.as_view(), name="blacklist_user")
 
 
     

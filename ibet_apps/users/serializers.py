@@ -21,7 +21,7 @@ from django.utils.encoding import force_text
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
 from django.contrib.postgres.fields import JSONField
-
+from utils.constants import *
 class ChoicesSerializerField(serializers.SerializerMethodField):
     """
     A read-only field that return the representation of a model field with choices.
@@ -65,7 +65,7 @@ class RegisterSerializer(serializers.Serializer):
     over_eighteen    = serializers.BooleanField(required=False)
     language         = serializers.CharField(required=False)
     referral_code    = serializers.CharField(required=False)
-
+    currency         = serializers.ChoiceField(choices=CURRENCY_CHOICES)
 
 
     def validate_username(self, username):
@@ -135,6 +135,7 @@ class RegisterSerializer(serializers.Serializer):
             'over_eighteen':    self.validated_data.get('over_eighteen', ''),
             'language':         self.validated_data.get('language', ''),
             'referral_code':    self.validated_data.get('referral_code', ''),
+            'currency':    self.validated_data.get('currency', ''),
         }
 
     def save(self, request):
@@ -154,6 +155,7 @@ class RegisterSerializer(serializers.Serializer):
         user.gender           = self.cleaned_data.get('gender')
         user.over_eighteen    = self.cleaned_data.get('over_eighteen')
         user.language         = self.cleaned_data.get('language')
+        user.currency         = self.cleaned_data.get('currency')
 
         user.save()
         return user
@@ -238,7 +240,7 @@ class LoginSerializer(serializers.Serializer):
 
         if 'allauth' in settings.INSTALLED_APPS:
             from allauth.account import app_settings
-
+            # print(username, password)
             user = self.custom_check_username_email_phone_password(username, password)
 
         else:

@@ -63,15 +63,26 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '7i^ke1w79@h(!g0)e18c8(^j=c8ewfx8=*9n4652o%0f3i^g_-'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# # SECURITY WARNING: don't run with debug turned on in production!
+if os.environ["ENV"].find('prod') != -1:
+    DEBUG = False
+    ALLOWED_HOSTS = ['.claymoreasia.com', 
+                     '.elasticbeanstalk.com', 
+                     '3.115.60.156',
+                     '172.31.32.117', 
+                     '52.194.242.127'
+                     ]
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = ['*']
+    
 
 CORS_ORIGIN_WHITELIST = [
     'localhost:3000'
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-ALLOWED_HOSTS = ['*']       # Added this for Andorid to access back-end
+       # Added this for Andorid to access back-end
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -196,7 +207,7 @@ s3_bucket = "ibet-admin-" + os.environ["ENV"]
 ### This is a hack as we have to use the redshift on apdev for local.
 if 'local' in s3_bucket:
     s3_bucket = "ibet-admin-apdev"
-redshift_data = getKeys(s3_bucket, 'config/ibetadmin_redshift.json')
+REDSHIFT_DATA = getKeys(s3_bucket, 'config/ibetadmin_redshift.json')
 
 if os.getenv("ENV") == "local":
     print("[" + str(datetime.datetime.now()) + "] Using local db")
@@ -243,15 +254,15 @@ elif "ENV" in os.environ:
     }
 
 try:
-    redshift_connection = psycopg2.connect(user=redshift_data['REDSHIFT_USERNAME'],
-                                           password=redshift_data['REDSHIFT_PASSWORD'],
-                                           host=redshift_data['REDSHIFT_HOSTNAME'],
-                                           port=redshift_data['REDSHIFT_PORT'],
-                                           database=redshift_data['REDSHIFT_DB_NAME'])
-    redshift_cursor = redshift_connection.cursor()
+    REDSHIFT_CONNECTION = psycopg2.connect(user=REDSHIFT_DATA['REDSHIFT_USERNAME'],
+                                           password=REDSHIFT_DATA['REDSHIFT_PASSWORD'],
+                                           host=REDSHIFT_DATA['REDSHIFT_HOSTNAME'],
+                                           port=REDSHIFT_DATA['REDSHIFT_PORT'],
+                                           database=REDSHIFT_DATA['REDSHIFT_DB_NAME'])
+    REDSHIFT_CURSOR = REDSHIFT_CONNECTION.cursor()
     print('Successfully established Redshift connection.')
 
-except exception as e:
+except Exception as e:
     print ("FATAL__ERROR: cannot establish Redshift connection: ", e)
 
 
@@ -297,7 +308,9 @@ LANGUAGE_CODE = 'en-us'
 LANGUAGES = (
     ('en', _('English')),
     ('zh-hans', _('Chinese')),
-    ('fr', _('Franch')),
+    # ('fr', _('Franch')),
+    ('vi', ('Vietnam')),
+    ('th', ('Thailand')),
 )
 
 # TIME_ZONE = 'UTC'
@@ -335,7 +348,8 @@ STATIC_URL = '/static/'
 
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 
 log_filename = "logs/debug.log"
@@ -402,7 +416,7 @@ else:
         }, 
         'handlers': {
             'file': {
-                'level': 'ERROR',
+                'level': 'INFO',
                 'class': 'logging.FileHandler',
                 'filename': '/opt/python/log/django-logger.log',
                 'formatter': 'verbose',
@@ -411,7 +425,7 @@ else:
         'loggers': {
             'django': {
                 'handlers': ['file'],
-                'level': 'ERROR',
+                'level': 'INFO',
                 'propagate': True,
             },
         }
@@ -440,6 +454,7 @@ TEST_WITHOUT_MIGRATIONS_COMMAND = 'django_nose.management.commands.test.Command'
 STATIC_DIRS = 'static'
 STATICFILES_DIRS = [
     STATIC_DIRS,
+    os.path.join(BASE_DIR, 'extra_app', 'xadmin', 'static'),
 ]
 
 AWS_S3_ADMIN_BUCKET = 'ibet-admin-dev'

@@ -76,7 +76,7 @@ class VIPView(CommAdminView):
                     }
 
                 except Exception as e:
-                    logger.error("Error getting request from vip admin frontend: ", e)
+                    logger.error("Error getting request from vip admin frontend: {}".format(str(e)))
 
             result['data'] = getVIPData(queryset, min_date, max_date, "list")
 
@@ -161,8 +161,8 @@ class VIPView(CommAdminView):
 def getVIPData(queryset, start_time, end_time, type):
     vip_arr = []
     for vip in queryset:
-        deposit_count, deposit_amount = calculateDeposit(vip, start_time, end_time)
-        withdrawal_count, withdrawal_amount = calculateWithdrawal(vip, start_time, end_time)
+        deposit_count, deposit_amount = getTransactionAmount(vip, start_time, end_time, TRANSACTION_DEPOSIT, None)
+        withdrawal_count, withdrawal_amount = getTransactionAmount(vip, start_time, end_time, TRANSACTION_WITHDRAWAL, None)
         referee = vip.referred_by
         if deposit_count == 0:
             ave_deposit = 0
@@ -186,15 +186,15 @@ def getVIPData(queryset, start_time, end_time, type):
             'phone_verified': vip.phone_verified,
             'id_verified': vip.id_verified,
             'affiliate_id': referee,  # the affiliate who referred this VIP user
-            'ggr': calculateGGR(vip, start_time, end_time),
-            'turnover': calculateTurnover(vip, start_time, end_time),
+            'ggr': calculateGGR(vip, start_time, end_time, None),
+            'turnover': calculateTurnover(vip, start_time, end_time, None),
             'deposit': deposit_amount,
             'deposit_count': deposit_count,
             'ave_deposit': ave_deposit,
             'withdrawal': withdrawal_amount,
             'withdrawal_count': withdrawal_count,
-            'bonus_cost': calculateBonus(vip, start_time, end_time),
-            'ngr': calculateNGR(vip, start_time, end_time),
+            'bonus_cost': getTransactionAmount(vip, start_time, end_time, TRANSACTION_BONUS, None)[1],
+            'ngr': calculateNGR(vip, start_time, end_time, None),
         }
         if type == "list":
             vip_arr.append(vip_dict)

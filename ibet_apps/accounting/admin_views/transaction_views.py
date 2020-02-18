@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, Http404
 from django.urls import reverse, reverse_lazy
+from django.db import models, transaction
 from django.db.models import Q
 from django.template.loader import render_to_string
 from django.core import serializers
@@ -11,8 +12,10 @@ from users.models import CustomUser
 from xadmin.views import CommAdminView
 from utils.constants import *
 
+import utils.helpers as helpers
 import simplejson as json
 import logging
+import decimal
 import pytz
 
 logger = logging.getLogger("django")
@@ -137,10 +140,10 @@ class ConfirmSettlement(CommAdminView):
 
         if result == "approve":
             curr_txn.status = 0
-            logger.info('Finish update the status of deposit ' + str(txn_pk) + ' to Approve')
+            logger.info('Finish updating the status of deposit ' + str(txn_pk) + ' to Approve')
         else:
             curr_txn.status = 1
-            logger.info('Finish update the status of deposit ' + str(txn_pk) + ' to Reject')
+            logger.info('Finish updating the status of deposit ' + str(txn_pk) + ' to Reject')
         curr_txn.save()
         return HttpResponse(status=200)
 
@@ -162,7 +165,35 @@ class RiskReview(CommAdminView):
 # modify success to failure or vice-versa (and modify amount?)
 class OverrideTransaction(CommAdminView):
     def post(self, request):
-        pass
+        # print(request)
+        new_amount = request.POST.get("new_amount")
+        reason = request.POST.get("reason")
+        pk = request.POST.get("txn_id")
+
+        try:
+            with transaction.atomic():
+                curr_txn = Transaction.objects.get(pk=pk)
+                if new_amount:
+                    curr_txn.amount = new_amount
+                new_status = 0 if curr_txn.status == 1 else 1
+                curr_txn.status = new_status
+                curr_txn.remark = curr_txn.remark + " -> Result override to " + curr_txn.get_status_display()
+
+                # TODO: implement changelog function to record 
+                # addToChangelog()
+                
+                can_update = helpers.addOrWithdrawBalance(curr_txn.user_id.username, curr_txn.amount, "add")
+                if can_update:
+                    curr_txn.save()
+                    return HttpResponse("Transaction No. " + pk + " was changed from 'Failed' to 'Successful'")
+                else:
+                    return HttpResponse("Was not able to update user's balance")
+                    
+        except Exception as e:
+            logger.error("There was an error with overriding the transaction result", exc_info=1)
+            logger.error(repr(e))
+            return HttpResponse("There was an error when overriding the result")
+            
 
 # get user details for modal
 class UserInfo(CommAdminView):
@@ -204,7 +235,7 @@ class GetLatestTransactions(CommAdminView):
 
         for trans in latest_transactions[:20]:
             txn = dict()
-            txn["payment"] = trans.get_channel_display()
+            txn["channel"] = trans.get_channel_display()
             txn["tran_no"] = trans.transaction_id
             txn["time_app"] = trans.request_time.strftime("%d %B %Y %X")
             txn["amount"] = trans.amount
@@ -216,22 +247,6 @@ class GetLatestTransactions(CommAdminView):
             content_type="application/json",
         )
 
-
 def myconverter(o):
     if isinstance(o, timezone.date):
         return o.__str__()
-
-# user_account = cancelled_transaction.user_bank_account
-# if user_account == None:
-#     cancelledDict["bank"] = ""
-#     cancelledDict["branch"] = ""
-#     cancelledDict["city"] = ""
-#     cancelledDict["name"] = ""
-#     cancelledDict["account"] = ""
-# else:
-#     bank = user_account.bank
-#     cancelledDict["bank"] = bank.name
-#     cancelledDict["branch"] = bank.branch
-#     cancelledDict["city"] = bank.city
-#     cancelledDict["name"] = user_account.account_name
-#     cancelledDict["account"] = user_account.account_number

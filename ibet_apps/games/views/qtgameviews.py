@@ -16,6 +16,7 @@ from django.utils import timezone
 
 import os
 import json
+import math
 import uuid
 import logging
 import requests
@@ -64,8 +65,11 @@ class VerifySession(APIView):
                     qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
                     
                     status_code = 200
+                    n_float = int(user.main_wallet * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
+                        'balance': round(bal),
                         # TODO: needs to handle if user.currency is bitcoin
                         'currency': CURRENCY_CHOICES[user.currency][1],
                     }
@@ -95,6 +99,7 @@ class GetBalance(APIView):
     """
 
     def get(self, request, *args, **kwargs):
+        http_session = request.META.get('HTTP_WALLET_SESSION')
         pass_key = request.META.get('HTTP_PASS_KEY')
         username = self.kwargs.get('playerId')
         status_code = 500
@@ -107,12 +112,29 @@ class GetBalance(APIView):
             message = "The given pass-key is incorrect."
             logger.info("Error given pass key from QT wallet!")
         else:
+            prov = GameProvider.objects.get(provider_name="QTech")
+            cat = Category.objects.get(name='Games')
+            
+            
             try:
                 user = CustomUser.objects.get(username=username)
+                
+                try: 
+                    qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
+                    if not qt_session.valid:
+                        message = 'Expired (wallet) session being used for getting balance!'
+                        logger.info(message) 
+                    
+                except Exception as e:
+                    message = 'Player (wallet) session missing but still used for getting balance!'
+                    logger.info(message) 
+                
+                
                 status_code = 200
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
                 response = {
-                    'balance': "{0:0.2f}".format(int(user.main_wallet * 100)/100.0),
-                    # TODO: needs to handle if user.currency is bitcoin
+                    'balance': round(bal),
                     'currency': CURRENCY_CHOICES[user.currency][1],
                 }
                 return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
@@ -121,7 +143,7 @@ class GetBalance(APIView):
             except Exception as e:
                 status_code = 400
                 code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
-                message = "General error. If request could not be processed."
+                message = "General error. Request could not be processed."
                 logger.error("Error getting user " + str(e))
 
         response = {
@@ -263,16 +285,21 @@ class ProcessTransactions(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            roundId = request.GET['roundId']
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            roundId = body['roundId']
+            transType = body["txnType"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
         except:
             status_code = 400
@@ -320,6 +347,7 @@ class ProcessTransactions(APIView):
             status_code = 400
             message = 'PLAYER_NOT_FOUND'
             logger.error(message) 
+            print(message)
             
             response = {
                 "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
@@ -327,9 +355,39 @@ class ProcessTransactions(APIView):
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            #
+            # try to find if the txnId exists
+            #
+            rows = GameBet.objects.filter(  provider=prov,
+                                            category=cat,
+                                            user=user,
+                                            user_name = user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=txnId
+                                            )
             
-        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+            if rows.count() > 0:
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                record = rows[0]
                 
+                response = {
+                    'balance': round(bal),
+                    "referenceId": record.transaction_id
+                }
+                logger.info("No transaction for ref_no, {}, for reason of idempotency".format(txnId))
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
+        except:
+            logger.warning('Filter gamebet exception: ' + str(e))
+        
+        logger.info("ref_no, {}, is a new transaction".format(txnId))        
+        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+        
         if transType == "DEBIT":
             bal = user.main_wallet - amount
             
@@ -351,16 +409,19 @@ class ProcessTransactions(APIView):
                                 'txnType': transType,
                                 'completed': completed, 
                                 'roundId': roundId, 
-                                'category': request.GET['category'],
-                                'device': request.GET['device']
+                                'category': body['category'],
+                                'device': body['device']
                             }
                         )
                         user.main_wallet = bal
                         bet.save()
                         user.save()
                         
+                    n_float = int(bal * 100) / 100.0
+                    bal = Decimal(n_float)
+                    
                     response = {
-                        "balance": str(bal),
+                        'balance': round(bal),
                         "referenceId": trans_id
                     }
                     
@@ -380,7 +441,7 @@ class ProcessTransactions(APIView):
                 }
                 status_code = 400
                 
-            
+            logger.info("Done processing DEBIT")
         elif transType == "CREDIT":
             user.main_wallet += amount
             
@@ -402,15 +463,18 @@ class ProcessTransactions(APIView):
                             'txnType': transType,
                             'completed': completed, 
                             'roundId': roundId, 
-                            'category': request.GET['category'],
-                            'device': request.GET['device']
+                            'category': body['category'],
+                            'device': body['device']
                         }
                     )
                     bet.save()
                     user.save()
                     
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
                 response = {
-                    "balance": str(user.main_wallet),
+                    'balance': round(bal),   
                     "referenceId": trans_id
                 }
                 
@@ -424,13 +488,13 @@ class ProcessTransactions(APIView):
                     "message": "CREDIT unexpected error"
                 }
                 
+            logger.info("Done processing CREDIT")
         else:
             response = {
                 "code": "REQUEST_DECLINED",
                 "message": "Invalid transaction type: " + transType
             }
             status_code = 400
-                    
             
         return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
     
@@ -462,17 +526,21 @@ class ProcessRollback(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
+        body = json.loads(request.body)
+        for i in ['category','device']:
+            if not i in body:
+                body[i] = ''
+        
         try:
-            playerId = request.GET['playerId']
-            txnId = request.GET['txnId']
-            gameId = request.GET["gameId"]
-            transType = request.GET["txnType"]
-            currency = request.GET["currency"]
-            created = request.GET['created'] # timestamp
-            completed = request.GET['completed'] # true / false
-            amount = request.GET["amount"]
+            playerId = body['playerId']
+            txnId = body['txnId']
+            gameId = body["gameId"]
+            currency = body["currency"]
+            created = body['created'] # timestamp
+            completed = body['completed'] # true / false
+            amount = body["amount"]
             amount = Decimal(amount)
-            orig_txnId = request.GET['betId']
+            orig_txnId = body['betId']
             
         except:
             status_code = 400
@@ -488,23 +556,10 @@ class ProcessRollback(APIView):
         
         try:
             user = CustomUser.objects.get(username=playerId)
-            qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
             prov = GameProvider.objects.get(provider_name="QTech")
             cat = Category.objects.get(name='Games')
             
-            if not qt_session.valid:
-                status_code = 400
-                message = 'Missing, invalid or expired player (wallet) session token'
-                logger.error(message) 
-                
-                response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
-                    "message": message
-                }
-                
-                return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
-            
-            elif user.block:
+            if user.block:
                 status_code = 403
                 message = "The player account is blocked"
                 logger.error("Blocked user {} trying to access QT Game".format(username))
@@ -515,7 +570,18 @@ class ProcessRollback(APIView):
                 }
                 
                 return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+            try: 
+                qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
                 
+                if not qt_session.valid:
+                    message = 'Expired (wallet) session being used for rollback!'
+                    logger.info(message) 
+                
+            except Exception as e:
+                message = 'Player (wallet) session Missing but proceed with rollback!'
+                logger.info(message) 
+            
         except:
             status_code = 400
             message = 'PLAYER_NOT_FOUND'
@@ -528,36 +594,86 @@ class ProcessRollback(APIView):
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
         
-        user.main_wallet += amount
+        try:
+            #
+            # try to find if the txnId exists
+            #
+            rows = GameBet.objects.filter(  provider=prov,
+                                            category=cat,
+                                            user=user,
+                                            user_name = user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=txnId
+                                            )
+            if rows.count() > 0:
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                record = rows[0]
+                
+                response = {
+                    'balance': round(bal),
+                    "referenceId": record.transaction_id
+                }
+                logger.info("No transaction for ref_no, {}, for reason of idempotency".format(txnId))
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
+        except Exception as e:
+            logger.warning('Filter gamebet exception: ' + str(e))
+            
+        logger.info("ref_no, {}, is a new transaction".format(txnId))
+        
         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
+        
         
         try:
             #
             # try to find the original QT txnId for rollback
             #
-            record = GameBet.objects.filter(  provider=prov,
-                                           category=cat,
-                                           user=user,
-                                           user_name = user.username,
-                                           currency=user.currency,
-                                           market=ibetCN,
-                                           ref_no=orig_txnId
-                                           )
+            rows = GameBet.objects.filter(  provider=prov,
+                                            category=cat,
+                                            user=user,
+                                            user_name = user.username,
+                                            currency=user.currency,
+                                            market=ibetCN,
+                                            ref_no=orig_txnId
+                                            )
             
+            if rows.count() > 0:
+                logger.info("Rollback from original txnId=" + orig_txnId)
+                
+                user.main_wallet += amount
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                
+                response = {
+                    'balance': round(bal),
+                    "referenceId": trans_id
+                }
+            else:
+                logger.warning("No rollback due to original txnId, {}, NOT found".format(orig_txnId))
+                
+                n_float = int(user.main_wallet * 100) / 100.0
+                bal = Decimal(n_float)
+                response = {
+                    'balance': round(bal)
+                }
+                
+                return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+                 
+            
+        except Exception as e:
+            logger.warning('No rollback: Filter gamebet exception: ' + str(e))
+            
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
             response = {
-                "balance": str(user.main_wallet),
-                "referenceId": trans_id
+                "balance": round(bal)
             }
             
-        except:
-            logger.error("Original ref_no, {}, NOT FOUND".format(orig_txnId)) 
-            response = {
-                "balance": str(user.main_wallet)
-            }
-            
-        #
-        # it proceeds with rollback regardless the orig_txnId
-        #
+            return HttpResponse(json.dumps(response), content_type='application/json', status=201)
+        
         try:
             with transaction.atomic():
                 bet = GameBet(
@@ -577,8 +693,8 @@ class ProcessRollback(APIView):
                         'transactionType': "RollBack",
                         'rollBackFrom': orig_txnId,
                         'completed': completed, 
-                        'category': request.GET['category'],
-                        'device': request.GET['device']
+                        'category': body['category'],
+                        'device': body['device']
                     }
                 )
                 bet.save()

@@ -89,6 +89,7 @@ class ThirdParty(models.Model):
     limit_access = models.BooleanField(default=False)
     block_risk_level = models.SmallIntegerField(choices=RISK_LEVEL, null=True, blank=True)
     player_segment = models.SmallIntegerField(choices=VIP_CHOICES, null=True, blank=True)
+    allowed_statuses = models.SmallIntegerField(choices=ALLOWED_STATUSES, null=True, blank=True)
 
     # payment method risk / settlement settings
     risk_review = models.BooleanField(default=True)
@@ -194,7 +195,9 @@ class Transaction(models.Model):
     status = models.SmallIntegerField(
         choices=STATE_CHOICES, default=2, verbose_name=_("Status")
     )
-    
+    current_balance = models.DecimalField(
+        max_digits=20, decimal_places=4, default=0, verbose_name=_("Current Balance")
+    )
     # Transaction types: Deposit, Withdrawal
     transaction_type = models.SmallIntegerField(
         choices=TRANSACTION_TYPE_CHOICES, default=0, verbose_name=_("Transaction Type")

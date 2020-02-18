@@ -93,6 +93,7 @@
                     <col style="width: 85px">  <!-- // -->
                     <col style="width: 78px">  <!-- // -->
                     <col style="width: 90px">  <!-- // -->
+                    <col style="width: 90px">  <!-- // -->
                 </colgroup>
                 <thead>
                     <tr>
@@ -125,7 +126,7 @@
                         <td>{{ tran.risk_level }}</td>
                         <td>{{ tran.user_status }}</td>
                         <td>{{ tran.method }}</td>
-                        <td>{{ tran.payment }}</td>
+                        <td>{{ tran.channel }}</td>
                         <td>{{ tran.tran_no }}</td>
                         <td>{{ tran.order_id }}</td>
                         <td>{{ tran.app_time }}</td>
@@ -135,25 +136,31 @@
                         <td>{{ tran.status }}</td>
 
                         {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
-                        <td class="manual-override">
-                            <button id="{{ tran.pk }}"class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
-                                <!-- <span class="glyphicon glyphicon-search"></span> -->
-                                Confirm
-                            </button>
-                        </td>
-                        
-                        {% elif tran.status == 'Success' %}
-                        <td class="manual-override">
-                            <button id="result-override-btn" type="button" data-toggle="modal" data-target="#override_deposit">
-                                Override
-                            </button>
-                        </td>
+                            <td class="edit-txn">
+                                <button id="{{ tran.pk }}"class="confirm-settlement-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                    Confirm
+                                </button>
+                            </td>
+                            
+                        {% elif tran.status == 'Failed' %}
+                            <td class="edit-txn">
+                                <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                </button>
+                            </td>
+                            {% if tran.channel == 'Asiapay' or tran.channel == 'Qaicash' or tran.channel == 'ScratchCard'%}
+                            <td class="edit-txn">
+                                <button class="result-override-btn" type="button" data-toggle="modal" data-target="#override-deposit">
+                                    Override
+                                </button>
+                            </td>
+                            {% endif %}
                         {% else %}
-                        <td class="manual-override">
-                            <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
-                                    <span class="glyphicon glyphicon-search"></span>
-                            </button>
-                        </td>
+                            <td class="edit-txn">
+                                <button class="blue-btn" type="button" data-toggle="modal" data-target="#audit_deposit">
+                                        <span class="glyphicon glyphicon-search"></span>
+                                </button>
+                            </td>
                         {% endif %}
                         <td style="display: none">{{ tran.pk }}</td>
                     </tr>
@@ -194,133 +201,15 @@
     <div class="modal fade" id="audit_deposit" role="dialog">
         <div id="deposit_request_pop" class="modal-dialog">
             <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    Deposit request details
-                </div>
-                <div class="modal-body">
-                    <form action="/" method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" name="type" value="audit_deposit">
-                        <input type="hidden" id="dep_trans_no" name="dep_trans_no">
-                        <input type="hidden" id="dep_row_index" name="dep_row_index">
-
-                        <div class="row deposit-request-word">
-                            <div class="col-md-3" style="margin-left:12px">TRANSACTION DETAILS</div>
-                            <div class="col-md-4" style="margin-left:20px">BANK DETAILS</div>
-                            <div class="col-md-4" style="margin-left:12px">MEMBER DETAILS</div>
-                        </div>
-
-                        <div class="row" style="margin-left:10px;margin-top: 10px">
-                            <div class="col-md-3 deposit-request-details">
-                                <div class="col-md-6 deposit-request-title">
-                                    <p>Deposit Slip</p>
-                                    <p>Transaction No.</p>
-                                    <p>Created Time</p>
-                                    <p>Provider Ref No.</p>
-                                    <p>Amount</p>
-                                </div>
-                                <div class="col-md-6 deposit-request-data" id="trans_deposit_detail">
-                                </div>
-                            </div>
-
-                            <div class="col-md-4 deposit-request-details">
-                                <div class="col-md-6 deposit-request-title">
-                                    <p>Bank</p>
-                                    <p>Branch</p>
-                                    <p>City</p>
-                                    <p>Account Name</p>
-                                    <p>Account No.</p>
-                                </div>
-                                <div class="col-md-6 deposit-request-data" id="bank_detail">
-                                </div>
-                            </div>
-
-                            <div class="col-md-4 deposit-request-details" style="padding-bottom: 50px">
-                                <div class="col-md-3 deposit-request-title">
-                                    <p>Member ID</p>
-                                    <p>Username</p>
-                                    <p>First Name</p>
-                                    <p>Last Name</p>
-                                </div>
-                                <div class="col-md-4 deposit-request-data" id="member-details">
-                                </div>
-                                <div class="col-md-3 deposit-request-title">
-                                    <p>VIP Level</p>
-                                    <p>Risk Level</p>
-                                    <p>Balance</p>
-                                </div>
-                                <div class="col-md-2 deposit-request-data" id="risk-details">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- latest deposits -->
-                        <div class="row deposit-request-notes" style="margin-top: 30px;margin-left: 10px">
-                            <p><strong>LATEST DEPOSITS</strong></p>
-                        </div>
-                        <div id="latest_deposit">
-                            <table class="table-striped table-bordered"
-                                style="width: 100%; margin-top: 10px; margin-bottom: 40px">
-                                <thead>
-                                    <tr>
-{#                                        <th scope="col">#</th>#}
-                                        <th scope="col">PAYMENT</th>
-                                        <th scope="col">TRANSACTION NO.</th>
-                                        <th scope="col">CREATED TIME</th>
-                                        <th scope="col">BANK</th>
-                                        <th scope="col">BRANCH</th>
-                                        <th scope="col">CITY</th>
-                                        <th scope="col">NAME</th>
-                                        <th scope="col">ACCOUNT</th>
-                                        <th scope="col">PROVIDER REF NO.</th>
-                                        <th scope="col">AMOUNT</th>
-                                        <th scope="col">STATUS</th>
-                                    </tr>
-                                </thead>
-                                <tbody id=latest_deposits>
-                                </tbody>
-                            </table>
-                        </div>
-                        {% if tran.method == 'Local Bank Transfer' and tran.status == 'Pending' %}
-                        <!-- notes -->
-                        <div class="form-group">
-                            <label for="deposit_notes" class="deposit-request-word"
-                                style="margin-left: 10px">NOTES</label>
-                            <textarea id='notes' class="form-control" name="deposit_notes"
-                                style="width: 40%;height: 100px;" placeholder="Add anything of importance"></textarea>
-
-                            <div id="deposit-request-button">
-                                <button type="button" class="btn btn-success" id="deposit-review-a">Approve</button>
-                                <!-- <button type="button" class="btn btn-success" id="deposit-review-appnext">Approve and
-                                    Next</button> -->
-                                <button type="button" class="btn btn-danger" id="deposit-review-r">Reject</button>
-                                <!-- <button type="button" class="btn btn-danger" id="deposit-review-rejnext">Reject and
-                                    Next</button> -->
-                                <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </form>
-                </div>
-            </div>
+            {% include "confirm_settlement_modal.html" %}
         </div>
     </div>
 
     <!-- override_txn modal -->
-    <div class="modal fade" id="override_deposit" role="dialog">
-        <div id="override" class="modal-dialog">
-                <!-- Modal content-->
-                <div class="modal-content">
-                    <div class="modal-header">
-                        Override Transaction
-                    </div>
-                    <div class="modal-body">
-                        <div>
-                            stuff
-                        </div>
-                    </div>
-                </div>
+    <div class="modal fade" id="override-deposit" role="dialog">
+        <div id="override" class="modal-dialog" style="width: 40%">
+            <!-- Modal content-->
+            {% include "override_modal.html" %}
         </div>
     </div>
 
@@ -347,6 +236,18 @@
 
 
 <script>
+    // fill in bank details of modal
+    function showBankDetail (data) {
+        let bankDetails = $("#bank_detail");
+        bankDetails.empty();
+        var content = "";
+        content += "<p>" + data[6] + "</p>";  // bank name
+        content += "<p>" + data[7] + "</p>";  // bank branch
+        content += "<p>" + data[8] + "</p>";  // bank city
+        content += "<p>" + data[9] + "</p>";  // account holder name
+        content += "<p>" + data[10] + "</p>";  // account number
+        bankDetails.append(content);
+    }
     function initCSRF() {
          let csrftoken = $.cookie("csrftoken");
 
@@ -487,17 +388,85 @@
         initSearchParams();
         initEventHandlers();
 
+        // fill in user data into transaction detail modal
+        function addMemberDetails(data) {
+            let userDetails = $("#member-details");
+            userDetails.empty();
+            let content = "";
+            content += "<p>" + data[0].id + "</p>";
+            content += "<p>" + data[0].username + "</p>";
+            content += "<p>" + data[0].first_name + "</p>";
+            content += "<p>" + data[0].last_name + "</p>";
+            userDetails.append(content);
+
+            let riskDetails = $("#risk-details");
+            riskDetails.empty();
+            content = "";
+            content += "<p>.....</p>";
+            content += "<p>" + data[0].risk_level + "</p>";
+            content += "<p>" + data[0].balance + "</p>";
+            riskDetails.append(content);
+        }
+        // fill in latest deposit section of txn detail modal
+        function addDepositRecord(data, trans_pk) {
+            let depositArea = $("#latest_deposits");
+            console.log(data);
+            depositArea.empty();
+            let content = "";
+            for (let i = 0; i < data[0].length; i++) {
+                content += '<tr>';
+                // content += '<td>' + (i + 1) + '</td>';
+                content += '<td>' + data[0][i].channel + '</td>';
+                content += '<td>' + data[0][i].tran_no + '</td>';
+                content += '<td>' + data[0][i].time_app + '' + '</td>';
+                content += '<td>' + (data[0][i].bank || '') + '</td>';
+                content += '<td>' + (data[0][i].branch || '') + '</td>';
+                content += '<td>' + (data[0][i].city || '') + '</td>';
+                content += '<td>' + (data[0][i].name || '') + '</td>';
+                content += '<td>' + (data[0][i].account || '') + '</td>';
+                content += '<td>' + data[0][i].order_id + '</td>';
+                content += '<td>' + data[0][i].amount + '</td>';
+                content += '<td>' + data[0][i].status + '</td>';
+                content += '</tr>'
+            }
+            depositArea.append(content);
+            $("#dep_trans_no").val(trans_pk);
+            // $("#dep_row_index").val(dep_row_index);
+        }
+        // fill in deposit details of modal
+        function showDepositDetail (data, id) {
+            // console.log("deposit data:");
+            console.log(data[13], data[5]);
+            let txnDetails = $(id);
+            txnDetails.empty();
+            let content = "";
+            content += "<p>...</p>";  // placeholder for deposit slip upload
+            content += "<p>" + data[7] + "</p>";  // transaction no.
+            content += "<p>" + data[9] + "</p>";  // created time
+            content += "<p>" + data[8] + "</p>";  // ref no.
+            content += "<p>" + data[12] + "</p>";  // amount
+            txnDetails.append(content);
+            if (data[13] == "Pending" && data[5] == "Local Bank Transfer") {
+                console.log("SHOW");
+                $("#confirm-reject-section").attr("hidden", false)
+            }
+        }
+
+        
         $(".dt-buttons .dt-button.buttons-csv.buttons-html5").text("Export");
 
         // open modal and populate details data
-        $('#deposits-table tbody').on('click', 'button', function () {
+        $('#deposits-table tbody').on('click', 'button', function () {    
             let row = $(this).closest('tr');
             let rowData = row.find('td');
             let data = rowData.map(d => rowData[d].innerHTML);
+            console.log($(this).attr("class"));
 
-            showDepositDetail(data);
-            // showBankDetail(data);
-            let txn_pk = data[15];
+            let id = $(this).attr("class") == "result-override-btn" ? "#override-deposit-detail" : "#trans-deposit-detail"
+            showDepositDetail(data, id);
+
+            // showBankDetail(data); 
+            let txn_pk = data[data.length - 1];
             let user_id = data[0];
             $.when(
                 $.ajax({
@@ -521,79 +490,8 @@
             });
         });
 
-        // fill in user data into transaction detail modal
-        function addMemberDetails(data) {
-            let userDetails = $("#member-details");
-            userDetails.empty();
-            let content = "";
-            content += "<p>" + data[0].id + "</p>";
-            content += "<p>" + data[0].username + "</p>";
-            content += "<p>" + data[0].first_name + "</p>";
-            content += "<p>" + data[0].last_name + "</p>";
-            userDetails.append(content);
 
-            let riskDetails = $("#risk-details");
-            riskDetails.empty();
-            content = "";
-            content += "<p>.....</p>";
-            content += "<p>" + data[0].risk_level + "</p>";
-            content += "<p>" + data[0].balance + "</p>";
-            riskDetails.append(content);
-        }
-
-        // fill in latest deposit section of txn detail modal
-        function addDepositRecord(data, trans_pk) {
-            let depositArea = $("#latest_deposits");
-            depositArea.empty();
-            let content = "";
-            for (let i = 0; i < data[0].length; i++) {
-                content += '<tr>';
-                // content += '<td>' + (i + 1) + '</td>';
-                content += '<td>' + data[0][i].payment + '</td>';
-                content += '<td>' + data[0][i].tran_no + '</td>';
-                content += '<td>' + data[0][i].time_app + '' + '</td>';
-                content += '<td>' + (data[0][i].bank || '') + '</td>';
-                content += '<td>' + (data[0][i].branch || '') + '</td>';
-                content += '<td>' + (data[0][i].city || '') + '</td>';
-                content += '<td>' + (data[0][i].name || '') + '</td>';
-                content += '<td>' + (data[0][i].account || '') + '</td>';
-                content += '<td>' + data[0][i].order_id + '</td>';
-                content += '<td>' + data[0][i].amount + '</td>';
-                content += '<td>' + data[0][i].status + '</td>';
-                content += '</tr>'
-            }
-            depositArea.append(content);
-            $("#dep_trans_no").val(trans_pk);
-            // $("#dep_row_index").val(dep_row_index);
-        }
-
-        // fill in deposit details of modal
-        function showDepositDetail (data) {
-            let txnDetails = $("#trans_deposit_detail");
-            txnDetails.empty();
-            let content = "";
-            content += "<p>...</p>";  // placeholder for deposit slip upload
-            content += "<p>" + data[7] + "</p>";  // transaction no.
-            content += "<p>" + data[9] + "</p>";  // created time
-            content += "<p>" + data[8] + "</p>";  // ref no.
-            content += "<p>" + data[12] + "</p>";  // amount
-            txnDetails.append(content);
-        }
-
-        function showBankDetail (data) {
-            let bankDetails = $("#bank_detail");
-            bankDetails.empty();
-            var content = "";
-            content += "<p>" + data[6] + "</p>";  // bank name
-            content += "<p>" + data[7] + "</p>";  // bank branch
-            content += "<p>" + data[8] + "</p>";  // bank city
-            content += "<p>" + data[9] + "</p>";  // account holder name
-            content += "<p>" + data[10] + "</p>";  // account number
-            bankDetails.append(content);
-        }
-
-
-        // double click approve button
+        // double click approve button for confirming settlement
         $('#deposit-review-a').click(function () {
             $(this).html('Click to Approve');
             $(this).attr('id', 'deposit-review-app');
@@ -612,27 +510,7 @@
                 })
             });
         });
-        // double click reject button
-        $('#deposit-review-r').click(function () {
-            $(this).html('Click to Reject');
-            $(this).attr('id', 'deposit-review-rej');
-            $('#deposit-review-rej').click(function () {
-                let thisTransNo = $("#dep_trans_no").val();
-                
-                $.ajax({
-                    method: 'POST',
-                    url: "{% url 'xadmin:confirm_settlement' %}",
-                    data: {
-                        'type': 'updateTransaction',
-                        'dep_trans_no': thisTransNo,
-                        'result': 'reject',
-                    }
-                })
-                .done(function() {
-                    location.reload();
-                })
-            });
-        });
+
 
         $('#deposit-review-cancel').click(function () {
             location.reload();

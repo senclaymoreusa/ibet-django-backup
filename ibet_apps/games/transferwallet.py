@@ -6,11 +6,15 @@ from users.views.helper import checkUserBlock
 from users.models import CustomUser, UserWallet
 from games.models import GameProvider
 import logging
-from games.views.eagameviews import requestEADeposit, requestEAWithdraw
-from games.views.onebookviews import fundTransfer
-from games.views.kygameviews import kyTransfer
-from games.views.aggamesviews import agFundTransfer
+from games.views.eagameviews import requestEADeposit, requestEAWithdraw, getEAWalletBalance
+from games.views.onebookviews import fundTransfer, checkUserBalance
+from games.views.kygameviews import kyTransfer, kyBalance
+from games.views.aggamesviews import agFundTransfer, getBalance
 from games.views.ptgameviews import ptTransfer
+from games.views.gameplayintviews import getGPIBalance, gpiTransfer
+import simplejson as json
+import decimal
+
 
 logger = logging.getLogger('django')
 
@@ -39,6 +43,9 @@ class TransferDeposit():
     def PTDeposit(self):
         return ptTransfer(self.user, self.amount, self.from_wallet, 0)
 
+    def GPIDeposit(self):
+        return gpiTransfer(self.user, self.amount, self.from_wallet, 0)
+
 
     
 class TransferWithdraw():
@@ -66,3 +73,53 @@ class TransferWithdraw():
 
     def PTWithdraw(self):
         return ptTransfer(self.user, self.amount, self.to_wallet, 1)
+
+    def GPIWithdraw(self):
+        return gpiTransfer(self.user, self.amount, self.to_wallet, 1)
+
+
+class CheckTransferWallet():
+
+    def __init__(self, user):
+        self.user = user
+    
+    def EACheckAmount(self):
+        obj = getEAWalletBalance(self.user)
+        obj = json.loads(obj)
+        balance = 0
+        if obj and obj['balance']:
+            balance = decimal.Decimal(obj['balance'])
+        return balance
+         
+    def OnebookCheckAmount(self):
+        obj = checkUserBalance(self.user)
+        obj = json.loads(obj)
+        balance = 0
+        if obj and obj['balance']:
+            balance = decimal.Decimal(obj['balance'])
+        return balance
+        
+    def AGCheckAmount(self):
+        obj = getBalance(self.user)
+        obj = json.loads(obj)
+        balance = 0
+        if obj and obj['balance']:
+            balance = decimal.Decimal(obj['balance'])
+        return balance
+
+    def BBINCheckAmount(self):
+        return 0
+
+    def OPUSCheckAmount(self):
+        return 0
+
+    def GPICheckAmount(self):
+        balance = decimal.Decimal(getGPIBalance(self.user))
+        return balance
+
+    def PTCheckAmount(self):
+        return 0
+
+    def KYCheckAmount(self):
+        balance = kyBalance(self.user)
+        return balance

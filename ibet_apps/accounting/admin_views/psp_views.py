@@ -94,11 +94,16 @@ class GetPSP(CommAdminView):
     def get(self, request):
         psp_type = request.GET.get('type')
         pk = request.GET.get('pk')
-        
-        if psp_type == "deposit":
-            provider = DepositChannel.objects.filter(pk=pk)
-        else:
-            provider = WithdrawChannel.objects.filter(pk=pk)
+        if not pk:
+            if psp_type == "deposit":
+                provider = DepositChannel.objects.all()
+            else:
+                provider = WithdrawChannel.objects.all()
+        else:                
+            if psp_type == "deposit":
+                provider = DepositChannel.objects.filter(pk=pk)
+            else:
+                provider = WithdrawChannel.objects.filter(pk=pk)
             
         provider = serializers.serialize('json', provider)
         return HttpResponse(provider, content_type='application/json')
@@ -129,11 +134,36 @@ class scheduleDowntime(CommAdminView):
             }
             if freq == 'monthly' and date:
                 new_downtime['date'] = date
-            
+            print(start,end)
             # clean out all old downtime entries
-            cleanDowntime(psp.all_downtime['once'])
+            res = cleanDowntime(psp.all_downtime['once'])
+            logger.info("Cleaning out old downtime entries...")
+            logger.info(res)
+
             
-            # create new downtime entry
+            # # show the next downtime as the one that will happen next
+            # if not psp.downtime_start and not psp.downtime_end:
+            #     if freq == 'once':
+            #         psp.downtime_start = datetime.datetime.strptime(start, "%Y/%m/%d %H:%M%p")
+            #         psp.downtime_end = datetime.datetime.strptime(end, "%Y/%m/%d %H:%M%p")
+            #     elif freq == 'monthly':
+            #         this_month = datetime.datetime.now()
+            #         h = hourToInt(start)
+            #         print(date,h)
+            #         this_month = this_month.replace(day=int(date), hour=h, minute=0)
+            #         psp.downtime_start = this_month
+            #         h = hourToInt(end)
+            #         this_month = this_month.replace(hour=h)
+            #         psp.downtime_end = this_month
+            #     else: # freq is daily
+            #         today = datetime.datetime.now()
+            #         h = hourToInt(start)
+            #         today = today.replace(hour=h, minute=0)
+            #         psp.downtime_start = today
+            #         h = hourToInt(end)
+            #         today = today.replace(hour=h)
+            #         psp.downtime_end = today
+
             psp.all_downtime[freq].append(new_downtime)
             psp.save()
             return JsonResponse({
@@ -141,11 +171,12 @@ class scheduleDowntime(CommAdminView):
                 "downtime_added": str(start) + " to " + str(end)
             })
         except Exception as e:
-            logger.error(repr(e))
+            logger.error(repr(e), exc_info=1)
             return JsonResponse({
                 "success": False,
                 "downtime_added": None
             })
+
 class removeDowntime(CommAdminView):
     def post(self, request):
         psp_type = request.POST.get('psp_type')
@@ -185,11 +216,17 @@ def cleanDowntime(downtimeArr):
     res = []
     now = datetime.datetime.now()
     for i, dt in enumerate(downtimeArr):
-        endDate = datetime.datetime.strptime(dt['end'], "%d/%m/%y %H:%M%p")
+        endDate = datetime.datetime.strptime(dt['end'], "%Y/%m/%d %H:%M%p")
         if now > endDate:
             res.append(dt['id'])
             del downtimeArr[i]
-    return JsonResponse({
+    return {
         'success': True,
         'deleted': res
-    })
+    }
+
+def hourToInt(s):
+    if s[-2:] == 'pm':
+        return int(s[0:2]) + 12 if len(s) == 7 else int(s[0]) + 12
+    if s[-2:] == 'am':
+        return int(s[0:2]) if len(s) == 7 else int(s[0])

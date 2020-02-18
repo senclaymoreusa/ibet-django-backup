@@ -669,10 +669,8 @@ msgid "The current user is blocked!"
 msgstr "用户被禁用"
 
 #: ibet_apps/users/views/views.py:365
-#, fuzzy
-#| msgid "Must include \"username\" and \"password\"."
 msgid "Invalid username/ passowrd"
-msgstr "必须包括 \"username\" and \"password\""
+msgstr "必须包括 用戶名/密碼"
 
 #: ibet_apps/users/views/views.py:415
 msgid "Successfully logged out."

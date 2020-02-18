@@ -36,14 +36,7 @@ from utils.aws_helper import getThirdPartyKeys
 logger = logging.getLogger('django')
 
 import base64
-from simplejson import JSONDecodeError
-
-
-# connect AWS S3
-third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-KY_AES_KEY = third_party_keys["KAIYUAN"]["DESKEY"]
-KY_MD5_KEY = third_party_keys["KAIYUAN"]["MD5KEY"]
-
+import pytz
 
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
@@ -90,16 +83,47 @@ def generateUrl(param, is_api):
     return url
 
 
+def kyBalance(user):
+    try:
+        param = "s=1&account=" + str(user.username)
+        url = generateUrl(param, True)
+        
+        res = requests.get(url)
+        if res.status_code == 200:
+            res_data = res.json()
+            if res_data["d"]["code"] == 0:
+                balance = float(res_data["d"]["money"])
+                return balance
+            else:
+                logger.warning("Kaiyuan get balance API connection request warning: {}".format(res_data["d"]["code"]))
+                return 0
+        else:
+            logger.warning("Kaiyuan get balance API connection request warning: {}".format(res.status_code))
+            return 0
+    except Exception as e:
+        logger.warning("Kaiyuan get balance API Error: {}".format(repr(e)))
+        return 0
+
+
 class KyBets(View):
     def post(self, request, *args, **kwargs):
         try:
-            # Query Bet Order
+            r = RedisClient().connect()
+            redis = RedisHelper()
+
+            start_time = redis.get_ky_bets_timestamp
+
             timestamp = get_timestamp()
+            if start_time is None:
+                start_time = timestamp - 300000 # five minutes before now
 
-            startTime = get_timestamp() - 300000 # five minutes before now
-            endTime = get_timestamp() - 60000 # one minute before now
+            # Query Bet Order
+            if type(start_time) == bytes:
+                start_time = start_time.decode("utf-8")
 
-            param = "s=6" + "&startTime=" + str(startTime) + "&endTime=" + str(endTime)
+            end_time = timestamp - 60000 # one minute before now
+
+            param = "s=6" + "&startTime=" + str(start_time) + "&endTime=" + str(end_time)
 
             param = aes_encode(KY_AES_KEY, param)
             param = base64.b64encode(param)
@@ -121,58 +145,82 @@ class KyBets(View):
             url = url + '?' + req
             res = requests.get(url)
 
-            data = res.json()
+            if res.status_code == 200:
+                data = res.json()
 
-            if data['d']['code'] == 0:
-                count = int(data['d']['count'])
-                record_list = data['d']['list']
+                if data['d']['code'] == 0:
+                    count = int(data['d']['count'])
+                    record_list = data['d']['list']
 
-                provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
-                category = Category.objects.filter(name='Table Games')
+                    provider = GameProvider.objects.get(provider_name=KY_PROVIDER)
+                    category = Category.objects.filter(name='Table Games')
 
-                game_id = record_list['GameID']
-                accounts = record_list['Accounts']
-                # server_id = record_list['ServerID']
-                # kind_id = record_list['KindID']
-                # table_id = record_list['TableID']
-                cell_score = record_list['CellScore']
-                profit = record_list['Profit']
-                revenue = record_list['Revenue']
+                    game_id = record_list['GameID']
+                    accounts = record_list['Accounts']
+                    # server_id = record_list['ServerID']
+                    # kind_id = record_list['KindID']
+                    # table_id = record_list['TableID']
+                    cell_score = record_list['CellScore']
+                    profit = record_list['Profit']
+                    revenue = record_list['Revenue']
+                    start_time = record_list['GameStartTime']
+                    end_time = record_list['GameEndTime']
 
-                for i in range(0, count):
-                    username = accounts[i][6:]
-                    user = CustomUser.objects.get(username=username)
+                    gamebets_list = []
 
-                    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                    for i in range(0, count):
+                        username = accounts[i][6:]
+                        user = CustomUser.objects.get(username=username)
 
-                    win_amount = float(profit[i]) - float(revenue[i])
+                        trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
-                    if win_amount > 0:
-                        outcome = 0
-                    else:
-                        outcome = 1
+                        bet_time = datetime.strptime(start_time[i], '%Y-%m-%d %H:%M:%S')
+                        bet_time = bet_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        bet_time = bet_time.astimezone(pytz.utc)
 
-                    GameBet.objects.create(
-                        provider=provider,
-                        category=category[0],
-                        user=user,
-                        user_name=user.username,
-                        amount_wagered=decimal.Decimal(cell_score[i]),
-                        amount_won=decimal.Decimal(win_amount),
-                        outcome=outcome,
-                        transaction_id=trans_id,
-                        market=ibetCN,
-                        ref_no=game_id[i],
-                        resolved_time=timezone.now(),
-                        other_data={}
-                    )
+                        resolved_time = datetime.strptime(end_time[i], '%Y-%m-%d %H:%M:%S')
+                        resolved_time = resolved_time.replace(tzinfo=pytz.timezone(provider.timezone))
+                        resolved_time = resolved_time.astimezone(pytz.utc)
 
-                return HttpResponse("You have add {} records".format(count), status=200)
+                        if int(cell_score[i] == 0):
+                            outcome = 2 # Tie Game
+                        if win_amount > 0:
+                            outcome = 0 # Won
+                        else:
+                            outcome = 1 # Lose
+
+                        gamebet = GameBet(provider=provider,
+                            category=category[0],
+                            user=user,
+                            user_name=user.username,
+                            amount_wagered=decimal.Decimal(cell_score[i]),
+                            amount_won=decimal.Decimal(win_amount),
+                            outcome=outcome,
+                            transaction_id=trans_id,
+                            market=ibetCN,
+                            ref_no=game_id[i],
+                            bet_time=bet_time,
+                            resolved_time=resolved_time,
+                            other_data={}
+                        )
+
+                        gamebets_list.append(gamebet)
+
+                    # bulk_create
+                    GameBet.objects.bulk_create(gamebets_list)
+                    # Set Redis
+                    redis.set_ky_bets_timestamp(end_time)
+
+                    return HttpResponse("You have add {} records".format(count), status=200)
+                else:
+                    redis.set_ky_bets_timestamp(end_time)
+                    return HttpResponse("No record at this time", status=200)
             else:
-                return HttpResponse("No record at this time", status=200)
+                logger.warning("Kaiyuan GetRecord Failed: {}".format(repr(res)))
+                return HttpResponse("Kaiyuan GetRecord Failed: {}".format(repr(res)))
         except Exception as e:
             logger.error("Kaiyuan Game Background Task Error: {}".format(repr(e)))
-            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=400)
+            return HttpResponse("Kaiyuan Game Background Task Error: {}".format(repr(e)), status=200)
 
 
 # @background(schedule=10)

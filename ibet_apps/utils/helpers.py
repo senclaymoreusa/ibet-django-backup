@@ -43,6 +43,8 @@ def addOrWithdrawBalance(username, balance, type_balance):
                 return True
             else:
                 if decimal.Decimal(balance) > current_balance:
+                    logger.info("Attempting to withdraw more than what the user has")
+                    logger.info(f"User({username}) has ${current_balance} and attempting to withdraw ${balance}")
                     return False
 
                 new_balance = current_balance - decimal.Decimal(balance)
@@ -52,10 +54,10 @@ def addOrWithdrawBalance(username, balance, type_balance):
                 return True
 
     except (Exception, ObjectDoesNotExist) as e:
-        logger.critical("FATAL__ERROR::addOrWithdrawBalance::Unable to update user's balance", exc_info=1, stack_info=1)
+        logger.critical("FATAL__ERROR::addOrWithdrawBalance::Unable to update user's balance", exc_info=1)
         logger.error(repr(e))
         # logger.error(f"user {username} does not exist")
-        return False
+        return None
 
 
 def get_client_ip(request):

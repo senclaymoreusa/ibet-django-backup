@@ -21,6 +21,7 @@ import uuid
 from games.models import *
 from accounting.models import * 
 from utils.constants import *
+from games.transferwallet import CheckTransferWallet
 
 
 logger = logging.getLogger('django')
@@ -83,7 +84,7 @@ class Transfer(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            logger.error("Request transfer error: ", e)
+            logger.error("Request transfer error: {}".format(str(e)))
             return HttpResponse(status=400)
 
 
@@ -100,32 +101,37 @@ class EachWalletAmount(View):
             user_id = request.GET.get('user_id')
             user = CustomUser.objects.get(pk=user_id)
 
-            all_providers = GameProvider.objects.all()
-            for provider in all_providers:
+            transfer_providers = GameProvider.objects.filter(is_transfer_wallet=True)
 
-                if provider.is_transfer_wallet:
-                    provider_name = str(provider.provider_name)
-                    response[provider_name] = Decimal('0.00')
+            updateWallet(transfer_providers, user)
+
+            for provider in transfer_providers:
+                provider_name = str(provider.provider_name)
+                response[provider_name] = Decimal('0.00')
 
             # print(response)
-
+            
+            totalAmount = user.main_wallet
             all_wallets = UserWallet.objects.filter(user=user)
             for wallet in all_wallets:
                 response[wallet.provider.provider_name] =  "%.2f" % wallet.wallet_amount
-            
+                totalAmount += wallet.wallet_amount
 
             data = []
             data.append({
                 "code": "main",
                 "amount":  "%.2f" % user.main_wallet,
-                "isMain": True
+                "isMain": True,
+                "percent": (round(100 * (user.main_wallet / totalAmount))) if user.main_wallet > 0 else 0, 
             })
 
             for code, amount in response.items(): 
+                amount = Decimal(amount)
                 data.append({
                     "code": code,
                     "amount": amount,
-                    "isMain": False
+                    "isMain": False,
+                    "percent": (round (100 * (amount / totalAmount))) if Decimal(amount) > 0 else 0
                 })
 
             return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json')
@@ -138,8 +144,18 @@ class EachWalletAmount(View):
 
         
         except Exception as e:
-            logger.error("Get amount of each wallet by a user error: ", e)
+            logger.error("Get amount of each wallet by a user error: {}".format(str(e)))
             return HttpResponse(status=400)
 
 
-        
+def updateWallet(all_trans_wallet, user):
+
+    for i in all_trans_wallet:
+        wallet_class = CheckTransferWallet(user)
+        function_name = i.provider_name + 'CheckAmount'
+        balance = getattr(wallet_class, function_name)()
+        if balance >= 0:
+            UserWallet.objects.filter(user=user, provider=i).update(wallet_amount=balance)
+            logger.info("finished update {} the wallet for user {}".format(i.provider_name, user.username))
+
+    logger.info("finished update all the wallet")

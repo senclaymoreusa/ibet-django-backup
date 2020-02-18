@@ -25,7 +25,6 @@ from games.models import *
 from accounting.models import * 
 from utils.constants import *
 
-
 logger = logging.getLogger('django')
 
 EA_GAME_HOST_URL = ""
@@ -67,7 +66,8 @@ class EALiveCasinoClientLoginView(View):
         # print(action, request_id, properties_user_id, properties_password)
 
         status_code = 0
-        currency_code = ""
+        currency = 156
+        vendor = 2
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
@@ -75,7 +75,7 @@ class EALiveCasinoClientLoginView(View):
                 status_code = 101
                 error_message = "Invalid password"
 
-            if user.block is True:
+            if checkUserBlock(user):
                 status_code = 104
                 error_message = "User has been block"
 
@@ -123,7 +123,7 @@ class EALiveCasinoClientLoginView(View):
                         },
                         {
                             "@name": "currencyid",
-                            "#text": str(currency_code)
+                            "#text": str(currency)
                         }, 
                         {
                             "@name": "status",
@@ -209,7 +209,7 @@ def requestEADeposit(user, amount, from_wallet):
         request_id = "D"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
         # print(request_id)
-        url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
+        url = EA_DOMAIN + "deposit/wkpibet/server.php"
 
         headers = {'Content-Type': 'application/xml'}
         data = {
@@ -330,7 +330,7 @@ def comfirmEADeposit(request_id, properties_payment_id, status_code):
         elif status_code == "201":
             error_message = "ERR_INVALID_REQ"
 
-        url = "https://testmis.ea2-mission.com/configs/external/deposit/wkpibet/server.php"
+        url = EA_DOMAIN + "deposit/wkpibet/server.php"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -389,7 +389,7 @@ class WithdrawEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            if float(user.ea_wallet) < float(amount):
+            if float(user.ea_wallet) < float(amount): # please change this
                 return HttpResponse("Balance not enough")
 
             if requestEAWithdraw(user, amount, "main") == CODE_SUCCESS:
@@ -444,7 +444,7 @@ def requestEAWithdraw(user, amount, to_wallet):
         request_id = "W"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
         
-        url = "https://testmis.ea2-mission.com/configs/external/withdrawal/wkpibet/server.php"
+        url = EA_DOMAIN + "withdrawal/wkpibet/server.php"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -580,7 +580,7 @@ def getEAWalletBalance(user):
     request_id = "C"
     request_id = request_id + "%0.12d" % random.randint(0,999999999999)
 
-    url = "https://testmis.ea2-mission.com/configs/external/checkclient/wkpibet/server.php"
+    url = EA_DOMAIN + "checkclient/wkpibet/server.php"
     headers = {'Content-Type': 'application/xml'}
     data = {
         "request": {
@@ -618,17 +618,28 @@ def getEAWalletBalance(user):
     api_response = {}
     
     try: 
+        properties_status = ""
+        propertiesMessage = ""
         for i in response['request']['element']['properties']:
             if i['@name'] == 'status' and "#text" in i:
                 properties_status= i['#text']
             elif i['@name'] == 'errdesc' and "#text" in i:
                 propertiesMessage = i['#text']
-                logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
         
         api_response['status_code'] = properties_status
         api_response['error_message'] = propertiesMessage
+        api_response['balance'] = propertiesBalance
+        
+        if properties_status == '203':
+            logger.info("The user never play ea game: {}".format(propertiesMessage))
+        else:
+            logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
 
     except:
+
+        properties_user_id = str(user.username)
+        propertiesBalance = 0
+        propertiesCurrency = ""
         for i in response['request']['element']['properties']:
             if i['@name'] == 'userid':
                 properties_user_id= i['#text']
@@ -647,10 +658,13 @@ def getEAWalletBalance(user):
             currency = CURRENCY_THB
         elif currency == "704":
             currency = CURRENCY_VND
+        else:
+            currency = CURRENCY_CNY
         
         api_response['currency'] = currency
     
-    logger.info("Successfully get the balance from EA and amount is: " + propertiesBalance)
+        logger.info("Successfully get the balance from EA and amount is: " + str(propertiesBalance))
+
     return json.dumps(api_response)
 
 
@@ -681,13 +695,13 @@ class EASingleLoginValidation(View):
         # print(action, request_id, properties_user_id, properties_UUID, properties_ip_address)
 
         status_code = 0
-        currency = "156" # change the default
+        currency = 156 # change the default
         vendor = 2
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
             user_currency = user.currency
-            if user.block is True:
+            if checkUserBlock(user):
                 status_code = 104
                 error_message = "User has been block"
 

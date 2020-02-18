@@ -431,7 +431,7 @@ ul.ui-autocomplete {
     color: #fff;
 }
 
-#affiliate_channels_details .modal-body>div:nth-of-type(even) {
+#affiliate_channels_details .modal-body .promotion-links>div:nth-of-type(even) {
     background-color: #f3f3f3;
 }
 
@@ -626,4 +626,22 @@ table thead tr th {
 
 #affiliates_wrapper .dataTables_scroll{
     margin-bottom: 100px;
+}
+
+#commission-detail-btn {
+    width: 30px;
+    height: 30px;
+    background-color: #428bca;
+    color:white;
+    float:right;
+    margin-right: 3px;
+}
+
+#refer-channel-name {
+     width: 135px;
+     height: 33px;
+     border: solid 1px #bdbdbd;
+     background-color: #ffffff;
+     margin-top: 20px;
+     margin-bottom: 20px;
 }

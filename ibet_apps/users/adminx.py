@@ -3,6 +3,7 @@ import xadmin
 from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
+from users.views.segmentationview import SegmentationView
 from .models import  CustomUser, UserTag, UserWithTag, UserAction
 from .forms import UserCreationForm, CustomUserChangeForm, userWithTagCreationForm, userWithTagEditForm
 from users.views.adminview import *
@@ -90,10 +91,11 @@ class GlobalSettings(object):
                     #     'title': _('Media Channels'),
                     #     'icon': 'fa fa-share-square-o'
                     # },
-                    # {
-                    #     'title': _('Segmentation Settings'),
-                    #     'icon': 'fa fa-cogs'
-                    # },
+                    {
+                        'title': _('Segmentation Settings'),
+                        'url': '/xadmin/segmentation',
+                        'icon': 'fa fa-cogs'
+                    },
                 )
             },
             {
@@ -375,3 +377,4 @@ xadmin.site.register_view(r'agentdetail/(?P<pk>\d+)/$', AgentDetailView, name='a
 
 # VIP
 xadmin.site.register_view(r'vip/$', VIPView, name='vipview')
+xadmin.site.register_view(r'segmentation/$', SegmentationView, name='segmentationview')

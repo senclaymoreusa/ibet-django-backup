@@ -150,7 +150,7 @@ def checkUserBlock(user):
                 expired_time = expired_time + datetime.timedelta(365*5)
 
         logger.info("Blocked time: " + str(blocked_time))   
-        logger.info("Expried time: " + str(expired_time))
+        logger.info("Expired time: " + str(expired_time))
 
         # print(str(timezone.now()))
         if expired_time > timezone.now():

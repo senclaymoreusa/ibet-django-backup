@@ -71,6 +71,7 @@ from operation.views import send_sms
 from itertools import islice
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+import utils.helpers as helpers
 from rest_framework.authtoken.models import Token
 
 import datetime
@@ -190,7 +191,7 @@ class UserDetailsView(RetrieveUpdateAPIView):
                 return Response(data)
             return Response(serializer.data)
         except Exception as e:
-            logger.error("Error getting user details", e)
+            logger.error("Error getting user details {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
@@ -214,7 +215,7 @@ class UserDetailsView(RetrieveUpdateAPIView):
             logger.info("User details format is not correct", e)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error("Error updating user details", e)
+            logger.error("Error updating user details {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def get_object(self):
@@ -261,11 +262,17 @@ class RegisterView(CreateAPIView):
         try:
             with transaction.atomic():
                 # add time of registration and register event
+                rr = requests.get("https://ipapi.co/json/")
+                rrdata = rr.json()
+                try :
+                    ip = rrdata["ip"]
+                except:
+                    ip = helpers.get_client_ip(request)
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=self.request.META['REMOTE_ADDR'],
+                    ip_addr=ip,
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
@@ -298,8 +305,10 @@ class RegisterView(CreateAPIView):
 
         return Response(self.get_response_data(user), status=status.HTTP_201_CREATED, headers=headers)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
+        # print(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(user)
         else:
@@ -349,7 +358,7 @@ class LoginView(GenericAPIView):
         return response_serializer
 
     def login(self):
-        
+
         languageCode = 'en'
         if LANGUAGE_SESSION_KEY in self.request.session:
             languageCode = self.request.session[LANGUAGE_SESSION_KEY]
@@ -403,19 +412,24 @@ class LoginView(GenericAPIView):
                 ipLocation = self.iovationData['details']['realIp']['ipLocation'] 
             else:
                 ipLocation = None
+            if 'details' in self.iovationData and 'realIp' in self.iovationData['details'] and 'address' in self.iovationData['details']['realIp']:
+                realIp = self.iovationData['details']['realIp']['address'] 
+            else:
+                realIp = helpers.get_client_ip(request)
             otherData = self.iovationData
            
-
             # print(self.user.username)
-            # r = RedisClient().connect()
+            r = RedisClient().connect()
             redis = RedisHelper()
+
+            redis.set_user_by_device(self.user.username, device)
             redis.set_device_by_user(self.user.username, device)
 
             
             with transaction.atomic():
                 action = UserAction(
                     user= customUser.first(),
-                    ip_addr=statedIp,
+                    ip_addr=realIp,
                     result=result,
                     device=device,
                     browser=str(browser),
@@ -431,7 +445,11 @@ class LoginView(GenericAPIView):
                 loginUser.update(login_times=loginTimes+1)
 
         except Exception as e:
-            logger.error("cannot get users device info in login iovation", e)
+
+            logger.error("cannot get users device info in login iovation.{}".format(str(e)))
+
+           
+
 
         if getattr(settings, 'REST_SESSION_LOGIN', True):
             self.process_login()
@@ -507,8 +525,8 @@ class LogoutView(APIView):
             pass
 
         action = UserAction(
-            user= CustomUser.objects.filter(username=self.user).first(),
-            ip_addr=self.request.META['REMOTE_ADDR'],
+            user= CustomUser.objects.get(username=self.user),
+            ip_addr=helpers.get_client_ip(request),
             event_type=1,
             created_time=timezone.now()
         )
@@ -637,6 +655,8 @@ class LanguageView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         languageCode = serializer.validated_data['languageCode']
+        if languageCode == 'zh':
+            languageCode = "zh-hans"
         request.session[LANGUAGE_SESSION_KEY] = languageCode
         request.session.modified = True
         # Make current response also shows translated result
@@ -773,7 +793,7 @@ class AddOrWithdrawBalance(APIView):
 
         if type_balance == 'add':
             if user[0].ftd_time is None:
-                user.update(ftd_time=timezone.now(), modified_time=timezone.now())
+                user.update(ftd_time=timezone.now(), modified_time=timezone.now(), ftd_time_amount=balance)
 
             new_balance = currrent_balance + decimal.Decimal(balance)
             user.update(main_wallet=new_balance, modified_time=timezone.now())
@@ -833,7 +853,7 @@ class Activation(APIView):
         email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
-        user.update(verfication_time=timezone.now(), modified_time=timezone.now())
+        user.update(verification_time=timezone.now(), modified_time=timezone.now())
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code, modified_time=timezone.now())
         def timeout():
@@ -906,6 +926,7 @@ class FacebookRegister(CreateAPIView):
                         status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
@@ -1098,6 +1119,60 @@ class GenerateForgetPasswordCode(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class CheckRetrievePasswordMethod(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get('username')
+
+        res = {}
+        res["question"] = False
+        res["phone"] = False
+        res["email"] = False
+        
+        try:
+            user = CustomUser.objects.get(username=username)
+    
+            if user.security_answer is not None:
+                res["question"] = True
+            if user.phone is not None:
+                res["phone"] = True
+            if user.email is not None:
+                res["email"] = True
+            # if user.phone_verified:
+            #     res["phone"] = True
+            # if user.email_verified:
+            #     res["email"] = True
+
+            return Response(res)
+        except ObjectDoesNotExist:
+            logger.info("Retrieve Password Method API -- User: {} not exist".format(username))
+            return Response(res)
+        except Exception as e:
+            logger.error("Retrieve Password Method API Error: {}".format(repr(e)))
+            return Response(res)
+
+
+# class ConfirmRetrieveMethodAPI(APIView):
+#     permission_classes = (AllowAny, )
+
+#     def get(self, request, *args, **kwargs):
+#         method = request.GET.get("method")
+
+#         try:
+#             if method == "question":
+#                 pass
+#             if method == "phone":
+#                 pass
+#             if method == "email":
+#                 pass
+
+#         except Exception as e:
+#             logger.error("ConfirmRetrieveMethodAPI error: {}".format(repr(e)))
+#             return Response(status)
+
+
 class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
@@ -1228,7 +1303,8 @@ class GenerateActivationCode(APIView):
         try:
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
-                phone = data['phone']
+                # phone = data['phone']
+                phone = user[0].phone
                 time = timezone.now() - datetime.timedelta(days=1)
                 event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
                 count = UserAction.objects.filter(event_filter).count()
@@ -1244,7 +1320,8 @@ class GenerateActivationCode(APIView):
                         action = UserAction(
                             user=user[0],
                             event_type=EVENT_CHOICES_SMS_CODE,
-                            created_time=timezone.now()
+                            created_time=timezone.now(),
+                            ip_addr=helpers.get_client_ip(request)
                         )
                         action.save()
 
@@ -1276,7 +1353,8 @@ class GenerateActivationCode(APIView):
                     action = UserAction(
                         user=user[0],
                         event_type=EVENT_CHOICES_SMS_CODE,
-                        created_time=timezone.now()
+                        created_time=timezone.now(),
+                        ip_addr=helpers.get_client_ip(request)
                     )
                     action.save()
 
@@ -1287,7 +1365,7 @@ class GenerateActivationCode(APIView):
                 user.update(activation_code=random_num)
                 send_sms(str(random_num), user[0].pk)
         except Exception as e:
-            logger.error("Error Generating Activation Code: ", e)
+            logger.error("Error Generating Activation Code: {}".format(repr(e)))
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
@@ -1412,7 +1490,7 @@ class UserSearchAutocomplete(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error from searching user: ", e)
+            logger.error("Error from searching user: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1480,7 +1558,7 @@ class SetLimitation(View):
             return HttpResponse(('Successfully set the {} limitation'.format(limit_type)), status = 200)
 
         except Exception as e:
-            logger.error("Error from setting user's limitation: ", e)
+            logger.error("Error from setting user's limitation: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)      
 
 class DeleteLimitation(View):
@@ -1531,7 +1609,7 @@ class DeleteLimitation(View):
             return HttpResponse(json.dumps(response, cls=LazyEncoder), content_type="application/json")
         
         except Exception as e:
-            logger.error("Error from delete user's limitation: ", e)
+            logger.error("Error from delete user's limitation: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1573,7 +1651,7 @@ class CancelDeleteLimitation(View):
             return HttpResponse(('Successfully cancel the {} limitation action'.format(limit_type)), status=200)
 
         except Exception as e:
-            logger.error("Error from delete user's limitation: ", e)
+            logger.error("Error from delete user's limitation: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class GetLimitation(View):
@@ -1678,7 +1756,7 @@ class GetLimitation(View):
             return HttpResponse(json.dumps(limitationDict, cls=DjangoJSONEncoder), content_type="application/json", status=200)
         
         except Exception as e:
-            logger.error("Error from getting user's limitations: ", e)
+            logger.error("Error from getting user's limitations: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class SetBlockTime(View):
@@ -1713,7 +1791,7 @@ class SetBlockTime(View):
             return HttpResponse(('Successfully block the userId: {0} for lock timespan option {1}'.format(userId, lock_timespan)), status=200)
         
         except Exception as e:
-            logger.error("Error from setting user's blocking time : ", e)
+            logger.error("Error from setting user's blocking time : {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
         
  
@@ -1755,7 +1833,7 @@ class MarketingSettings(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
         
         except Exception as e:
-            logger.error("Error getting marketing for a user", e)
+            logger.error("Error getting marketing for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
@@ -1807,7 +1885,7 @@ class MarketingSettings(View):
             return HttpResponse(('Successfully set the marketing setting'), status=200)
 
         except Exception as e:
-            logger.error("Error setting marketing for a user", e)
+            logger.error("Error setting marketing for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1839,7 +1917,7 @@ class PrivacySettings(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
         except Exception as e:
-            logger.error("Error getting privacy setting for a user", e)
+            logger.error("Error getting privacy setting for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1873,7 +1951,7 @@ class PrivacySettings(View):
             return HttpResponse(('Successfully set the privacy setting'), status=200)
 
         except Exception as e:
-            logger.error("Error getting privacy setting for a user", e)
+            logger.error("Error getting privacy setting for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1901,7 +1979,7 @@ class GetBetHistory(View):
             return HttpResponse(json.dumps(response), content_type='application/json',status=200)
 
         except Exception as e:
-            logger.error("Error getting bet history for a user", e)
+            logger.error("Error getting bet history for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class ActivityCheckSetting(View):
@@ -1928,7 +2006,7 @@ class ActivityCheckSetting(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
         
         except Exception as e:
-            logger.error("Error getting privacy setting for a user", e)
+            logger.error("Error getting privacy setting for a user {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request, *args, **kwargs):
@@ -1955,7 +2033,7 @@ class ActivityCheckSetting(View):
             return HttpResponse(('Successfully set the activity check setting'), status=200)
         
         except Exception as e:
-            logger.error("Error from setting privacy", e)
+            logger.error("Error from setting privacy {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1980,7 +2058,7 @@ class CheckUserStatusAPI(View):
             return HttpResponse(json.dumps(data, cls=LazyEncoder), content_type="application/json")
         
         except Exception as e:
-            logger.error("Error from setting privacy", e)
+            logger.error("Error from setting privacy {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -2034,7 +2112,7 @@ class UserSecurityQuestion(View):
             return HttpResponse(json.dumps(data), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error getting security question for a user: ", e)
+            logger.error("Error getting security question for a user: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
         
@@ -2069,7 +2147,7 @@ class UserSecurityQuestion(View):
             return HttpResponse(json.dumps(response), content_type='application/json')
 
         except Exception as e:
-            logger.error("Error setting security questions: ", e)
+            logger.error("Error setting security questions: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
 class SetWithdrawPassword(View):
@@ -2081,7 +2159,7 @@ class SetWithdrawPassword(View):
             userId = data['userId'] 
             withdrawPassword = data['withdrawPassword']
             customUser = CustomUser.objects.get(pk=userId)
-            print(customUser)
+            # print(customUser)
             if checkUserBlock(customUser):
                 errorMessage = _('The current user is blocked!')
                 data = {
@@ -2112,10 +2190,22 @@ class SetWithdrawPassword(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status = 200)
 
         except Exception as e:
-            logger.error("Error setting withdraw password: ", e)
+            logger.error("Error setting withdraw password: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
 
-
+def checkWithdrawPassword(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        pk = data.get("user_id")
+        pw = data.get("password")
+        user = CustomUser.objects.get(pk=pk)
+        res = check_password(pw, user.withdraw_password)
+        
+        return JsonResponse({
+            "success": res
+        })
+        
+        
 
 class ResetWithdrawPassword(View):
 
@@ -2165,5 +2255,5 @@ class ResetWithdrawPassword(View):
             return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
         except Exception as e:
-            logger.error("Error resetting withdraw password: ", e)
+            logger.error("Error resetting withdraw password: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)

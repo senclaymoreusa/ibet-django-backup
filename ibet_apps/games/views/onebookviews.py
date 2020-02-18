@@ -155,15 +155,17 @@ class CreateMember(APIView):
             if rdata['error_code'] == 0:
                 return Response({"success":"The user is created successful in onebook CreateMember."})
             else:
+                logger.critical("ONEBOOK::Unable to create member.")
                 message = rdata['message']
                 return Response({"failed": message})
             
             return Response(rdata)
         except ObjectDoesNotExist as e:
-            return Response({"error":"The user is not existed in onebook CreateMember."}) 
+            logger.error("The user does not exist in onebook CreateMember.")
+            return Response({"error":"The user does not exist in onebook CreateMember."}) 
 
 def createMember(user,currency,oddsType):
-
+    
     headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
     r = requests.post(ONEBOOK_API_URL + "CreateMember/", headers=headers, data={
         "vendor_id": ONEBOOK_VENDORID,
@@ -175,9 +177,10 @@ def createMember(user,currency,oddsType):
         "MaxTransfer": ONEBOOK_MAXTRANSFER,
         "MinTransfer": ONEBOOK_MINTRANSFER, #ONEBOOK_MINTRANSFER
     })
-    
+
     rdata = r.json()
     logger.info(rdata)
+    
     # print(rdata)
     if r.status_code == 200:
         if rdata['error_code'] == 0 or rdata['error_code'] == 6:
@@ -185,8 +188,11 @@ def createMember(user,currency,oddsType):
         else:
             return ERROR_CODE_FAIL
     else: 
+        logger.critical("ONEBOOK::Unable to create member.")
         return ERROR_CODE_FAIL
     
+    
+   
     
     
 
@@ -235,7 +241,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
             })
             rdata = r.json()
             #print(rdata)
-            logger.info(rdata)
+            
             if r.status_code == 200:
                 success = True
                 break
@@ -250,6 +256,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                 logger.info("Waiting for %s seconds before retrying again")
                 sleep(delay)
         if not success:
+            logger.critical("ONEBOOK:: Unable to request fund transfer.")
             return ERROR_CODE_FAIL
         if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
             # amount = Decimal(amount.replace(',',''))
@@ -273,7 +280,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             status=TRAN_SUCCESS_TYPE)
                     return CODE_SUCCESS
                 except Exception as e:
-                    logger.error("request transfer to Onebook: ", e)
+                    logger.error("request transfer to Onebook: {}".format(str(e)))
                     #print("request transfer to Onebook: ", e)
                     return ERROR_CODE_FAIL
             elif direction == '0':                                                            
@@ -294,7 +301,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                             status=TRAN_SUCCESS_TYPE)
                     return CODE_SUCCESS
                 except Exception as e:
-                    logger.error("request transfer from Onebook: ", e)
+                    logger.error("request transfer from Onebook: {}".format(str(e)))
                     #print("request transfer from Onebook: ", e)
                     return ERROR_CODE_FAIL
             # user.save()
@@ -311,7 +318,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                     "wallet_id": wallet_id,
                 })
                 rrdata = rr.json()
-                logger.info(rrdata)
+                
                 if rr.status_code == 200:
                     try:
                         rcode = rrdata['error_code']
@@ -334,7 +341,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                                             status=TRAN_SUCCESS_TYPE)
                                     return CODE_SUCCESS
                                 except Exception as e:
-                                    logger.error("request transfer to Onebook: ", e)
+                                    logger.error("request transfer to Onebook: {}".format(str(e)))
                                     #print("request transfer to Onebook: ", e)
                                     return ERROR_CODE_FAIL
                             elif direction == '0':
@@ -355,7 +362,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                                     return CODE_SUCCESS
                             # user.save() 
                                 except Exception as e:
-                                    logger.error("request transfer from Onebook: ", e)
+                                    logger.error("request transfer from Onebook: {}".format(str(e)))
                                     #print("request transfer from Onebook: ", e)
                                     return ERROR_CODE_FAIL      
                             
@@ -364,8 +371,8 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                             return ERROR_CODE_FAIL
                             break
                         elif rcode == 3:
-                            logger.info("Request failed {} time(s)'.format(x+1)")
-                            logger.info("Waiting for %s seconds before retrying again")
+                            logger.info("Request failed {} time(s). Waiting for %s seconds before retrying again".format(x+1))
+                            
                             sleep(300) #wait for 5 minites then try again  
                     except NameError as error:
                         logger.error(error)
@@ -373,7 +380,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
                 elif rr.status_code == 204:
                     # Handle error
                     logger.info("Failed to complete a request for onebook check fund transfer...")
-                    logger.error(rrdata)
+                    
                     return ERROR_CODE_FAIL
         else:    
             return ERROR_CODE_FAIL
@@ -381,12 +388,7 @@ def fundTransfer(user, amount, fund_wallet, direction, wallet_id, oddsType):
         return ERROR_CODE_FAIL
 
 
-class test(View):
-    def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela01")
-        #response = createMember(user, 13, "2")
-        response = fundTransfer(user, "1", "main", "1", "1", "2")
-        return HttpResponse(response)
+
 
     
 # def test01(request, username):
@@ -423,7 +425,7 @@ class FundTransfer(APIView):
                     })
                     
                     rdata = r.json()
-                    logger.info(rdata)
+                    
                     if r.status_code == 200:
                         success = True
                         break
@@ -431,14 +433,15 @@ class FundTransfer(APIView):
                         success = True
                         # Handle error
                         logger.info("Failed to complete a request for onebook FundTransfer...")
-                        logger.error(rdata)
+                       
                         return Response(rdata)
                     elif r.status_code == 500:
-                        logger.info("Request failed {} time(s)'.format(x+1)")
-                        logger.info("Waiting for %s seconds before retrying again")
+                        logger.info("Request failed {} time(s).Waiting for %s seconds before retrying again".format(x+1))
+                        
                         sleep(delay)
                 
                 if not success:
+                    logger.critical("ONEBOOK::Unbale to request fund transfer.")
                     return Response(rdata)
                 
                 if  rdata['error_code'] == 0 and rdata['Data']['status'] == 0 and rdata['message'] == 'Success':
@@ -447,16 +450,17 @@ class FundTransfer(APIView):
                     if direction == '1':
                         #deposit
                         user.main_wallet = user.main_wallet - amount
-                        user.onebook_wallet = user.onebook_wallet + amount
+                        # user.onebook_wallet = user.onebook_wallet + amount
                     elif direction == '0':
                         #withdraw
                         user.main_wallet = user.main_wallet + amount
-                        user.onebook_wallet = user.onebook_wallet - amount
+                        # user.onebook_wallet = user.onebook_wallet - amount
                     user.save()
                     
                     return Response(rdata)
                 elif rdata['Data']['status'] == 1 :
                     message = rdata['message']
+                    logger.critical("ONEBOOK::Unbale to request fund transfer.")
                     return Response({"error":"Failed", "message": message})    
                 elif rdata['Data']['status'] == 2:  #call checkFundTransfer api
                     for x in range(3):
@@ -484,12 +488,13 @@ class FundTransfer(APIView):
                         elif rr.status_code == 204:
                             # Handle error
                             logger.info("Failed to complete a request for onebook check fund transfer...")
-                            logger.error(rrdata)
+                            
                             return Response(rrdata)
                 else:    
                     return Response({"error":"Request failed for onebook FundTransfer"})      
         except ObjectDoesNotExist:
-            return Response({"error":"The user is not existed onebook FundTransfer."}) 
+            logger.error("ONEBOOK::Unbale to get user for onebook FundTransfer.")
+            return Response({"error":"The user does not exist onebook FundTransfer."}) 
 
 
 
@@ -501,7 +506,7 @@ def getBetDetail(request):
         try:
             PROVIDER = GameProvider.objects.get(provider_name=ONEBOOK_PROVIDER)
         except ObjectDoesNotExist:
-            logger.error("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
+            logger.error("ONEBOOK::PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
             raise Exception("PROVIDER AND/OR CATEGORY RELATIONS DO NOT EXIST.")
             
         headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
@@ -514,20 +519,32 @@ def getBetDetail(request):
             r = RedisClient().connect()
             redis = RedisHelper()
         except:
-            logger.error("There is something wrong with redis connection.")
+            logger.error("ONEBOOK::There is something wrong with redis connection.")
             return Response({'status': 'There is something wrong with redis connection.'}, status=status.HTTP_400_BAD_REQUEST)
 
         #print(redis.check_onebook_bet_details(onebook_run))
-        if redis.check_onebook_bet_details(onebook_run) is False: #if the key is not existed in redis
+        if redis.check_onebook_bet_details(onebook_run) is False: #if the key does not exist in redis
             redis.set_onebook_bet_details(onebook_run)  #insert the key to redis
             while(redis.check_onebook_bet_details(onebook_run)): #loop while the key is existed in redis
-                r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
-                    "vendor_id": ONEBOOK_VENDORID,
-                    "version_key": version_key,
-                })
-                rdata = r.json()
+                try:
+                    r = requests.post(ONEBOOK_API_URL + "GetBetDetail/", headers=headers, data={
+                        "vendor_id": ONEBOOK_VENDORID,
+                        "version_key": version_key,
+                    })
+                    rdata = r.json()
+                except requests.RequestException:
+                    logger.error("Connectivity error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'Connectivity error for onebook GetBetDetail API.'})
+                except ValueError:
+                    logger.error("JSON parsing error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'JSON parsing error for onebook GetBetDetail API.'})
+                except (IndexError, KeyError):
+                    logger.error("JSON format error for onebook GetBetDetail API.")
+                    redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
+                    return Response({'error': 'JSON format error for onebook GetBetDetail API.'})
                 if r.status_code == 200:
-                    logger.info(rdata)
                     
                     version_key = rdata["Data"]["last_version_key"]        
                     
@@ -537,9 +554,10 @@ def getBetDetail(request):
                     updates.save()
                         
                     if  "BetDetails" in rdata['Data']:
-                        
+                        gamebets_list = []
                         # logger.info(rdata["Data"]["BetDetails"])
                         for i in range(len(rdata["Data"]["BetDetails"])):
+                            
                             username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                             # print(username)
                             
@@ -552,37 +570,47 @@ def getBetDetail(request):
                                 
                             except ObjectDoesNotExist:     
                                 redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
-                                logger.error("The user does not exist.")
-                                return Response({'error': 'The user does not exist.'})
+                                logger.error("ONEBOOK::The user does not exist for get bet detail.")
+                                return Response({'error': 'The user does not exist for get bet detail..'})
 
                             transid = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                             outcome = rdata["Data"]["BetDetails"][i]["ticket_status"]
-                            if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
+                            
+                            home_id = rdata["Data"]["BetDetails"][i]["home_id"]
+                            away_id = rdata["Data"]["BetDetails"][i]["away_id"]
+
+                            if rdata["Data"]["BetDetails"][i]["settlement_time"] == '':
+                                    if not GameBet.objects.filter(ref_no=trans_id).exists():
                                     
-                                    GameBet.objects.create(provider=PROVIDER,
-                                                        category=cate,
-                                                        user=user,
-                                                        user_name=user.username,
-                                                        transaction_id=transid,
-                                                        odds=rdata["Data"]["BetDetails"][i]["odds"],
-                                                        amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
-                                                        currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
-                                                        bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
-                                                        amount_won=rdata["Data"]["BetDetails"][i]["winlost_amount"],
-                                                        ref_no=trans_id,
-                                                        market=ibetCN,
-                                                        other_data=rdata
+                                        gamebet = GameBet(provider=PROVIDER,
+                                                            category=cate,
+                                                            user=user,
+                                                            user_name=user.username,
+                                                            game_name=str(home_id) + '/' + str(away_id),
+                                                            transaction_id=transid,
+                                                            odds=rdata["Data"]["BetDetails"][i]["odds"],
+                                                            amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
+                                                            currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
+                                                            bet_type=rdata["Data"]["BetDetails"][i]["bet_type"],
+                                                            ref_no=trans_id,
+                                                            market=ibetCN,
+                                                            other_data={
+                                                                "version_key": version_key
+                                                            }
                                                         )
+                                        gamebets_list.append(gamebet)
                                 
                             else:
-                                if outcome == ("won" or "half won" or "lose" or "half lose" or "draw" or "reject" or "refund" or "void"):
+                                if (outcome == "won" or outcome == "half won" or outcome == "lose" or outcome == "half lose" or outcome == "draw" or outcome == "reject" or  outcome == "refund" or outcome == "void"):
+                                    
                                     resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
-                                        
-                                    GameBet.objects.get_or_create(provider=PROVIDER,
+                                       
+                                    gamebet = GameBet(provider=PROVIDER,
                                                         category=cate,
                                                         transaction_id=transid,
                                                         user=user,
                                                         user_name=user.username,
+                                                        game_name=str(home_id) + '/' + str(away_id),
                                                         odds=rdata["Data"]["BetDetails"][i]["odds"],
                                                         amount_wagered=rdata["Data"]["BetDetails"][i]["stake"],
                                                         currency=convertCurrency[rdata["Data"]["BetDetails"][i]["currency"]],
@@ -592,8 +620,14 @@ def getBetDetail(request):
                                                         resolved_time=utcToLocalDatetime(resolve),
                                                         ref_no=trans_id,
                                                         market=ibetCN,
-                                                        other_data=rdata,
-                                                        )
+                                                        other_data={
+                                                                "version_key": version_key
+                                                            }
+                                                    )
+                                    gamebets_list.append(gamebet)
+                        GameBet.objects.bulk_create(gamebets_list)
+
+
                         # sleep(delay)  
                         # print("sleep")  
                     else:
@@ -601,7 +635,7 @@ def getBetDetail(request):
                         break
                 else:
                     redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis when break the while loop
-                    logger.info("There was something wrong with the onebook getBetDetail result")
+                    logger.critical("There was something wrong with the onebook getBetDetail result")
                     return Response({'status': 'There was something wrong with the onebook getBetDetail result'}, status=status.HTTP_400_BAD_REQUEST)
             redis.remove_onebook_bet_details(onebook_run)  #remove the key from redis
             #print(redis.check_onebook_bet_details(onebook_run))        
@@ -611,8 +645,39 @@ def getBetDetail(request):
             return Response({'status': 'skip running this time onebook getBetDetail.'}, status=status.HTTP_200_OK)
     
 
+@api_view(['POST'])
+@permission_classes((AllowAny,))         
+def getTeamName(request):
+    team_id = request.POST.get("team_id")
+    headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+    try:
+        r = requests.post(ONEBOOK_API_URL + "GetTeamName/", headers=headers, data={
+            "vendor_id": ONEBOOK_VENDORID,
+            "team_id": team_id,
+        })
+        rdata = r.json()
+
+    except requests.RequestException:
+        logger.error("Connectivity error for onebook getTeamName API.")
+        return Response({'error': 'Connectivity error for onebook getTeamName API.'})
+    except ValueError:
+        logger.error("JSON parsing error for onebook getTeamName API.")
+        return Response({'error': 'JSON parsing error for onebook getTeamName API.'})
+    except (IndexError, KeyError):
+        logger.error("JSON format error for onebook getTeamName API.")
+        return Response({'error': 'JSON format error for onebook getTeamName API.'})
+    if r.status_code == 200:
+        error_code = rdata["error_code"]
+        if error_code == 0:
+            names = rdata["Data"]["names"]
+            return Response(names)
+        else:
+            logger.info('ONEBOOK::There was something wrong with the onebook getTeamName result')
+            return Response({'error':'There was something wrong with the onebook getTeamName result'}, status=status.HTTP_200_OK)
+    else:
+        logger.warning('ONEBOOK::There was something wrong with the onebook getTeamName connection')
+        return Response({'error':'There was something wrong with the onebook getTeamName connection'}, status=status.HTTP_400_BAD_REQUEST)
     
- 
 
 @transaction.atomic
 class GetBetDetail(APIView):
@@ -647,7 +712,7 @@ class GetBetDetail(APIView):
             if  "BetDetails" in rdata['Data']:
                 # logger.info(rdata["Data"]["BetDetails"])
                 
-
+                gamebets_list = []
                 for i in range(len(rdata["Data"]["BetDetails"])):
                     username = str(rdata["Data"]["BetDetails"][i]["vendor_member_id"]).split('_')[0]
                     try:
@@ -658,7 +723,7 @@ class GetBetDetail(APIView):
                     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
                     if rdata["Data"]["BetDetails"][i]["settlement_time"] == None:
                         
-                        GameBet.objects.get_or_create(provider=PROVIDER,
+                        gamebet = GameBet(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
                                                     user=user,
@@ -672,10 +737,11 @@ class GetBetDetail(APIView):
                                                     market=ibetCN,
                                                     
                                                     )
+                        gamebets_list.append(gamebet)
                     else:
                         resolve = datetime.datetime.strptime(rdata["Data"]["BetDetails"][i]["settlement_time"], '%Y-%m-%dT%H:%M:%S.%f')
                         
-                        GameBet.objects.get_or_create(provider=PROVIDER,
+                        gamebet = GameBet(provider=PROVIDER,
                                                     category=cate,
                                                     transaction_id=trans_id,
                                                     user=user,
@@ -689,9 +755,11 @@ class GetBetDetail(APIView):
                                                     resolved_time=utcToLocalDatetime(resolve),
                                                     market=ibetCN,
                                                     )
+                        gamebets_list.append(gamebet)
+                    GameBet.objects.bulk_create(gamebets_list)
                 sleep(delay)    
             else:
-                logger.info("BetDetails is not existed.")
+                logger.info("BetDetails does not exist.")
                 break
         return Response(rdata)   
 
@@ -725,6 +793,7 @@ class Login(APIView):
                     logger.info("Waiting for %s seconds before retrying again")
                     sleep(delay)
             if not success:
+                logger.critical("ONEBOOK:: Unable to request login.")
                 return Response(rdata)
             try:
                 Data = rdata['Data']
@@ -740,13 +809,14 @@ class Login(APIView):
                     lang = 'en'
 
                 loginUrl = ONEBOOK_IFRAME_URL + 'token=' + Data + '&lang=' + lang
-                return Response({"login_url":loginUrl})
+                mobile_loginUrl = ONEBOOK_MOBILE_IFRAME_URL + 'token=' + Data + '&lang=' + lang
+                return Response({"login_url":loginUrl, "mobile_login": mobile_loginUrl})
             except NameError as e:
-                logger.error(e)
+                logger.error("Cannot find the code for onebook login data.")
                 return Response({"error": "Cannot find the code for onebook login data."})
 
         except ObjectDoesNotExist as e:
-            logger.error(e)
+            logger.error("Cannot find the user for onebook login.")
             return Response({"error": "Cannot find the user for onebook login."})
 
 def CheckMemberOnline(request):
@@ -778,6 +848,7 @@ def CheckMemberOnline(request):
                 tr1.text = '3'
                 tr2 = ET.SubElement(root, "message")
                 tr2.text = 'The user is logout.'
+                logger.error("ONEBOOK::Cannot find the token for onebook CheckMemberOnline.")
                 return HttpResponse(ET.tostring(root), content_type="text/xml")
         except ObjectDoesNotExist:
             root = ET.Element("member_online")
@@ -785,9 +856,79 @@ def CheckMemberOnline(request):
             tr1.text = '2'
             tr2 = ET.SubElement(root, "message")
             tr2.text = 'User is not exist for onebook.'
+            logger.error("ONEBOOK::Cannot find the user for onebook CheckMemberOnline.")
             return HttpResponse(ET.tostring(root), content_type="text/xml")
         return HttpResponse(ET.tostring(root), content_type="text/xml")
 
+      
+def checkUserBalance(user):
+    if user.currency == CURRENCY_CNY:
+        currency = 13
+    elif user.currency == CURRENCY_USD:
+        currency = 3
+    elif user.currency == CURRENCY_THB:
+        currency = 4
+    elif user.currency == CURRENCY_EUR:
+        currency = 6
+    elif user.currency == CURRENCY_IDR:
+        currency = 15
+    elif user.currency == CURRENCY_VND:
+        currency = 51
+    elif user.currency == CURRENCY_TEST or (user.currency == CURRENCY_TTC):
+        currency = 20
+    else:
+        currency = 13
+
+    if createMember(user, currency, "2") == CODE_SUCCESS:
+    
+        headers =  {'Content-Type': 'application/x-www-form-urlencoded'}
+        delay = 5
+        success = False
+        for x in range(3):
+            r = requests.post(ONEBOOK_API_URL + "CheckUserBalance/", headers=headers, data={
+                "vendor_id": ONEBOOK_VENDORID,
+                "vendor_member_ids": user.username, 
+                "wallet_id": '1'
+            })
+            rdata = r.json()
+
+            if r.status_code == 200:
+                success = True
+                break
+            elif r.status_code == 204:
+                success = True
+                # Handle error
+                logger.info("Failed to complete a request for onebook checkUserBalance...")
+                
+                return Response(rdata)
+            elif r.status_code == 500:
+                logger.info("Request failed {} time(s).Waiting for %s seconds before retrying again".format(x+1))
+                
+                sleep(delay)
+        if not success:
+            logger.error("ONEBOOK::Cannot find the data for onebook check user balance.")
+            balance = 0.00
+            return json.dumps({"balance":balance})
+        try:
+            Data = rdata['Data'] 
+            balance = Data[0]["balance"]
+            if balance == None:
+                balance = 0.00
+            else: 
+                balance = float(balance)
+            return json.dumps({"balance":balance})
+        except:
+            balance = 0.00
+            logger.error("ONEBOOK::Cannot find the data for onebook check user balance.")
+            return json.dumps({"error": "Cannot find the data for onebook check user balance.", "balance":balance})
+    else:
+        balance = 0.00
+        logger.error("ONEBOOK::Cannot create user for check user balance.")    
+        return json.dumps({"balance":balance})
+class test(View):
+    def get(self, request, *args, **kwargs):
+        user = CustomUser.objects.get(username="agtest1")
         
-
-
+        #response = createMember(user, 13, "2")
+        response = checkUserBalance(user)
+        return HttpResponse(response)

@@ -97,7 +97,12 @@ def confirm_payment(request):
             if transaction_data["status"] == '00':  # deposit successful
                 matching_transaction.status = 0
                 matching_transaction.remark = "Deposit successful!"
-                helpers.addOrWithdrawBalance(matching_transaction.user_id, transaction_data["amount"], "add")
+                successful = helpers.addOrWithdrawBalance(matching_transaction.user_id, transaction_data["amount"], "add")
+                if not successful:
+                    return JsonResponse({
+                        "success": False,
+                        "message": "Could not modify balance"
+                    })
 
             if transaction_data["status"] == '01' or transaction_data["status"] == '04':  # deposit pending
                 matching_transaction.status = 3
@@ -123,7 +128,10 @@ def confirm_payment(request):
             })
         except ObjectDoesNotExist as e:
             logger.critical("FATAL__ERROR::CirclePay::Unable to confirm payment", exc_info=1, stack_info=1)
-            return JsonResponse({"message": "Could not find matching transaction"})
+            return JsonResponse({
+                "success": False,
+                "message": "Could not find matching transaction"
+            })
 
 
 def check_transaction(request):

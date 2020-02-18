@@ -6,7 +6,7 @@ from django.db.models import Q
 import datetime
 
 from accounting.models import Transaction
-from users.models import CustomUser
+from users.models import CustomUser, WithdrawAccounts
 from utils.admin_helper import utcToLocalDatetime
 from utils.constants import *
 import json
@@ -17,9 +17,77 @@ import logging
 logger = logging.getLogger('django')
 
 
-def get_transactions(request):
+def addWithdrawAccount(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user = CustomUser.objects.get(pk=data["user_id"])
+            name = data.get("full_name")
+            bank_code = data.get("bank_code") if data.get("bank_code") else None
+            if (name):
+                user.first_name = name.split(" ")[0]
+                user.last_name = name.split(" ")[1]
+                user.save()
 
-    
+            new_acc = WithdrawAccounts(
+                user=user,
+                account_no=data["acc_no"],
+                bank_code=bank_code
+            )
+
+            new_acc.save()
+            return JsonResponse({
+                'success': True,
+                'message': "Added new bank account for withdrawal"
+            })
+        except Exception as e:
+            logger.info(repr(e))
+            return JsonResponse({
+                'success': False,
+                'message': "Parameters incorrect or missing"
+            })
+
+def getWithdrawAccounts(request):
+    if request.method == "GET":
+        try:
+            pk = request.GET.get("id")
+            user = CustomUser.objects.get(pk=pk)
+            all_accs = WithdrawAccounts.objects.filter(user_id=user)
+
+            return JsonResponse({
+                "success": True,
+                "results": list(all_accs.values('id', 'account_no', 'bank_code'))
+            })
+        except Exception as e:
+            logger.repr(e)
+            return JsonResponse({
+                "success": False,
+                "results": []
+            })
+def removeWithdrawAccount(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            acc_id = data.get("acc_id")
+            user_id = data.get("user_id")
+            
+            deleted = WithdrawAccounts.objects.get(user_id=user_id, id=acc_id).delete()
+
+            return JsonResponse({
+                "success": True,
+                "deleted": deleted,
+                "message": "Deleted the account"
+            })
+        except Exception as e:
+            logger.info(repr(e))
+            return JsonResponse({
+                "success": False,
+                "deleted": [],
+                "message": "Account or User not found"
+            })
+
+
+def get_transactions(request):
     user_id = request.GET.get("user_id")
     trans_type = request.GET.get("type")
     time_from = request.GET.get("time_from")
@@ -32,7 +100,6 @@ def get_transactions(request):
             'success': False,
             'results': "You have to select start or end date"
         })
-
 
     try:
         user = CustomUser.objects.get(pk=user_id)
@@ -89,7 +156,8 @@ def get_transactions(request):
             data["transaction_type"] = tran.get_transaction_type_display()
             data["channel"] = tran.get_channel_display()
             data["amount"] = tran.amount
-            data["provider"] = tran.get_status_display()
+            data["balance"] = tran.current_balance
+            data["status"] = tran.get_status_display()
             trans_data.append(data)
         # res = serializers.serialize('json', all_transactions)
         logger.info("Successfully get transaction history")
@@ -115,11 +183,8 @@ def save_transaction(request):
             'bank_acc_no': data['bank_acc_no'],
             'real_name': data['real_name']
         }
-        status = 2
-        if data['type'] == 0:
-            status = 3
+        status = 2 if data['type'] == 0 else 3
         try:
-
             txn = Transaction(
                 transaction_id=txn_id,
                 user_id=user,
@@ -142,4 +207,61 @@ def save_transaction(request):
                 'success': False,
                 'transaction_id': None
             })
-        
+
+def save_momopay(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user = CustomUser.objects.get(pk=request.user.pk)
+            txn_id = request.user.username+"-"+timezone.datetime.today().isoformat()+"-"+str(random.randint(0, 10000000))
+            txn = Transaction(
+                transaction_id=txn_id,
+                user_id=user,
+                amount=data['amount'],
+                currency=7,
+                method="Momo Pay",
+                transaction_type=data['type'],
+                channel=12, # 11 = LBT
+                status=2
+            )
+            txn.save()
+            return JsonResponse({
+                'success': True,
+                'transaction_id': txn_id
+            })
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'transaction_id': None
+            })
+
+def get_transaction_by_id(request):
+    if request.method == "GET":
+        transaction_id = request.GET.get("transaction_id")
+
+        try:
+            tran = Transaction.objects.get(transaction_id=transaction_id)
+            
+            trans_data = {
+                'transaction_id': tran.transaction_id,
+                'amount': tran.amount,
+                'balance': tran.current_balance,
+                'currency': tran.get_currency_display(),
+                'request_time': tran.request_time,
+                'transaction_type':  tran.get_transaction_type_display(),
+                'channel':  tran.get_channel_display(),
+                'status':  tran.get_status_display()
+            }
+
+            return JsonResponse({
+                'success': True,
+                'results': trans_data
+            })
+
+        except Exception as e:
+            logger.error(repr(e))
+            return JsonResponse({
+                'success': False,
+                'results': "There is something wrong"
+            })
