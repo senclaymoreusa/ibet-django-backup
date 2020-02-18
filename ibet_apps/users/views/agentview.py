@@ -462,7 +462,7 @@ def getDownlineList(queryset, start_time, end_time):
             'total_withdrawal': getTransactionAmount(downline, start_time, end_time, TRANSACTION_WITHDRAWAL, None)[1],
             'total_bonus': getTransactionAmount(downline, start_time, end_time, TRANSACTION_BONUS, None)[1],
             'total_adjustment': getTransactionAmount(downline, start_time, end_time, TRANSACTION_ADJUSTMENT, None)[1],
-            'balance': getUserBalance(downline),
+            'balance': downline.main_wallet,
             'turnover': calculateTurnover(downline, start_time, end_time, None),
         }
 
@@ -615,10 +615,8 @@ class AgentDetailView(CommAdminView):
                 return streamingExport(commission_history_export, 'Affiliate ' + str(affiliate.username) + ' Monthly Commission History')
 
             # COMMISSION LEVELS
-            if affiliate.commission_setting == "System":
-                context["commission_levels"] = SystemCommissionLevel.objects.all()
-            else:
-                context["commission_levels"] = PersonalCommissionLevel.objects.filter(user_id=affiliate)
+            context["system_commission_levels"] = SystemCommissionLevel.objects.all().order_by('commission_level')
+            context["personal_commission_levels"] = PersonalCommissionLevel.objects.filter(user_id=affiliate).order_by('commission_level')
 
             # DOWNLINE STATUS
             context["downline_number"] = getDownlines(affiliate).count()
@@ -848,40 +846,80 @@ class AgentDetailView(CommAdminView):
                 manager = affiliate.affiliate_managed_by
 
             commission_list = []
-            # update commission levels
-            for i in level_details:
-                if i['pk'] == '':
-                    current_commission = PersonalCommissionLevel.objects.create(
-                        user_id=affiliate,
-                        commission_percentage=i['rate'],
-                        downline_commission_percentage=i['downline_rate'],
-                        commission_level=i['level'],
-                        active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd'],
-                        ngr=i['downline_net_profit']
-                    )
-                    current_commission.save()
-                    commission_list.append(current_commission.pk)
-                    logger.info("Create new commission level " +
-                                i['level'] + " for affiliate " + affiliate.username)
-                else:
-                    current_commission = PersonalCommissionLevel.objects.filter(pk=i['pk'])
-                    current_commission.update(
-                        commission_percentage=i['rate'],
-                        downline_commission_percentage=i['downline_rate'],
-                        commission_level=i['level'],
-                        active_downline_needed=i['active_downline'],
-                        monthly_downline_ftd_needed=i['downline_ftd']
-                    )
-                    logger.info("Update commission level " +
-                                i['level'] + " for affiliate " + affiliate.username)
-                    commission_list.append(i['pk'])
-            deleted_commission_levels = PersonalCommissionLevel.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
-            deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
-            if deleted_list.count() > 0:
-                logger.info("Admin user " + admin_user + " delete commission level " + str(
-                    deleted_list) + " for affiliate " + str(affiliate.username))
-            deleted_commission_levels.delete()
+
+            if affiliate_detail[3] == 'System':
+                # update commission levels
+                for i in level_details:
+                    if i['pk'] == '':
+                        current_commission = SystemCommissionLevel.objects.create(
+                            commission_percentage=i['rate'],
+                            downline_commission_percentage=i['downline_rate'],
+                            commission_level=i['level'],
+                            active_downline_needed=i['active_downline'],
+                            monthly_downline_ftd_needed=i['downline_ftd'],
+                            ngr=i['downline_ngr']
+                        )
+                        current_commission.save()
+                        commission_list.append(current_commission.pk)
+                        logger.info("Create new system commission level " + i['level'])
+                    else:
+                        current_commission = SystemCommissionLevel.objects.filter(pk=i['pk'])
+                        current_commission.update(
+                            commission_percentage=i['rate'],
+                            downline_commission_percentage=i['downline_rate'],
+                            commission_level=i['level'],
+                            active_downline_needed=i['active_downline'],
+                            monthly_downline_ftd_needed=i['downline_ftd']
+                        )
+                        logger.info("Update system commission level " + i['level'])
+                        commission_list.append(i['pk'])
+                deleted_commission_levels = SystemCommissionLevel.objects.exclude(
+                    pk__in=commission_list)
+                deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
+                if deleted_list.count() > 0:
+                    logger.info("Admin user " + str(admin_user) + " delete system commission level " + str(
+                        deleted_list))
+                deleted_commission_levels.delete()
+
+            else:
+                # update commission levels
+                for i in level_details:
+                    if i['pk'] == '':
+                        current_commission = PersonalCommissionLevel.objects.create(
+                            user_id=affiliate,
+                            commission_percentage=i['rate'],
+                            downline_commission_percentage=i['downline_rate'],
+                            commission_level=i['level'],
+                            active_downline_needed=i['active_downline'],
+                            monthly_downline_ftd_needed=i['downline_ftd'],
+                            ngr=i['downline_ngr']
+                        )
+                        current_commission.save()
+                        commission_list.append(current_commission.pk)
+                        logger.info("Create new commission level " +
+                                    i['level'] + " for affiliate " + affiliate.username)
+                    else:
+                        current_commission = PersonalCommissionLevel.objects.filter(pk=i['pk'])
+                        current_commission.update(
+                            commission_percentage=i['rate'],
+                            downline_commission_percentage=i['downline_rate'],
+                            commission_level=i['level'],
+                            active_downline_needed=i['active_downline'],
+                            monthly_downline_ftd_needed=i['downline_ftd']
+                        )
+                        logger.info("Update commission level " +
+                                    i['level'] + " for affiliate " + affiliate.username)
+                        commission_list.append(i['pk'])
+                deleted_commission_levels = PersonalCommissionLevel.objects.filter(user_id=affiliate).exclude(pk__in=commission_list)
+                deleted_list = deleted_commission_levels.values_list('commission_level', flat=True)
+                if deleted_list.count() > 0:
+                    logger.info("Admin user " + str(admin_user) + " delete commission level " + str(
+                        deleted_list) + " for affiliate " + str(affiliate.username))
+                deleted_commission_levels.delete()
+
+
+
+
 
             # ['wluuuu', 'Normal', 'Enable', 'System', 'No']
             # update affilite attributes

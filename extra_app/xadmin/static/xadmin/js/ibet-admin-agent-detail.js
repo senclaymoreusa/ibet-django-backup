@@ -44,6 +44,7 @@
                 },
                 "lengthMenu": "_MENU_",
             },
+            dom: '<<t>Bpil>',
             "columnDefs": [
                 {
                     "orderable": false,
@@ -209,9 +210,16 @@
             if (checkCommissionLevelEmpty() == false) {
                 var delete_btn = $('#delete_commission_level')
                 delete_btn.remove();
-                var new_commission_level = $('.commission_level_details').clone();
+                var commission_settting = $("input[name='commission-set']:checked").val();
+                if (commission_settting === 'System') {
+                    var new_commission_level = $('#system_commission_level_details').clone();
+                    var level = $('.commission_levels #system_commission_level_details').last().find('.commission_level_label').text();
+                } else {
+                    var new_commission_level = $('#personal_commission_level_details').clone();
+                    var level = $('.commission_levels #personal_commission_level_details').last().find('.commission_level_label').text();
+                }
                 $(new_commission_level).find('input').val('');
-                var level = $('.commission_levels .commission_level_details').last().find('.commission_level_label').text();
+
                 $(new_commission_level).find('.commission_level_label').text(+level + 1);
                 $(new_commission_level).append(delete_btn);
                 $('.commission_levels').append(new_commission_level)
@@ -373,6 +381,28 @@
         }
 
         $('.manager-assign').chosen({ width: "70%" });
+
+        $('#edit-details-btn').on('click', function(){
+            var commission_settting = $("input[name='commission-set']:checked").val();
+            if (commission_settting === 'System') {
+                $('#system_commission_levels').css('display', '');
+            } else {
+                $('#personal_commission_levels').css('display', '');
+            }
+        });
+
+        $("input[name='commission-set']").on('change', function(){
+            var val = $("input[name='commission-set']:checked").val();
+            if (val === 'System') {
+                $('#system_commission_levels').css('display', '');
+                $('#personal_commission_levels').css('display', 'none');
+            } else {
+                $('#system_commission_levels').css('display', 'none');
+                $('#personal_commission_levels').css('display', '');
+
+            }
+        });
+
     });
 
     function copyToClipboard(value) {
