@@ -1154,23 +1154,50 @@ class CheckRetrievePasswordMethod(APIView):
             return Response(res)
 
 
-# class ConfirmRetrieveMethodAPI(APIView):
-#     permission_classes = (AllowAny, )
+class ConfirmRetrieveMethodAPI(APIView):
+    permission_classes = (AllowAny, )
 
-#     def get(self, request, *args, **kwargs):
-#         method = request.GET.get("method")
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get('username')
+        # method = request.GET.get("method")
 
-#         try:
-#             if method == "question":
-#                 pass
-#             if method == "phone":
-#                 pass
-#             if method == "email":
-#                 pass
+        try:
+            user = CustomUser.objects.get(username=username)
+            
+            res = {}
 
-#         except Exception as e:
-#             logger.error("ConfirmRetrieveMethodAPI error: {}".format(repr(e)))
-#             return Response(status)
+            # 0, _('What is your’s father birthday?')),
+            # (1, _('What is your’s mother birthday?')),
+            # (2, _('What is your’s spouse birthday?')),
+            # (3, _('What is your first company’s employee ID?')),
+            # (4, _('What is your primary school class teacher’s name?')),
+            # (5, _('What is your best childhood friend’s name?')),
+            # (6, _('What is the name of the person that influenced you the most?'))
+
+            if user.security_question == 0:
+                res["question"] = 'What is your’s father birthday?'
+            elif user.security_question == 1:
+                res["question"] = 'What is your’s mother birthday?'
+            elif user.security_question == 2:
+                res["question"] = 'What is your’s spouse birthday?'
+            elif user.security_question == 3:
+                res["question"] = 'What is your first company’s employee ID?'
+            elif user.security_question == 4:
+                res["question"] = 'What is your primary school class teacher’s name?'
+            elif user.security_question == 5:
+                res["question"] = 'What is your best childhood friend’s name?'
+            elif user.security_question == 6:
+                res["question"] = 'What is the name of the person that influenced you the most?'
+            
+            email = "*******" + user.email[user.email.index('@'):]
+            phone = "*******" + user.phone[-4:]
+            res["email"] = email
+            res["phone"] = phone
+
+            return Response(res)
+        except Exception as e:
+            logger.error("ConfirmRetrieveMethodAPI error: {}".format(repr(e)))
+            return Response(status)
 
 
 class SendResetPasswordCode(APIView):
