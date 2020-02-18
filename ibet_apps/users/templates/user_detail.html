@@ -729,8 +729,36 @@
             </div>
                     
             <div class='row'>
+                <button id="send-sms-btn" style="margin-left: 5%;" type="button" class="btn btn-primary blockDisable" data-toggle="modal" data-target="#send-sms">Send SMS</button>
                 <button id="edit-detail-btn" type="button" class="btn btn-primary blockDisable" data-toggle="modal" data-target="#edit_details">Edit details</button>
             </div>
+
+            <!-- send sms window -->
+            <div class="modal fade" id="send-sms" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #ffa313; color:white;">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">New SMS</h4>
+                            <div class="update-time">Updated {{ time }}</div>
+                        </div>
+                        <div class="modal-body">
+                            <div>Send SMS to {{customuser.username}}</div>
+                            <div class="form-group">
+                                <div class="edit-member-info-label">Message Body</div>
+                                <textarea class="form-control" id="message_body" name="message_body" rows="5"></textarea>
+                            </div>
+                            
+                            <div style="margin-top: 5px;">
+                                <button type="button" id="send-sms-submit" class="btn btn-success">Send</button>
+                                <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>  
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
             
             <!-- edit member detail window -->
             <div class="modal fade" id="edit_details" role="dialog">
@@ -1699,13 +1727,13 @@
                             {% endif %}
                         </tbody>
                     </table>
-                    <div class="row">
+                    <div class="row" style="margin-bottom: 10px;">
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
-                        <div class="transaction-control-group col-md-9"></div>
+                        <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                         <div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%">
                             <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
@@ -1715,7 +1743,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%">
                                 <ul class="pagination" style="margin:0px;">
                                     <li class="page-item disabled" id='previousPage'>
                                     <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1757,9 +1785,9 @@
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
-                        <div class="transaction-control-group col-md-9"></div>
+                        <div class="transaction-control-group col-md-9" style="width: 71%;"></div>
                         <div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%;">
                             <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
@@ -1769,7 +1797,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%;">
                                 <ul class="pagination" style="margin:0px;">
                                     <li class="page-item disabled" id='previousPage'>
                                     <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1849,13 +1877,13 @@
                             {% endif %}
                         </tbody>
                     </table>
-                    <div class="row">
+                    <div class="row"  style="margin-bottom: 5px;">
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
-                        <div class="transaction-control-group col-md-9"></div>
+                        <div class="transaction-control-group col-md-9" style="width: 71%;"></div>
                         <div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1' style="width: 10%;">
                             <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
@@ -1865,7 +1893,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1' style="width: 10%;">
                                 <ul class="pagination" style="margin:0px;">
                                     <li class="page-item disabled" id='previousPage'>
                                     <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -2163,20 +2191,20 @@
                                     <!-- <div>{{ limitation.loss }}</div> -->
                                     {% for limit in limitation.loss %}
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-5">
                                                 <div class="member-limit-info">Loss limit {{ forloop.counter }}</div>
                                             </div>
-                                            <div class="col-md-8">
+                                            <div class="col-md-7">
                                                 <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                             </div>
                                         </div>
                                     {% endfor %}
                                 {% else %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Loss limit</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$</div>
                                         </div>
                                     </div>
@@ -2184,20 +2212,20 @@
                                 {% if limitation.deposit %}
                                     {% for limit in limitation.deposit %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Deposit limit {{ forloop.counter }}</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                         </div>
                                     </div>
                                     {% endfor %}
                                 {% else %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Deposit limit</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$</div>
                                         </div>
                                     </div>
@@ -2205,20 +2233,20 @@
                                 {% if limitation.withdraw %}
                                     {% for limit in limitation.withdraw %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Withdraw limit {{ forloop.counter }}</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                         </div>
                                     </div>
                                     {% endfor %}
                                 {% else %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Withdraw limit</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$</div>
                                         </div>
                                     </div>
@@ -3190,6 +3218,38 @@ $(document).ready(function() {
         $("#closeAccountBtn2").css('display', 'none');
         $('#closeAccountBtn2').removeAttr('onclick');
         
+    });
+
+
+    $('#send-sms-submit').click(function() {
+
+        if (!confirm("Are you sure you want to send sms!")) {
+            return;
+        }
+        
+        var message = $('#message_body').val();
+        if (!message) {
+            alert("please provide a message body");
+            return;
+        }
+
+        var url = "{% url 'admin_send_sms' %}";
+        var user_id = $('#hidden_user_id').val();
+        data = {
+            "user_id": user_id,
+            "message": message,
+        }
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(data),
+            success: function(data)
+            {
+                window.location.reload();
+            }
+        });
+
     });
 
 

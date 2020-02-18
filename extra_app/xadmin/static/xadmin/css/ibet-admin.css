@@ -514,7 +514,7 @@ table.table-bordered > tbody > tr > td {
 }
 
 #edit-detail-btn {
-    margin-left: 5%;
+    /* margin-left: 5%; */
     margin-top: 10px;
     margin-bottom: 10px;
 }
