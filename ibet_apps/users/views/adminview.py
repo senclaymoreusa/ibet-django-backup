@@ -315,7 +315,7 @@ class UserDetailView(CommAdminView):
 
 
         userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
-        login_json_obj = userLastLogin.ip_location
+        login_json_obj = userLastLogin.ip_location if userLastLogin else ""
         # print(login_json_obj)
         context['userLoginObj'] = {
             'time': userLastLogin.created_time if userLastLogin else "None",
@@ -326,7 +326,8 @@ class UserDetailView(CommAdminView):
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
         context['activeTime'] = GameBet.objects.filter(user=customUser, amount_wagered__gte=0).count()
         create_account_ip =  UserAction.objects.filter(user=customUser, event_type=EVENT_CHOICES_REGISTER)
-        context['create_account_ip'] = create_account_ip.order_by('-created_time').ip_addr if len(create_account_ip) > 0 else ""
+        # print(create_account_ip)
+        context['create_account_ip'] = create_account_ip.order_by('-created_time').first().ip_addr if len(create_account_ip) > 0 else ""
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
@@ -546,6 +547,10 @@ class UserDetailView(CommAdminView):
                 update_fields = request.POST.get('update_fields')
                 update_fields = json.loads(update_fields)
 
+                user = CustomUser.objects.get(pk=user_id)
+                before_status = user.member_status
+                after_status = ""
+
                 if len(update_fields) <= 0:
                     response = {
                         "status": True,
@@ -556,6 +561,7 @@ class UserDetailView(CommAdminView):
                 query = {}
                 system_message = ""
                 first_image_upload = False
+                status_change = False
                 for i in update_fields:
                     if i['name'] == 'reason_text':
                         continue
@@ -565,9 +571,14 @@ class UserDetailView(CommAdminView):
                         first_image_upload = True
                         # print(first_image_upload)
                         continue
-
-                    query[i['name']] = i['value']
-                    system_message += i['name'] + " change to " + i['value']
+                    if i['name'] == 'member_status':
+                        status_change = True
+                        after_status = int(i['value'])
+                        query[i['name']] = i['value']
+                        system_message += i['name'] + " change to " + str(dict(MEMBER_STATUS).get(after_status))
+                    else:
+                        query[i['name']] = i['value']
+                        system_message += i['name'] + " change to " + i['value']
 
                     
                 with transaction.atomic():
@@ -575,7 +586,7 @@ class UserDetailView(CommAdminView):
                     if user_id_img and first_image_upload:
                         self.upload_user_photo_id(username, user_id_img)
                         UserActivity.objects.create(
-                            user = CustomUser.objects.get(pk=user_id),
+                            user = user,
                             admin = request.user,
                             system_message = "Upload user ID image",
                             message = reason_text,
@@ -583,7 +594,7 @@ class UserDetailView(CommAdminView):
                         )
                     elif not user_id_img and not first_image_upload:
                         UserActivity.objects.create(
-                            user = CustomUser.objects.get(pk=user_id),
+                            user = user,
                             admin = request.user,
                             system_message = "Delete user ID image",
                             message = reason_text,
@@ -591,9 +602,17 @@ class UserDetailView(CommAdminView):
                         )
                         self.remove_user_photo_id(username)
 
-                 
+                    if status_change:
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = "Status change from " + str(dict(MEMBER_STATUS).get(before_status)) + " to " + str(dict(MEMBER_STATUS).get(after_status)),
+                            message = reason_text,
+                            activity_type = ACTIVITY_STATUS_CHANGED,
+                        )
+
                     UserActivity.objects.create(
-                        user = CustomUser.objects.get(pk=user_id),
+                        user = user,
                         admin = request.user,
                         system_message = system_message.replace("_", " ") if system_message else None,
                         message = reason_text,
@@ -817,7 +836,7 @@ class UserDetailView(CommAdminView):
                                 set_temporary_timeout(user, block_time)
                             else:
                                 set_permanent_timeout(user, block_time)
-
+                            user.member_status = MEMBER_STATUS_CLOSED
                             UserActivity.objects.create(
                                 user = user,
                                 admin = request.user,
@@ -832,12 +851,21 @@ class UserDetailView(CommAdminView):
                     else:
                         with transaction.atomic():
                             user.block = True
+                            user.member_status = MEMBER_STATUS_CLOSED
                             UserActivity.objects.create(
                                 user = user,
                                 admin = request.user,
                                 system_message = sys_message,
                                 message = reason,
                                 activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                            )
+
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_STATUS_CHANGED,
                             )
 
                             UserActivity.objects.create(
@@ -857,6 +885,7 @@ class UserDetailView(CommAdminView):
                         # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
                         user.temporary_block_time = None
                         user.block = False
+                        user.member_status = MEMBER_STATUS_NORMAL
                         user.save()
 
                         UserActivity.objects.create(
@@ -865,6 +894,14 @@ class UserDetailView(CommAdminView):
                             system_message = "Open account",
                             message = reason,
                             activity_type = ACTIVITY_OPEN_ACCOUNT,
+                        )
+
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = sys_message,
+                            message = reason,
+                            activity_type = ACTIVITY_STATUS_CHANGED,
                         )
 
                         UserActivity.objects.create(
@@ -1047,9 +1084,12 @@ class UserListView(CommAdminView):
             activeDays = int(betTims)
             userDict['active_days'] = activeDays
             userDict['member_status'] = user.get_member_status_display() if user.get_member_status_display() else ""
-            userDict['status_changed'] = user.member_changed_time if user.member_changed_time else ""
-            userDict['changed_by'] = ''
-            userDict['closure_reason'] = ''
+            status_change_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_STATUS_CHANGED).order_by('created_time').first()
+            close_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_CLOSE_ACCOUNT).order_by('created_time').first()
+            userDict['status_changed'] = status_change_obj.created_time if status_change_obj else ""
+            # userDict['status_changed'] = user.member_changed_time if user.member_changed_time else ""
+            userDict['changed_by'] = status_change_obj.admin if status_change_obj else ""
+            userDict['closure_reason'] = close_obj.system_message if close_obj and user.member_status == MEMBER_STATUS_CLOSED else ""
 
 
             userDict['last_login_time'] = user.last_login_time
@@ -1829,7 +1869,7 @@ class BlackListUser(View):
                     UserActivity.objects.create(
                         user = blacklist_user,
                         admin = admin,
-                        system_message = "The user is being blacklist",
+                        system_message = "blacklist user",
                         message = reason,
                         activity_type = ACTIVITY_CLOSE_ACCOUNT,
                     )
@@ -1837,7 +1877,15 @@ class BlackListUser(View):
                     UserActivity.objects.create(
                         user = blacklist_user,
                         admin = admin,
-                        system_message = "The user is being blacklist",
+                        system_message = "blacklist user",
+                        message = reason,
+                        activity_type = ACTIVITY_STATUS_CHANGED,
+                    )
+
+                    UserActivity.objects.create(
+                        user = blacklist_user,
+                        admin = admin,
+                        system_message = "blacklist user",
                         message = reason,
                         activity_type = ACTIVITY_SYSTEM,
                     )
@@ -1918,6 +1966,11 @@ class ExportUserList(View):
                 contribution = '{:.2f}'.format(calculateContribution(user))
                 betTimes = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
                 activeDays = int(betTimes)
+                status_change_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_STATUS_CHANGED).order_by('created_time').first()
+                close_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_CLOSE_ACCOUNT).order_by('created_time').first()
+                status_changed = status_change_obj.created_time if status_change_obj else ""
+                changed_by = status_change_obj.admin if status_change_obj else ""
+                closure_reason = close_obj.system_message if close_obj and user.member_status == MEMBER_STATUS_CLOSED else ""
                 user_list_data.append([user.pk,
                                       user.username,
                                       user.get_user_attribute_display(),
@@ -1935,9 +1988,9 @@ class ExportUserList(View):
                                       contribution,
                                       activeDays,
                                       user.get_member_status_display(),
-                                      "",
-                                      "",
-                                      ""]
+                                      status_changed,
+                                      changed_by,
+                                      closure_reason]
                                     )
 
             return streamingExport(user_list_data, 'User List')
