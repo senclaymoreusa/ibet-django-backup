@@ -165,7 +165,7 @@ class CustomUser(AbstractBaseUser):
     time_of_registration = models.DateTimeField(_('Time of Registration'), auto_now_add=True, null=True)
     ftd_time = models.DateTimeField(_('Time of FTD'), blank=True, null=True)  # first time deposit
     ftd_time_amount = models.DecimalField(_('Amount of FTD'), max_digits=20, decimal_places=4, default=0)
-    verfication_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
+    verification_time = models.DateTimeField(_('Time of Verification'), blank=True, null=True)
     id_location = models.CharField(_('Location shown on the ID'), max_length=255, default='')
     last_login_time = models.DateTimeField(_('Last Login Time'), blank=True, null=True)
     last_betting_time = models.DateTimeField(_('Last Betting Time'), blank=True, null=True)
@@ -433,7 +433,8 @@ class UserAction(models.Model):
 class UserActivity(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="user")
     admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="admin")
-    message = models.CharField(max_length=250)
+    system_message = models.CharField(max_length=250, null=True, blank=True)
+    message = models.CharField(max_length=250, null=True, blank=True)
     activity_type = models.SmallIntegerField(choices=ACTIVITY_TYPE, default=0)
     created_time = models.DateTimeField(
         _('Created Time'),

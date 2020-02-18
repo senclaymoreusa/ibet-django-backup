@@ -370,7 +370,7 @@ def getManagerList(list_type):
     try:
         manager_group = UserGroup.objects.get(groupType=PERMISSION_GROUP, name=group_name)
     except Exception as e:
-        logger.info("Error getting {} group ".format(group_name) + str(e))
+        logger.info("Miss group for {} ".format(group_name) + str(e))
         return None
 
     managers = []

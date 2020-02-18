@@ -262,11 +262,17 @@ class RegisterView(CreateAPIView):
         try:
             with transaction.atomic():
                 # add time of registration and register event
+                rr = requests.get("https://ipapi.co/json/")
+                rrdata = rr.json()
+                try :
+                    ip = rrdata["ip"]
+                except:
+                    ip = helpers.get_client_ip(request)
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=helpers.get_client_ip(request),
+                    ip_addr=ip,
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
@@ -302,7 +308,7 @@ class RegisterView(CreateAPIView):
     @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
-        print(self.request)
+        # print(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(user)
         else:
@@ -847,7 +853,7 @@ class Activation(APIView):
         email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
-        user.update(verfication_time=timezone.now(), modified_time=timezone.now())
+        user.update(verification_time=timezone.now(), modified_time=timezone.now())
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code, modified_time=timezone.now())
         def timeout():
@@ -1113,6 +1119,60 @@ class GenerateForgetPasswordCode(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class CheckRetrievePasswordMethod(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get('username')
+
+        res = {}
+        res["question"] = False
+        res["phone"] = False
+        res["email"] = False
+        
+        try:
+            user = CustomUser.objects.get(username=username)
+    
+            if user.security_answer is not None:
+                res["question"] = True
+            if user.phone is not None:
+                res["phone"] = True
+            if user.email is not None:
+                res["email"] = True
+            # if user.phone_verified:
+            #     res["phone"] = True
+            # if user.email_verified:
+            #     res["email"] = True
+
+            return Response(res)
+        except ObjectDoesNotExist:
+            logger.info("Retrieve Password Method API -- User: {} not exist".format(username))
+            return Response(res)
+        except Exception as e:
+            logger.error("Retrieve Password Method API Error: {}".format(repr(e)))
+            return Response(res)
+
+
+# class ConfirmRetrieveMethodAPI(APIView):
+#     permission_classes = (AllowAny, )
+
+#     def get(self, request, *args, **kwargs):
+#         method = request.GET.get("method")
+
+#         try:
+#             if method == "question":
+#                 pass
+#             if method == "phone":
+#                 pass
+#             if method == "email":
+#                 pass
+
+#         except Exception as e:
+#             logger.error("ConfirmRetrieveMethodAPI error: {}".format(repr(e)))
+#             return Response(status)
+
+
 class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
@@ -1305,8 +1365,7 @@ class GenerateActivationCode(APIView):
                 user.update(activation_code=random_num)
                 send_sms(str(random_num), user[0].pk)
         except Exception as e:
-            print(repr(e))
-            logger.error("Error Generating Activation Code: {}".format(str(e)))
+            logger.error("Error Generating Activation Code: {}".format(repr(e)))
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)
