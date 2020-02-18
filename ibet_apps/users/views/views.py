@@ -300,6 +300,17 @@ class RegisterView(CreateAPIView):
                 UserBonusWallet.objects.bulk_create(ubw_objs)
                 logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
 
+                personal_commission_level1 = PersonalCommissionLevel.objects.create(
+                    user_id=customUser,
+                    commission_percentage=0,
+                    downline_commission_percentage=0,
+                    commission_level=1,
+                    active_downline_needed=0,
+                    monthly_downline_ftd_needed=0,
+                    ngr=0
+                )
+                personal_commission_level1.save()
+                logger.info("Create default personal commission level 1 for new Player {}".format(customUser.username))
         except Exception as e:
             logger.error("Error adding new user registration, refer link or bonus wallet info: ", str(e))
 
