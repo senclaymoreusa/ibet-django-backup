@@ -335,12 +335,20 @@ ACTIVITY_SYSTEM = 0     # System Change
 ACTIVITY_REMARK = 1     # Remark in form
 ACTIVITY_MESSAGE = 2    # Inbox message
 ACTIVITY_NOTE= 3        # Note in activity
+ACTIVITY_UPLOAD_IMAGE = 4
+ACTIVITY_REMOVE_IMAGE = 5
+ACTIVITY_CLOSE_ACCOUNT = 6
+ACTIVITY_OPEN_ACCOUNT = 7
 
 ACTIVITY_TYPE = (
     (0, 'System'),
     (1, 'Remark'),
     (2, 'Message'),
     (3, 'Note'),
+    (4, 'Upload ID image'),
+    (5, 'Remove ID image'),
+    (6, 'Close Account'),
+    (7, 'Open Account'),
 )
 
 
@@ -434,16 +442,22 @@ GAME_PRODUCT = (
 )
 
 
-RISK_LEVEL_A = 0
-RISK_LEVEL_E1 = 1
-RISK_LEVEL_E2 = 2
-RISK_LEVEL_F = 3
+VERY_HIGH = 0
+HIGH = 1
+MEDIUM = 2
+LOW = 3
+VERY_LOW = 4
+VIP = 5
+BUSINESS = 6
 
 RISK_LEVEL = (
-    (RISK_LEVEL_A, 'A'),
-    (RISK_LEVEL_E1, 'E1'),
-    (RISK_LEVEL_E2, 'E2'),
-    (RISK_LEVEL_F, 'F'),
+    (VERY_HIGH, 'Very High'),
+    (HIGH, 'High'),
+    (MEDIUM, 'Medium'),
+    (LOW, 'Low'),
+    (VERY_LOW, 'Very Low'),
+    (VIP, 'VIP'),
+    (BUSINESS, 'Business'),
 )
 
 ALLOWED_STATUSES = (
@@ -1490,6 +1504,13 @@ BRAND_OPTIONS = (
 )
 
 
+CLOSE_REASON = (
+    (0, 'Closed by player request'),
+    (1, 'Temporary self-exclusion'),
+    (2, 'AML'),
+    (3, 'Fraud'),
+)
+
 SECURITY_QUESTION = (
     (0, _('What is your’s father birthday?')),
     (1, _('What is your’s mother birthday?')),
@@ -1561,6 +1582,7 @@ PLAYNGO_PROVIDER = "PLAYNGO"
 IMES_PROVIDER = "IMES"
 QTECH_PROVIDER = "QTech"
 ALLBET_PROVIDER = "ALLBET"
+GPI_PROVIDER = "GPI"
 
 # Taiwan team
 GPT_PROVIDER = "GPT"

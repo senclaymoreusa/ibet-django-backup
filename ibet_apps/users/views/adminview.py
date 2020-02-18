@@ -1,7 +1,7 @@
 from xadmin.views import CommAdminView
 from django.core import serializers
 from django.http import HttpResponse
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, F
 from datetime import timedelta
 from django.db import transaction
 import boto3
@@ -30,6 +30,9 @@ from games.models import GameBet, Category, GameProvider
 from utils.admin_helper import *
 from operation.views import send_email
 from games.helper import transferRequest
+from utils.redisClient import RedisClient
+from utils.redisHelper import RedisHelper
+from operation.views import send_sms
 
 
 import requests
@@ -51,86 +54,93 @@ class UserDetailView(CommAdminView):
         customUser = CustomUser.objects.get(pk=self.kwargs.get('pk'))
         context['customuser'] = customUser
         context['bonus_amount'] = getUserBonus(customUser) if getUserBonus(customUser) else 0
-        context['can_withdraw_balance'] = customUser.main_wallet - customUser.bonus_wallet
+        context['can_withdraw_balance'] = customUser.main_wallet - customUser.bonus_wallet if  customUser.main_wallet - customUser.bonus_wallet > 0 else 0
         context['userPhotoId'] = self.download_user_photo_id(customUser.username)
-        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0)[:20]
+        context['userLoginActions'] = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time')[:20]
         context['trans_wallet'] = GameProvider.objects.filter(is_transfer_wallet=True)
+        context['total_ngr'] = calculateNGR(customUser, None, None, None)
+        context['total_ggr'] = calculateGGR(customUser, None, None, None)
+        context['segment'] = customUser.vip_level.level if  customUser.vip_level else None
+        context['member_status'] = customUser.get_member_status_display()
         transaction = Transaction.objects.filter(user_id=customUser)
         context['block'] = False
         temporaryBlockRes = {}
         permanentBlockRes = {}
         context['temperaryBlock'] = temporaryBlockRes
         context['permanentBlock'] = permanentBlockRes
-        if customUser.block is True:
-            blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
+        if checkUserBlock(customUser):
+            act_obj = UserActivity.objects.filter(user=customUser, activity_type=ACTIVITY_CLOSE_ACCOUNT).order_by('-created_time').first()
+            # blockLimitationDeatil = Limitation.objects.filter(user=customUser, limit_type=LIMIT_TYPE_BLOCK).order_by('-created_time').first()
             data = {
-                'date': blockLimitationDeatil.created_time,
-                'admin': blockLimitationDeatil.admin,
+                'date': act_obj.created_time,
+                'admin': act_obj.admin,
+                'reason_options': act_obj.system_message,
+                'reason': act_obj.message,
             }
             context['blockDetail'] = data
             context['block'] = True
 
-        elif checkUserBlock(customUser):
-            expired_time = ""
-            blocked_time = ""
-            temporaryStr = ""
-            temporaryCode = ""
-            permanentStr = ""
-            permanentCode = ""
-            blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
-            if customUser.temporary_block_time:
-                expired_time = customUser.temporary_block_time
-                if customUser.temporary_block_interval == INTERVAL_PER_DAY:
-                    expired_time = expired_time + datetime.timedelta(days=1)
-                    temporaryStr = "one day"
-                    temporaryCode = customUser.temporary_block_interval
-                elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
-                    expired_time = expired_time + datetime.timedelta(days=7)
-                    temporaryStr = "one week"
-                    temporaryCode = INTERVAL_PER_WEEK
-                elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
-                    expired_time = expired_time + datetime.timedelta(days=30)
-                    temporaryStr = "one month"
-                    temporaryCode = INTERVAL_PER_MONTH
+        # elif checkUserBlock(customUser):
+        #     expired_time = ""
+        #     blocked_time = ""
+        #     temporaryStr = ""
+        #     temporaryCode = ""
+        #     permanentStr = ""
+        #     permanentCode = ""
+        #     blocked_time = customUser.temporary_block_time or customUser.permanent_block_time
+        #     if customUser.temporary_block_time:
+        #         expired_time = customUser.temporary_block_time
+        #         if customUser.temporary_block_interval == INTERVAL_PER_DAY:
+        #             expired_time = expired_time + datetime.timedelta(days=1)
+        #             temporaryStr = "one day"
+        #             temporaryCode = customUser.temporary_block_interval
+        #         elif customUser.temporary_block_interval == INTERVAL_PER_WEEK:
+        #             expired_time = expired_time + datetime.timedelta(days=7)
+        #             temporaryStr = "one week"
+        #             temporaryCode = INTERVAL_PER_WEEK
+        #         elif customUser.temporary_block_interval == INTERVAL_PER_MONTH:
+        #             expired_time = expired_time + datetime.timedelta(days=30)
+        #             temporaryStr = "one month"
+        #             temporaryCode = INTERVAL_PER_MONTH
                 
-            elif customUser.permanent_block_time:
-                expired_time = customUser.permanent_block_time
-                if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
-                    expired_time = expired_time + datetime.timedelta(6*365/12)
-                    permanentStr = "six months"
-                    permanentCode = INTERVAL_PER_SIX_MONTH
-                elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
-                    expired_time = expired_time + datetime.timedelta(365)
-                    permanentStr = "one year"
-                    permanentCode = INTERVAL_PER_ONE_YEAR
-                elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
-                    expired_time = expired_time + datetime.timedelta(365*3)
-                    permanentStr = "three years"
-                    permanentCode = INTERVAL_PER_THREE_YEAR
-                elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
-                    expired_time = expired_time + datetime.timedelta(365*5)
-                    permanentStr = "five years"
-                    permanentCode = INTERVAL_PER_FIVE_YEAR
+        #     elif customUser.permanent_block_time:
+        #         expired_time = customUser.permanent_block_time
+        #         if customUser.permanent_block_interval == INTERVAL_PER_SIX_MONTH:
+        #             expired_time = expired_time + datetime.timedelta(6*365/12)
+        #             permanentStr = "six months"
+        #             permanentCode = INTERVAL_PER_SIX_MONTH
+        #         elif customUser.permanent_block_interval == INTERVAL_PER_ONE_YEAR:
+        #             expired_time = expired_time + datetime.timedelta(365)
+        #             permanentStr = "one year"
+        #             permanentCode = INTERVAL_PER_ONE_YEAR
+        #         elif customUser.permanent_block_interval == INTERVAL_PER_THREE_YEAR:
+        #             expired_time = expired_time + datetime.timedelta(365*3)
+        #             permanentStr = "three years"
+        #             permanentCode = INTERVAL_PER_THREE_YEAR
+        #         elif customUser.permanent_block_interval == INTERVAL_PER_FIVE_YEAR:
+        #             expired_time = expired_time + datetime.timedelta(365*5)
+        #             permanentStr = "five years"
+        #             permanentCode = INTERVAL_PER_FIVE_YEAR
                 
-            temporaryBlockRes = {
-                'temporaryStr': temporaryStr,
-                'temporaryCode': temporaryCode
-            }
+        #     temporaryBlockRes = {
+        #         'temporaryStr': temporaryStr,
+        #         'temporaryCode': temporaryCode
+        #     }
 
-            permanentBlockRes = {
-                'permanentStr': permanentStr,
-                'permanentCode': permanentCode
-            }
+        #     permanentBlockRes = {
+        #         'permanentStr': permanentStr,
+        #         'permanentCode': permanentCode
+        #     }
 
-            data = {
-                "expired_time": expired_time,
-                "date": blocked_time,
-                "admin": "User themselve"
-            }
-            context['blockDetail'] = data
-            context['block'] = True
-            context['temperaryBlock'] = temporaryBlockRes
-            context['permanentBlock'] = permanentBlockRes
+        #     data = {
+        #         "expired_time": expired_time,
+        #         "date": blocked_time,
+        #         "admin": "User themselve"
+        #     }
+        #     context['blockDetail'] = data
+        #     context['block'] = True
+        #     context['temperaryBlock'] = temporaryBlockRes
+        #     context['permanentBlock'] = permanentBlockRes
 
         #     temporaryBlockRes = {}
         # if customUser.temporary_block_interval is not None:
@@ -304,10 +314,19 @@ class UserDetailView(CommAdminView):
             context['userBetHistory'] = bet_list
 
 
-        userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()   
+        userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
+        login_json_obj = userLastLogin.ip_location
+        # print(login_json_obj)
+        context['userLoginObj'] = {
+            'time': userLastLogin.created_time if userLastLogin else "None",
+            'location': login_json_obj['region'] + ", " + login_json_obj['country'] if login_json_obj else "None",
+            'ip_address': userLastLogin.ip_addr if userLastLogin else "None"
+        }
         context['userLastIpAddr'] = userLastLogin
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
         context['activeTime'] = GameBet.objects.filter(user=customUser, amount_wagered__gte=0).count()
+        create_account_ip =  UserAction.objects.filter(user=customUser, event_type=EVENT_CHOICES_REGISTER)
+        context['create_account_ip'] = create_account_ip.order_by('-created_time').ip_addr if len(create_account_ip) > 0 else ""
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
@@ -360,7 +379,7 @@ class UserDetailView(CommAdminView):
                     time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 except:
                     time = datetime.datetime.strptime(deposit['fields']['request_time'], "%Y-%m-%dT%H:%M:%SZ")
-                time = time.strftime("%B %d, %Y, %I:%M %p")
+                time = time.strftime("%B %d, %Y, %H:%M")
                 depositDict = {
                     'transactionId': str(deposit['pk']),
                     'category': str(transTypeMap[deposit['fields']['transaction_type']]),
@@ -378,9 +397,13 @@ class UserDetailView(CommAdminView):
                     'method': deposit['fields']['method'],
                 }
                 lastDeposit.append(depositDict)
-            context['lastDeposits'] = lastDeposit[:1]
+            context['lastDeposits'] = lastDeposit[:1][0]
         else:
-            context['lastDeposits'] = {}
+            context['lastDeposits'] = {
+                'time': "",
+                'amount': "",
+                'status': "",
+            }
 
         withdraws = withdraw_trans.order_by('-request_time').first() 
         if withdraws:
@@ -412,10 +435,14 @@ class UserDetailView(CommAdminView):
                 lastWithdraw.append(withdrawDict)
             context['lastWithdraws'] = lastWithdraw[0]
         else:
-            context['lastWithdraws'] = {}
+            context['lastWithdraws'] = {
+                'time': "",
+                'amount': "",
+                'status': "",
+            }
 
 
-        activity = UserActivity.objects.filter(user=customUser).order_by("-created_time")
+        activity = UserActivity.objects.filter(user=customUser, activity_type__in=[0,1,2,3]).order_by("-created_time")
         if activity:
             context['activity'] = activity
         else:
@@ -483,6 +510,14 @@ class UserDetailView(CommAdminView):
         context['limitation'] = limitationDict
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
+        context['segment_level'] = Segmentation.objects.all()
+        context['related_user_data'] = getRelatedDevice(customUser.username)
+
+        log_obj = UserActivity.objects.filter(user=customUser, activity_type=ACTIVITY_UPLOAD_IMAGE).order_by('-created_time')
+        if len(log_obj) > 0:
+            log_obj = log_obj[0]
+            context['user_image_log_obj'] = log_obj
+
 
         # userJson = serializers.serialize('json', [customUser])
         # userJson = json.loads(userJson)
@@ -501,34 +536,85 @@ class UserDetailView(CommAdminView):
                 last_name = request.POST.get('last_name')
                 email = request.POST.get('email')
                 phone = request.POST.get('phone')
-                birthday = request.POST.get('birthday')
-                address = request.POST.get('address')
+                date_of_birth = request.POST.get('date_of_birth')
+                address = request.POST.get('street_address_1')
                 city = request.POST.get('city')
                 zipcode = request.POST.get('zipcode')
                 country = request.POST.get('country')
                 user_id_img = request.POST.get('user_id_img')
-                # upload image to S3
-                self.upload_user_photo_id(username, user_id_img)
+                reason_text = request.POST.get('reason_text')
+                update_fields = request.POST.get('update_fields')
+                update_fields = json.loads(update_fields)
 
-                CustomUser.objects.filter(pk=user_id).update(
-                    username=username, first_name=first_name, 
-                    last_name=last_name, email=email, 
-                    phone=phone, date_of_birth=birthday, 
-                    street_address_1=address, city=city,
-                    zipcode=zipcode, country=country)
-                
+                if len(update_fields) <= 0:
+                    response = {
+                        "status": True,
+                        "message": 'Nothing change for user: ' + str(username) + 'info'
+                    }
+                    return HttpResponse(json.dumps(response), content_type='application/json')
+
+                query = {}
+                system_message = ""
+                first_image_upload = False
+                for i in update_fields:
+                    if i['name'] == 'reason_text':
+                        continue
+                    elif i['name'] == 'user_id_img':
+                        continue
+                    elif i['name'] == 'user_id_img_first' and i['value'] == "true":
+                        first_image_upload = True
+                        # print(first_image_upload)
+                        continue
+
+                    query[i['name']] = i['value']
+                    system_message += i['name'] + " change to " + i['value']
+
+                    
+                with transaction.atomic():
+                # # upload image to S3
+                    if user_id_img and first_image_upload:
+                        self.upload_user_photo_id(username, user_id_img)
+                        UserActivity.objects.create(
+                            user = CustomUser.objects.get(pk=user_id),
+                            admin = request.user,
+                            system_message = "Upload user ID image",
+                            message = reason_text,
+                            activity_type = ACTIVITY_UPLOAD_IMAGE,
+                        )
+                    elif not user_id_img and not first_image_upload:
+                        UserActivity.objects.create(
+                            user = CustomUser.objects.get(pk=user_id),
+                            admin = request.user,
+                            system_message = "Delete user ID image",
+                            message = reason_text,
+                            activity_type = ACTIVITY_REMOVE_IMAGE,
+                        )
+                        self.remove_user_photo_id(username)
+
+                 
+                    UserActivity.objects.create(
+                        user = CustomUser.objects.get(pk=user_id),
+                        admin = request.user,
+                        system_message = system_message.replace("_", " ") if system_message else None,
+                        message = reason_text,
+                        activity_type = ACTIVITY_SYSTEM,
+                    )
+                    CustomUser.objects.filter(pk=user_id).update(**query)
                 logger.info('Finished update user: ' + str(username) + 'info to DB')
                 # print(CustomUser.objects.get(pk=user_id).id_image)
-
-                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user_id]))
+                response = {
+                    "status": True,
+                    "message": 'Finished update user: ' + str(username) + 'info to DB'
+                }
+                return HttpResponse(json.dumps(response), content_type='application/json')
         
             elif post_type == 'update_message':
                 admin_user = request.POST.get('admin_user')
                 message = request.POST.get('message')
 
                 UserActivity.objects.create(
-                    user = CustomUser.objects.filter(pk=user_id).first(),
-                    admin = CustomUser.objects.filter(username=admin_user).first(),
+                    user = CustomUser.objects.get(pk=user_id),
+                    admin = request.user,
                     message = message,
                     activity_type = 3,
                 )
@@ -542,29 +628,23 @@ class UserDetailView(CommAdminView):
                 user = CustomUser.objects.get(pk=user_id)
                 # print(str(activity_type))
                 
-                if activity_type == 'all':
-                    activitys = UserActivity.objects.filter(user=user).order_by('-created_time')
+                if activity_type == '-1':
+                    activities = UserActivity.objects.filter(user=user, activity_type_in=[0,1,2,3]).order_by('-created_time')
                 else:
-                    activitys = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
-                
-                activitys = serializers.serialize('json', activitys)
-                activitys = json.loads(activitys)
-                response = []
-                for act in activitys:
-                    actDict = {}
-                    try:
-                        time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    except:
-                        time = datetime.datetime.strptime(act['fields']['created_time'], "%Y-%m-%dT%H:%M:%SZ")
-                    time = time.strftime("%B %d, %Y, %I:%M %p")
-                    actDict['time'] = time
-                    adminUser = CustomUser.objects.get(pk=act['fields']['admin'])
-                    actDict['adminUser'] = str(adminUser.username)
-                    actDict['message'] = act['fields']['message']
-                    response.append(actDict)
-                # print(str(response))
+                    activities = UserActivity.objects.filter(user=user, activity_type=activity_type).order_by('-created_time')
 
-                return HttpResponse(json.dumps(response), content_type='application/json')
+                response = []
+                for act in activities:
+                    data = {
+                        'created_time': act.created_time.strftime("%B %d, %Y, %I:%M %p"),
+                        'adminUser': act.admin.username,
+                        'activity_type': act.activity_type,
+                        'message': act.message if act.message else "",
+                        'system_message': act.system_message if act.system_message else "",
+                    }
+                    response.append(data)
+
+                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
 
             elif post_type == 'limitation_setting':
                 
@@ -707,11 +787,18 @@ class UserDetailView(CommAdminView):
 
             elif post_type == 'block_user':
                 action = request.POST.get('action')
-                adminUsername = request.POST.get('admin_user')
-                admin = CustomUser.objects.get(username=adminUsername)
-                adminId = admin.pk
+                admin_user = request.user
+                user_id = request.POST.get('user_id')
+                block_time = request.POST.get('block_time')
+                reason_option = request.POST.get('reason_option')
+                reason = request.POST.get('reason')
+
+                # print(action, admin_user, user_id, block_time, reason_option, reason)
+                # block vicky 30 None None 0
+                # set_temporary_timeout(user, lock_timespan)
                 user = CustomUser.objects.get(pk=user_id)
-                    
+                sys_message = dict(CLOSE_REASON).get(int(reason_option)) if reason_option else ""
+                # print(sys_message)
                 if action == 'block':
 
                     if user.is_admin == True:
@@ -723,23 +810,75 @@ class UserDetailView(CommAdminView):
                         }
                         # print(json.dumps(error))
                         return HttpResponse(json.dumps(error), content_type="application/json")
+                    
+                    if block_time != '-1':
+                        with transaction.atomic():
+                            if int(block_time) >= 0 and int(block_time) <= 2:
+                                set_temporary_timeout(user, block_time)
+                            else:
+                                set_permanent_timeout(user, block_time)
 
-                    with transaction.atomic():
-                        user.block = True
-                        user.temporary_block_time = datetime.datetime.now()
-                        # user = CustomUser.objects.filter(pk=user_id).update(block=True, temporary_block_time=datetime.datetime.now())
-                        user.save()
-                        limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin)
-                        logger.info("Block user: " + str(user.username) + " by admin user: " + str(adminUsername))
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                            )
+                            # user.temporary_block_time = datetime.datetime.now()
+                            user.save()
+                            # limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin_user)
+                            logger.info("Block user: " + str(user.username) + " by admin user: " + str(admin_user))
+                    else:
+                        with transaction.atomic():
+                            user.block = True
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                            )
+
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_SYSTEM,
+                            )
+                            # user.temporary_block_time = datetime.datetime.now()
+                            user.save()
+                            # limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_BLOCK, admin=admin_user)
+                            logger.info("Block user: " + str(user.username) + " by admin user: " + str(admin_user))
+                    return HttpResponse(json.dumps({"message": "finished block"}), content_type="application/json")
                 else:
                     with transaction.atomic():
                         # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
-                        user.block = False
                         user.temporary_block_time = None
+                        user.block = False
                         user.save()
-                        limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin)
-                        logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(adminUsername))
-                return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
+
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = "Open account",
+                            message = reason,
+                            activity_type = ACTIVITY_OPEN_ACCOUNT,
+                        )
+
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = "Open account",
+                            message = reason,
+                            activity_type = ACTIVITY_SYSTEM,
+                        )
+
+                        # limitation = Limitation.objects.create(user=user, limit_type=LIMIT_TYPE_UNBLOCK, admin=admin_user)
+                        logger.info("Unblock user: " + str(user.username) + " by admin user: " + str(admin_user))
+                    return HttpResponse(json.dumps({"message": "finished open"}), content_type="application/json")
+                # return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
         except Exception as e:
             logger.error("User Detail View Error -- {}".format(repr(e)))
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
@@ -770,7 +909,15 @@ class UserDetailView(CommAdminView):
             accounts.append(userDict)
         return accounts
 
+    
+    def remove_user_photo_id(self, username):
+        # print(username)
+        aws_session = boto3.Session()
+        s3_client = aws_session.client('s3')
+        file_name = self.get_user_photo_file_name(username)
+        s3_client.delete_object(Bucket=settings.AWS_S3_ADMIN_BUCKET, Key=file_name)
 
+        logger.info('Finished remove username: ' + username + ' and file: ' + file_name + ' from S3!!!')
 
 
     def download_user_photo_id(self, username):
@@ -884,7 +1031,7 @@ class UserListView(CommAdminView):
             userDict['time_of_registration'] = user.time_of_registration
             userDict['ftd_time'] = user.ftd_time
             userDict['ftd_time_amount'] = user.ftd_time_amount if user.ftd_time_amount != 0 else ""
-            userDict['verfication_time'] = user.verfication_time
+            userDict['verification_time'] = user.verification_time
             userDict['id_location'] = user.id_location
             userDict['phone'] = user.phone
             userDict['address'] = user.get_user_address()
@@ -1000,7 +1147,7 @@ class UserListView(CommAdminView):
                 userDict['product_attribute'] = ''
                 userDict['time_of_registration'] = str(user.time_of_registration)
                 userDict['ftd_time'] = str(user.ftd_time)
-                userDict['verfication_time'] = str(user.verfication_time)
+                userDict['verification_time'] = str(user.verification_time)
                 userDict['id_location'] = user.id_location
                 userDict['phone'] = user.phone
                 userDict['address'] = str(user.street_address_1) + ', ' + str(user.street_address_2) + ', ' + str(user.city) + ', ' + str(user.state) + ', ' + str(user.country) 
@@ -1208,8 +1355,8 @@ class GetUserInfo(View):
                 'city': user.city,
                 'zipcode': user.zipcode,
                 'country': user.country,
-                'idApplicationTime': user.verfication_time if user.verfication_time else "",
-                'idReviewTime': user.verfication_time if  user.verfication_time else "",
+                'idApplicationTime': user.verification_time if user.verification_time else "",
+                'idReviewTime': user.verification_time if  user.verification_time else "",
                 'idReviewer': '',
             }
             return HttpResponse(json.dumps(response), content_type="application/json")
@@ -1572,4 +1719,166 @@ class UserTransfer(View):
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
         except Exception as e:
             logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))
+            return HttpResponse(status=400)
+
+
+
+class ProductContribution(View):
+
+    def get(self, request, *args, **kwargs):
+
+        user_id = request.GET.get('user_id')
+        customUser = CustomUser.objects.get(pk=user_id)
+        # print(user_id, customUser)
+        
+        try:
+            sport_query = Q(user_name=customUser.username) & (Q(category__name="Sports") | Q(category__parent_id__name="Sports"))
+            sport_contribution = GameBet.objects.filter(sport_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(sport_contribution)
+
+            game_query = Q(user_name=customUser.username) & (Q(category__name="Games") | Q(category__parent_id__name="Games"))
+            games_contribution = GameBet.objects.filter(game_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(games_contribution)
+
+            live_casino_query = Q(user_name=customUser.username) & (Q(category__name="Live Casino") | Q(category__parent_id__name="Live Casino"))
+            live_casino_contribution = GameBet.objects.filter(live_casino_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(live_casino_contribution)
+
+            lottery_query = Q(user_name=customUser.username) & (Q(category__name="Lotteries") | Q(category__parent_id__name="Lotteries"))
+            lottery_contribution = GameBet.objects.filter(lottery_query).aggregate(total=Sum(F('amount_wagered')-F('amount_won')))['total']
+            # print(lottery_contribution)
+            
+            
+            totalAmount = 0
+            if sport_contribution is not None:
+                totalAmount += sport_contribution
+            if games_contribution is not None:
+                totalAmount += games_contribution
+            if live_casino_contribution is not None:
+                totalAmount += live_casino_contribution
+            if lottery_contribution is not None:
+                totalAmount += lottery_contribution
+
+            response = {
+                'sport_value': "%.2f" % sport_contribution if sport_contribution else 0,
+                'sport_percent': (round(100 * (sport_contribution / totalAmount))) if sport_contribution and sport_contribution > 0 else 0,
+                'games': "%.2f" % games_contribution if games_contribution else 0,
+                'games_percent': (round(100 * (games_contribution / totalAmount))) if games_contribution and games_contribution > 0 else 0,
+                'live_casino': "%.2f" % live_casino_contribution if live_casino_contribution else 0,
+                'live_casino_percent': (round(100 * (live_casino_contribution / totalAmount))) if live_casino_contribution and live_casino_contribution > 0 else 0,
+                'lottery': "%.2f" % lottery_contribution if lottery_contribution else 0,
+                'lottery_percent': (round(100 * (lottery_contribution / totalAmount))) if lottery_contribution and lottery_contribution > 0 else 0,
+            }
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Make transfer error for user {}: {}".format(customUser.username, str(e)))
+            return HttpResponse(status=400)
+
+
+
+
+
+
+def getRelatedDevice(user):
+    r = RedisClient().connect()
+    redis = RedisHelper()
+    device = redis.get_devices_by_user(user)
+    related_user_use_same_device = []
+    related_user_data = []
+    if device:
+        related_user_use_same_device += redis.get_users_by_device(device.pop().decode('utf-8'))
+    while related_user_use_same_device:
+        username = related_user_use_same_device.pop().decode('utf-8')
+        if username == user:
+            continue
+        related_user = CustomUser.objects.get(username=username)
+
+        if related_user.is_admin:
+            continue
+        
+        related_user_info = {
+            'user_id': related_user.pk,
+            'username': related_user.username,
+            'member_status': related_user.get_member_status_display(),
+            'risk_level': related_user.get_risk_level_display(),
+            'balance': related_user.main_wallet
+        }
+        related_user_data.append(related_user_info)
+
+    return related_user_data
+
+
+
+
+class BlackListUser(View):
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        try:
+            user_list = data['user_list']
+            reason = data['reason']
+            admin = request.user
+
+            with transaction.atomic():
+                for user in user_list:
+                    blacklist_user = CustomUser.objects.get(pk=user)
+                    blacklist_user.block = True
+                    blacklist_user.member_status = MEMBER_STATUS_BLACKLISTED
+                    blacklist_user.save()
+                    UserActivity.objects.create(
+                        user = blacklist_user,
+                        admin = admin,
+                        system_message = "The user is being blacklist",
+                        message = reason,
+                        activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                    )
+
+                    UserActivity.objects.create(
+                        user = blacklist_user,
+                        admin = admin,
+                        system_message = "The user is being blacklist",
+                        message = reason,
+                        activity_type = ACTIVITY_SYSTEM,
+                    )
+
+            response = {
+                "message": "finished blacklist user"
+            }
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Blacklist user error: {}".format(str(e)))
+            return HttpResponse(status=400)
+
+
+
+
+
+class SendSMS(View):
+
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        try:
+            message = data['message']
+            user_id = data['user_id']
+
+            customUser = CustomUser.objects.get(pk=user_id)
+
+            send_sms(message, customUser, customUser.phone)
+
+            UserActivity.objects.create(
+                user = CustomUser.objects.get(pk=user_id),
+                admin = request.user,
+                system_message = "Send SMS message to " + customUser.username,
+                activity_type = ACTIVITY_MESSAGE,
+            )
+
+            response = {
+                "message": "finished send sms to user"
+            }
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Blacklist send sms to user: {}".format(str(e)))
             return HttpResponse(status=400)

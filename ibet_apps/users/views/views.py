@@ -262,11 +262,17 @@ class RegisterView(CreateAPIView):
         try:
             with transaction.atomic():
                 # add time of registration and register event
+                rr = requests.get("https://ipapi.co/json/")
+                rrdata = rr.json()
+                try :
+                    ip = rrdata["ip"]
+                except:
+                    ip = helpers.get_client_ip(request)
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=helpers.get_client_ip(request),
+                    ip_addr=ip,
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
@@ -294,6 +300,17 @@ class RegisterView(CreateAPIView):
                 UserBonusWallet.objects.bulk_create(ubw_objs)
                 logger.info("Create all categories Bonus Wallet for new Player {}".format(customUser.username))
 
+                personal_commission_level1 = PersonalCommissionLevel.objects.create(
+                    user_id=customUser,
+                    commission_percentage=0,
+                    downline_commission_percentage=0,
+                    commission_level=1,
+                    active_downline_needed=0,
+                    monthly_downline_ftd_needed=0,
+                    ngr=0
+                )
+                personal_commission_level1.save()
+                logger.info("Create default personal commission level 1 for new Player {}".format(customUser.username))
         except Exception as e:
             logger.error("Error adding new user registration, refer link or bonus wallet info: ", str(e))
 
@@ -302,7 +319,7 @@ class RegisterView(CreateAPIView):
     @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
-        print(self.request)
+        # print(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(user)
         else:
@@ -847,7 +864,7 @@ class Activation(APIView):
         email = request.data['email']
 
         user = get_user_model().objects.filter(email=email)
-        user.update(verfication_time=timezone.now(), modified_time=timezone.now())
+        user.update(verification_time=timezone.now(), modified_time=timezone.now())
         activation_code = str(base64.urlsafe_b64encode(uuid.uuid1().bytes.rstrip())[:25])[2:-1]
         user.update(activation_code=activation_code, modified_time=timezone.now())
         def timeout():
@@ -1113,6 +1130,87 @@ class GenerateForgetPasswordCode(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class CheckRetrievePasswordMethod(APIView):
+
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get('username')
+
+        res = {}
+        res["question"] = False
+        res["phone"] = False
+        res["email"] = False
+        
+        try:
+            user = CustomUser.objects.get(username=username)
+    
+            if user.security_answer is not None:
+                res["question"] = True
+            if user.phone is not None:
+                res["phone"] = True
+            if user.email is not None:
+                res["email"] = True
+            # if user.phone_verified:
+            #     res["phone"] = True
+            # if user.email_verified:
+            #     res["email"] = True
+
+            return Response(res)
+        except ObjectDoesNotExist:
+            logger.info("Retrieve Password Method API -- User: {} not exist".format(username))
+            return Response(res)
+        except Exception as e:
+            logger.error("Retrieve Password Method API Error: {}".format(repr(e)))
+            return Response(res)
+
+
+class ConfirmRetrieveMethodAPI(APIView):
+    permission_classes = (AllowAny, )
+
+    def get(self, request, *args, **kwargs):
+        username = request.GET.get('username')
+        # method = request.GET.get("method")
+
+        try:
+            user = CustomUser.objects.get(username=username)
+            
+            res = {}
+
+            # 0, _('What is your’s father birthday?')),
+            # (1, _('What is your’s mother birthday?')),
+            # (2, _('What is your’s spouse birthday?')),
+            # (3, _('What is your first company’s employee ID?')),
+            # (4, _('What is your primary school class teacher’s name?')),
+            # (5, _('What is your best childhood friend’s name?')),
+            # (6, _('What is the name of the person that influenced you the most?'))
+
+            if user.security_question == 0:
+                res["question"] = 'What is your’s father birthday?'
+            elif user.security_question == 1:
+                res["question"] = 'What is your’s mother birthday?'
+            elif user.security_question == 2:
+                res["question"] = 'What is your’s spouse birthday?'
+            elif user.security_question == 3:
+                res["question"] = 'What is your first company’s employee ID?'
+            elif user.security_question == 4:
+                res["question"] = 'What is your primary school class teacher’s name?'
+            elif user.security_question == 5:
+                res["question"] = 'What is your best childhood friend’s name?'
+            elif user.security_question == 6:
+                res["question"] = 'What is the name of the person that influenced you the most?'
+            
+            email = "*******" + user.email[user.email.index('@'):]
+            phone = "*******" + user.phone[-4:]
+            res["email"] = email
+            res["phone"] = phone
+
+            return Response(res)
+        except Exception as e:
+            logger.error("ConfirmRetrieveMethodAPI error: {}".format(repr(e)))
+            return Response(status)
+
+
 class SendResetPasswordCode(APIView):
 
     permission_classes = (AllowAny, )
@@ -1243,7 +1341,8 @@ class GenerateActivationCode(APIView):
         try:
             user = get_user_model().objects.filter(username=username)
             if postType == "change_member_phone_num":
-                phone = data['phone']
+                # phone = data['phone']
+                phone = user[0].phone
                 time = timezone.now() - datetime.timedelta(days=1)
                 event_filter = Q(user=user[0])&Q(event_type=EVENT_CHOICES_SMS_CODE)&Q(created_time__gt=time)
                 count = UserAction.objects.filter(event_filter).count()
@@ -1304,7 +1403,7 @@ class GenerateActivationCode(APIView):
                 user.update(activation_code=random_num)
                 send_sms(str(random_num), user[0].pk)
         except Exception as e:
-            logger.error("Error Generating Activation Code: {}".format(str(e)))
+            logger.error("Error Generating Activation Code: {}".format(repr(e)))
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         return Response(status=status.HTTP_200_OK)

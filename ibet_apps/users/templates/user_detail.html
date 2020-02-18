@@ -5,23 +5,49 @@
 
 {% block content %} 
     {% if blockDetail %}
-    <div style="width:100%; height:65px; border-radius: 4px; border: solid 2px #d9534f; margin-left: 3px; background-color: rgb(249, 225, 225);">
-        <div style="margin-left:2%; margin-top:10px;">
+    <div style="width:100%; border-radius: 4px; border: solid 2px #d9534f; margin-left: 3px; background-color: rgb(249, 225, 225);">
+        <div style="margin-left:2%; margin-top:10px; margin-bottom:10px;">
             <div class="row">
                 <div class="col-md-1" style="width:4.33%">
                     <span class="glyphicon glyphicon-exclamation-sign" style="font-size: 3em;"></span>
                 </div>
-                <div class="col-md-10" style="margin-top:1px;">
-                    <span style="line-height: 10px;">This member's account has been closed on {{ blockDetail.date }} by {{ blockDetail.admin }}. Actions on the account are disabled unless the account is re-opened. Only a system adminstrator can re-open the account.</span>
-                </div>
-                <div class="col-md-1" style="margin-top:3px;">
-                    <div>
-                        <button type="button" id="open-account-btn" class="btn btn-primary" style="margin-left: -8%;" onclick="userBlockAction('open')">
+                <div class="col-md-11" style="margin-top:1px; padding-left: 25px;">
+                    <div><span style="line-height: 10px;">This player's account has been closed. Actions on the account are disabled unless the account is re-opened. Only a system administrator can re-open the account.</span></div>
+                    <div style="margin-top:10px;">
+                        <div class="row">
+                            <div class="col-md-2 bold">Closure date</div>
+                            <div class="col-md-10">{{ blockDetail.date }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 bold">Closure reason</div>
+                            <div class="col-md-10">{{ blockDetail.reason_options }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 bold">Operator</div>
+                            <div class="col-md-10">{{ blockDetail.admin }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-2 bold">reason</div>
+                            <div class="col-md-10">{{ blockDetail.reason }}</div>
+                        </div>
+                        <div class="form-group" style="border-bottom: none">
+                            <div class="edit-member-info-label" style="margin-top:20px;" for="message_to_player">Reason for re-opening account*</div>
+                            <textarea style="width: 40%;" class="form-control" rows="2" id="reopen_message" placeholder="Please provide a brief explanation"></textarea>
+                        </div>
+                        <button type="button" id="open-account-btn" class="btn btn-primary" style="margin-top: 10px;" onclick="userBlockAction('open')">
                             Re-open account
                         </button>
                     </div>
                 </div>
             </div>
+            
+            <!-- <div class="col-md-1" style="margin-top:3px;">
+                <div>
+                    <button type="button" id="open-account-btn" class="btn btn-primary" style="margin-left: -8%;" onclick="userBlockAction('open')">
+                        Re-open account
+                    </button>
+                </div>
+            </div> -->
         </div>
     </div>
     {% endif %}
@@ -33,7 +59,7 @@
         </div>
         <div class="row" style="margin-top:20px; min-height: 165px;">
             <div class="col-md-6" >
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <div class="col-md-3" style="padding-right:2%">
                         <div class="block-title"><span></span></div>
                         <div class="block-title"><span>TOTAL BALANCE</span></div>
                         <div class="fund-block">
@@ -42,7 +68,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <div class="col-md-3" style="padding-right:2%">
                         <div class="block-title"><span>MAIN</span></div>
                         <div class="block-title"><span>WALLET BALANCE</span></div>
                         <div class="fund-block">
@@ -51,7 +77,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <div class="col-md-3" style="padding-right:2%">
                         <div class="block-title"><span>AVAILAVLE FOR</span></div>
                         <div class="block-title"><span>WITHDRAWAL</span></div>
                         <div class="fund-block">
@@ -60,7 +86,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2" style="width: 20%; padding-right:5px">
+                    <!-- <div class="col-md-2" style="width: 20%; padding-right:5px">
                         <div class="block-title"><span>MIN/ MAX</span></div>
                         <div class="block-title"><span>WITHDRAW AMOUNT</span></div>
                         <div class="fund-block">
@@ -68,8 +94,8 @@
                                 NO LIMIT
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-2" style="width: 20%;">
+                    </div> -->
+                    <div class="col-md-3" >
                         <div class="block-title"><span>&nbsp;</span></div>
                         <div class="block-title"><span>BONUS AMOUNT</span></div>
                         <div class="fund-block">
@@ -88,7 +114,7 @@
                         <div id="chart5" style="min-height: 135px; "></div>
                     </div>
                     <div class="col-md-9">
-                        <div class="row" id="walletData" style="margin-top: 10px;">
+                        <div class="row" id="walletData" style="margin-top: 10px; margin-left: 2%">
                         </div>
                     </div>
                 </div>
@@ -299,25 +325,34 @@
         </div>
         <div class="row" style="margin-top:15px;">
             <div class="col-md-6" >
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>&nbsp;</span></div>
-                    <div class="block-title"><span>MEMBER LEVEL</span></div>
+                    <div class="block-title"><span>Status</span></div>
                     <div class="life-time-value-block">
-                        <div class="block-content">
-                            VIP
+                        <div class="block-content" style=" padding-top:25px;">
+                            {{ member_status }}
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
+                    <div class="block-title"><span>&nbsp;</span></div>
+                    <div class="block-title"><span>SEGMENT</span></div>
+                    <div class="life-time-value-block">
+                        <div class="block-content" id="segment_input">
+                            {{ segment }}    
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>&nbsp;</span></div>
                     <div class="block-title"><span>RISK LEVEL</span></div>
                     <div class="life-time-value-block">
-                        <div class="block-content" id="risk_level_input">
+                        <div class="block-content" id="risk_level_input" style="line-height: normal; padding-top: 25%;">
                             {{ riskLevel }}    
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>WITHDRAWAL/</span></div>
                     <div class="block-title"><span>DEPOSIT</span></div>
                     <div class="life-time-value-block">
@@ -326,7 +361,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2" style="padding-right: 1%; width: 20%;">
                     <div class="block-title"><span>&nbsp;</span></div>
                     <div class="block-title"><span>BONUS/ DEPOSIT</span></div>
                     <div class="life-time-value-block">
@@ -336,7 +371,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6" style="margin-top:12px;">
+            <!-- <div class="col-md-6" style="margin-top:6px;">
                 <div>
                     <div><span id="contribution-title">CONTRIBUTION PER PRODUCT</span></div>
                 </div>
@@ -347,6 +382,20 @@
                 <div class="col-md-10">
 
                 </div>
+            </div> -->
+            <div class="col-md-6">
+                <div class="block-title"><span>&nbsp;</span></div>
+                <div class="block-title" style="width: 35%;"><span>CONTRIBUTION PER PRODUCT</span></div>
+                <div class="product-loader"></div>
+                <div id="eachProduct" style="display: none;">
+                    <div class="col-md-3" style="padding-left: 0px;">
+                        <div id="chart6" style="min-height: 135px; "></div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row" id="productData" style="margin-top: 10px; margin-left: 2%">
+                        </div>
+                    </div>
+                </div>
             </div>
 
 
@@ -356,11 +405,13 @@
             <div class="col-md-1" style="width: 12.55%; padding-right: 0px;">
                 <div class="live-time-value-text">TOTAL GGR</div>
                 <div class="active-block">
+                    <div class="account-detail">${{ total_ggr }}</div>
                 </div>
             </div>
             <div class="col-md-1" style="width: 12.55%; padding-right:0px;">
                 <div class="live-time-value-text">TOTAL NGR</div>
                 <div class="active-block">
+                    <div class="account-detail">${{ total_ngr }}</div>
                 </div>
             </div>
             <div class="col-md-1" style="width: 12.55%;">
@@ -388,7 +439,7 @@
                     <button id="login-btn" type="button" class="btn btn-default" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
                 </div>
             </div>
-            <div class="col-md-1" style="width: 12.55%; margin-left: -30px;margin-right: 15px;">
+            <div class="col-md-1" style="width: 12.55%; margin-left: -15px;margin-right: 15px;">
                 <div class="live-time-value-text">DEPOSIT AMOUNT</div>
                 <div class="active-block">
                     <div class="account-detail">${{ depositAmount }}</div>
@@ -415,25 +466,49 @@
                     <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Member ID</span>
+                            <span class="member-detail-label">Member ID</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.pk }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Username</span>
+                            <span class="member-detail-label">Username</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.username }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Is affilate</span>
+                            <span class="member-detail-label">Status</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">{{ member_status }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="member-detail-label">Segment</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">{{ segment }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="member-detail-label">Risk level</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">{{ riskLevel }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="member-detail-label">Is affilate</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">
                                 {% if customuser.user_to_affiliate_time %}
                                 <a href="{% url 'xadmin:agent_detail' customuser.pk %}">Yes</a>
@@ -445,49 +520,57 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">First Name</span>
+                            <span class="member-detail-label">First Name</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.first_name }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Last Name</span>
+                            <span class="member-detail-label">Last Name</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.last_name }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Email</span>
+                            <span class="member-detail-label">ID number</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
+                            <span class="detail-info">ID number</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <span class="member-detail-label">Email</span>
+                        </div>
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.email }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Phone</span>
+                            <span class="member-detail-label">Phone</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.phone }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Birthday</span>
+                            <span class="member-detail-label">Birthday</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <span class="detail-info">{{ customuser.date_of_birth }}</span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <span class="memeber-detail-label">Address</span>
+                            <span class="member-detail-label">Address</span>
                         </div>
-                        <div class="col-md-6" style="margin-left:-40px;">
+                        <div class="col-md-6" style="margin-left:-20px;">
                             <div><span class="detail-info">{{ customuser.street_address_1 }}</span></div>
                             <div><span class="detail-info">{{ customuser.street_address_2 }}</span></div>
                             <div><span class="detail-info">{{ customuser.city }}</span></div>
@@ -530,28 +613,16 @@
                     <div class="user-info-block">
                         <div id="member-input-container">
                             <div>
-                                <div class="block-title">Time</div>
-                                {% if customuser.last_login_time %}
-                                    <div class="block-text">{{ customuser.last_login_time }}</div>
-                                {% else %}
-                                    <div class="block-text">None</div>
-                                {% endif %}
+                                <div class="block-title bold">Time</div>
+                                <div class="block-text">{{ userLoginObj.time|date:'F d, Y, H:i' }}</div>
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">Location</div>
-                                {% if customuser.id_location %}
-                                    <div class="block-text">{{ customuser.id_location }}</div>
-                                {% else %}
-                                    <div class="block-text">None</div>
-                                {% endif %}
+                            <div style="margin-top:20px;">
+                                <div class="block-title bold">Location</div>
+                                <div class="block-text" style="text-transform: capitalize;">{{ userLoginObj.location }}</div>
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">IP address</div>
-                                {% if userLastIpAddr.ip_addr %}
-                                    <div class="block-text">{{ userLastIpAddr.ip_addr }}</div>
-                                {% else %}
-                                    <div class="block-text">None</div>
-                                {% endif %}
+                            <div style="margin-top:25px;">
+                                <div class="block-title bold">IP address</div>
+                                <div class="block-text">{{ userLoginObj.ip_address }}</div>
                             </div>
                         </div>
                         <button class="popup-btn" data-toggle="modal" data-target="#login_history"><i class="glyphicon glyphicon-search"></i></button>
@@ -562,23 +633,23 @@
                     <div class="user-info-block">
                         <div id="member-input-container">
                             <div>
-                                <div class="block-title">Time</div>
+                                <div class="block-title bold">Time</div>
                                 {% if lastDeposits.time %}
                                     <div class="block-text">{{ lastDeposits.time }}</div>
                                 {% else %}
                                     <div class="block-text">None</div>
                                 {% endif %}
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">Amount</div>
+                            <div style="margin-top:20px;">
+                                <div class="block-title bold">Amount</div>
                                 {% if lastDeposits.amount %}
                                     <div class="block-text">{{ lastDeposits.amount }}</div>
                                 {% else %}
                                     <div class="block-text">None</div>
                                 {% endif %}
                             </div>
-                            <div style="margin-top:12px;">
-                                <div class="block-title">Status</div>
+                            <div style="margin-top:25px;">
+                                <div class="block-title bold">Status</div>
                                 {% if lastDeposits.status %}
                                     <div class="block-text">{{ lastDeposits.status }}</div>
                                 {% else %}
@@ -594,28 +665,16 @@
                         <div class="user-info-block">
                             <div id="member-input-container">
                                 <div>
-                                    <div class="block-title">Time</div>
-                                    {% if lastWithdraws.time %}
-                                        <div class="block-text">{{ lastWithdraws.time }}</div>
-                                    {% else %}
-                                        <div class="block-text">None</div>
-                                    {% endif %}
+                                    <div class="block-title bold">Time</div>
+                                    <div class="block-text">{{ lastWithdraws.time }}</div>
                                 </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Amount</div>
-                                    {% if lastWithdraws.amount %}
-                                        <div class="block-text">{{ lastWithdraws.amount }}</div>
-                                    {% else %}
-                                        <div class="block-text">None</div>
-                                    {% endif %}
+                                <div style="margin-top:20px;">
+                                    <div class="block-title bold">Amount</div>
+                                    <div class="block-text">{{ lastWithdraws.amount }}</div>
                                 </div>
-                                <div style="margin-top:12px;">
-                                    <div class="block-title">Status</div>
-                                    {% if lastWithdraws.status %}
-                                        <div class="block-text">{{ lastWithdraws.status }}</div>
-                                    {% else %}
-                                        <div class="block-text">None</div>
-                                    {% endif %}
+                                <div style="margin-top:25px;">
+                                    <div class="block-title bold">Status</div>
+                                    <div class="block-text">{{ lastWithdraws.status }}</div>
                                 </div>
                             </div>
                             <button class="popup-btn" onclick='showInitialTransaction("{{ customuser.username }}", "{{ lastWithdraws }}", "withdraw")' data-toggle="modal" data-target="#trans_withdrawal_detail"><i class="glyphicon glyphicon-search"></i></button>
@@ -631,11 +690,15 @@
                     <div class="col-md-4">
                         <div style="margin-top:28px;">
                             <div class="block-title">Time</div>
-                            <div class="block-text">{{ customuser.time_of_registration }}</div>
+                            <div class="block-text">{{ customuser.time_of_registration|date:'F d, Y, H:i' }}</div>
                         </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">Verification time</div>
-                            <div class="block-text">{{ customuser.verfication_time }}</div>
+                            {% if user_image_log_obj %}
+                                <div class="block-text">{{ user_image_log_obj.created_time|date:'F d, Y, H:i' }}</div>
+                            {% else %}
+                                <div></div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -649,10 +712,14 @@
                         </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">First deposit</div>
-                            <div class="block-text">{{ customuser.ftd_time }}</div>
+                            <div class="block-text">{{ customuser.ftd_time|date:'F d, Y, H:i' }}</div>
                         </div>
                     </div>
                     <div class="col-md-4">
+                        <div style="margin-top:28px;">
+                            <div class="block-title">IP address</div>
+                            <div class="block-text">{{ create_account_ip }}</div>
+                        </div>
                         <div style="margin-top:28px;">
                             <div class="block-title">Source</div>
                             <div class="block-text">{{ customuser.get_user_attribute_display }}</div>
@@ -662,8 +729,36 @@
             </div>
                     
             <div class='row'>
+                <button id="send-sms-btn" style="margin-left: 5%;" type="button" class="btn btn-primary blockDisable" data-toggle="modal" data-target="#send-sms">Send SMS</button>
                 <button id="edit-detail-btn" type="button" class="btn btn-primary blockDisable" data-toggle="modal" data-target="#edit_details">Edit details</button>
             </div>
+
+            <!-- send sms window -->
+            <div class="modal fade" id="send-sms" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #ffa313; color:white;">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">New SMS</h4>
+                            <div class="update-time">Updated {{ time }}</div>
+                        </div>
+                        <div class="modal-body">
+                            <div>Send SMS to {{customuser.username}}</div>
+                            <div class="form-group">
+                                <div class="edit-member-info-label">Message Body</div>
+                                <textarea class="form-control" id="message_body" name="message_body" rows="5"></textarea>
+                            </div>
+                            
+                            <div style="margin-top: 5px;">
+                                <button type="button" id="send-sms-submit" class="btn btn-success">Send</button>
+                                <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>  
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
             
             <!-- edit member detail window -->
             <div class="modal fade" id="edit_details" role="dialog">
@@ -677,8 +772,9 @@
                             <!-- <h6 style="float: right;">Update Time:</h6> -->
                         </div>
                         <div class="modal-body">
-                            <div class='row'>
-                                <form action="{% url 'xadmin:user_detail' %}" method="POST">
+                            <form action="{% url 'xadmin:user_detail' %}" method="POST" id="edit-member-form">
+                                <div class='row'>
+                                
                                     {% csrf_token %}
                                     <div class='col-md-6'>
                                         <input type="hidden" name="type" value="edit_user_detail"></input>
@@ -692,25 +788,6 @@
                                             <input class="form-control" id='username' name="username" value="{{ customuser.username }}">
                                         </div>
                                         <div class="form-group">
-                                            <div for="member_level" class="edit-member-info-label">MEMBER LEVEL</div>
-                                            <select class="form-control">
-                                                <option value="VIP">VIP</option>
-                                                <option value="0">Operation</option>
-                                                <option value="1">Remark</option>
-                                                <option value="2">Chat</option>
-                                                <option value="3">Note</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <div for="risk_level" class="edit-member-info-label">RISK LEVEL</div>
-                                            <select class="form-control">
-                                                <option value="0" {% if customuser.risk_level == 0 %} selected=“selected”{% endif %}>A</option>
-                                                <option value="1" {% if customuser.risk_level == 1 %} selected=“selected”{% endif %}>E1</option>
-                                                <option value="2" {% if customuser.risk_level == 2 %} selected=“selected”{% endif %}>E2</option>
-                                                <option value="3" {% if customuser.risk_level == 3 %} selected=“selected”{% endif %}>F</option>
-                                            </select>
-                                            </div>
-                                        <div class="form-group">
                                             <div for="first_name" class="edit-member-info-label">FIRST NAME</div>
                                             <input class="form-control" name="first_name" value="{{ customuser.first_name }}">
                                         </div>
@@ -719,20 +796,79 @@
                                             <input class="form-control" name="last_name" value="{{ customuser.last_name }}">
                                         </div>
                                         <div class="form-group">
-                                            <div for="email" class="edit-member-info-label">EMAIL</div>
+                                            <div for="last_name" class="edit-member-info-label">ID NUMBER</div>
+                                            <input class="form-control" name="id_number" value="{{ customuser.id_number }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="date_of_birth" class="edit-member-info-label">BIRTHDAY</div>
+                                            <input class="form-control" name="date_of_birth" value="{{ customuser.date_of_birth }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="member_status" class="edit-member-info-label">STATUS</div>
+                                            <select class="form-control" name="member_status">
+                                                <option {% if customuser.member_status == 0 %} selected="selected"{% endif %} value="0">Normal</option>
+                                                <option {% if customuser.member_status == 1 %} selected="selected"{% endif %} value="1">Suspicious</option>
+                                                <option {% if customuser.member_status == 2 %} selected="selected"{% endif %} value="2">Restricted</option>
+                                                <option {% if customuser.member_status == 3 %} selected="selected"{% endif %} value="3">Closed</option>
+                                                <option {% if customuser.member_status == 4 %} selected="selected"{% endif %} value="3">Blacklist</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="player_segment" class="edit-member-info-label">PLAYER SEGMENT</div>
+                                            <select class="form-control">
+                                                <option value="-1"  {% if segment == None %} selected="selected"{% endif %}>Select....</option>
+                                                {% for i in segment_level %}
+                                                    <option value="{{ i.pk }}" {% if segment == i.level %} selected="selected"{% endif %}>{{ i.level }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="risk_level" class="edit-member-info-label" name="risk_level">RISK LEVEL</div>
+                                            <select class="form-control">
+                                                <option value="0" {% if customuser.risk_level == 0 %} selected="selected"{% endif %}>Very High</option>
+                                                <option value="1" {% if customuser.risk_level == 1 %} selected="selected"{% endif %}>High</option>
+                                                <option value="2" {% if customuser.risk_level == 2 %} selected="selected"{% endif %}>Medium</option>
+                                                <option value="3" {% if customuser.risk_level == 3 %} selected="selected"{% endif %}>Low</option>
+                                                <option value="4" {% if customuser.risk_level == 4 %} selected="selected"{% endif %}>Very Low</option>
+                                                <option value="5" {% if customuser.risk_level == 5 %} selected="selected"{% endif %}>VIP</option>
+                                                <option value="6" {% if customuser.risk_level == 6 %} selected="selected"{% endif %}>Business</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <div for="email" class="edit-member-info-label" style="display: inline-table;">
+                                                <div style="float: left;">EMAIL</div>
+                                                {% if customuser.email_verified %}
+                                                <div style="float: right;">Verified</div>
+                                                {% else %}
+                                                <div style="float: right;">Not Verified</div>
+                                                {% endif %}
+                                            </div>
                                             <input type='email' id='email' class="form-control" name="email" value="{{ customuser.email }}">
                                         </div>
                                         <div class="form-group">
-                                            <div for="phone" class="edit-member-info-label">PHONE</div>
+                                            <!-- <div for="phone" class="edit-member-info-label">PHONE</div> -->
+                                            <div for="phone" class="edit-member-info-label" style="display: inline-table;">
+                                                <div style="float: left;">PHONE</div>
+                                                {% if customuser.phone_verified %}
+                                                <div style="float: right;">Verified</div>
+                                                {% else %}
+                                                <div style="float: right;">Not Verified</div>
+                                                {% endif %}
+                                            </div>
                                             <input class="form-control" id='phone' name="phone" value="{{ customuser.phone }}">
                                         </div>
+                                        
                                         <div class="form-group">
-                                            <div for="birthday" class="edit-member-info-label">BIRTHDAY</div>
-                                            <input class="form-control" name="birthday" value="{{ customuser.date_of_birth }}">
-                                        </div>
-                                        <div class="form-group">
-                                            <div for="address" class="edit-member-info-label">ADDRESS</div>
-                                            <input class="form-control" name="address" style="height: 140px;" value="{{ customuser.street_address_1 }}">
+                                            <!-- <div for="address" class="edit-member-info-label">ADDRESS</div> -->
+                                            <div for="address" class="edit-member-info-label" style="display: inline-table;">
+                                                <div style="float: left;">ADDRESS</div>
+                                                {% if customuser.address_verified %}
+                                                <div style="float: right;">Verified</div>
+                                                {% else %}
+                                                <div style="float: right;">Not Verified</div>
+                                                {% endif %}
+                                            </div>
+                                            <input class="form-control" name="street_address_1" style="height: 140px;" value="{{ customuser.street_address_1 }}">
                                             <div class="row" style="margin-top: 8px;">
                                                 <div class="col-md-7" style="padding-right: 0px;">
                                                     <input class="form-control" name="city" value="{{ customuser.city }}">
@@ -745,45 +881,80 @@
                                                 <input class="form-control" name="country" value="{{ customuser.country }}">
                                             </div>
                                         </div>
-                                        {% if customuser.block == False %}
-                                        <div>
-                                            <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
-                                                <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
-                                            </button>
-                                        </div>
-                                        {% else %}
-                                        <div>
-                                            <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
-                                                Open account
-                                            </button>
-                                        </div>
-                                        {% endif %}
-                                        <p id='errorMessage'>&nbsp;</p>
-                                        <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
-                                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
                                     </div>
                                     <div class="col-md-6">
                                         <input id='hidden_input_img' type='file' accept='image/*' style='display: none;' onchange="chooseFile(event);">
                                         {% if userPhotoId %}
                                         <img id="user-photo-img" src="{{ userPhotoId }}">
+                                        <!-- user_image_log_obj -->
+                                        <div class="row" style="margin: 0px;">
+                                            <div class='col-md-6 edit-member-image-label bold'>Time of application</div>
+                                            <div class='col-md-6 edit-member-image-label'>{{ user_image_log_obj.created_time }}</div>
+                                        </div>
+                                        <div class="row" style="margin: 0px;">
+                                            <div class='col-md-6 edit-member-image-label bold'>Time of review</div>
+                                            <div class='col-md-6 edit-member-image-label'>{{ user_image_log_obj.created_time }}</div>
+                                        </div>
+                                        <div class="row" style="margin: 0px;">
+                                            <div class='col-md-6 edit-member-image-label bold'>Reviewer</div>
+                                            <div class='col-md-6 edit-member-image-label'>{{ user_image_log_obj.admin.username }}</div>
+                                        </div>
                                         {% else %}
                                         <img id="user-photo-img" src="https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png" alt="User ID Photo">
                                         {% endif %}
+                                        <input type="hidden" name='user_id_img_first' value="false">
                                         <input type="hidden" name='user_id_img' id="hidden_user_id_url">
                                         <div>&nbsp;</div>
                                         <div class="row">
-                                            <div class='col-md-8'>
-                                                <button type="button" class="btn btn-primary" onclick="clickUploadImg();">Upload new document</button>
+                                            <div class='col-md-6'>
+                                                <button type="button" class="btn btn-primary" onclick="clickUploadImg();">Upload document</button>
                                             </div>
-                                            <div class='col-md-4'>
-                                                <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)" onclick="clearImg();">
-                                                    <span class="glyphicon glyphicon-trash" style='color:white'></span>
+                                            <div id="removeImgBtn1" class='col-md-6'>
+                                                <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82)" onclick="clearImgEvent();">
+                                                    <span class="glyphicon glyphicon-trash" style='color:white' id="button-text"></span>
+                                                </button>
+                                            </div>
+                                            <div id="removeImgBtn2" class='col-md-6' style="display: none;">
+                                                <button type="button" class="btn btn-default" style="background-color:rgb(199, 89, 82); color:white;" onclick="clearImg();">
+                                                    Click to delete
                                                 </button>
                                             </div>
                                         </div>
+                                    </div>                          
+                                </div>
+                                <div>
+                                    <div class="form-group">
+                                        <div class="edit-member-info-label">REASON FOR CHANGES*</div>
+                                        <textarea class="form-control" id="reasonTextarea" name="reason_text" rows="3" placeholder="Please provide a brief explanation."></textarea>
                                     </div>
-                                </form>
-                            </div>
+
+                                    <!-- {% if customuser.block == False %}
+                                    <div>
+                                        <button type="button" id="close-account-btn" class="btn btn-danger" style="margin-top: 20px;">
+                                            <span class="glyphicon glyphicon-trash" style="color:white; padding-right: 20%; margin-left: -5px;"></span>Close account
+                                        </button>
+                                    </div>
+                                    {% else %}
+                                    <div>
+                                        <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
+                                            Open account
+                                        </button>
+                                    </div>
+                                    {% endif %} -->
+                                    <p id='errorMessage'>&nbsp;</p>
+                                    <button type="submit" id="submitButton" class="btn btn-primary submit-btn">Save</button>
+                                    <button type="button" id="blacklist" class="btn btn-primary submit-btn">Blacklist account</button>
+                                    {% if customuser.block == False %}
+                                    <button type="button" id="close-account-btn" class="btn btn-primary submit-btn">Close account</button>
+                                    {% else %}
+                                    <button type="button" id="open-account-btn" class="btn btn-success" style="margin-top: 20px;" onclick="userBlockAction('open')">
+                                        Open account
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                                </div>  
+                            </form>
                         </div>
                         <!-- <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -792,6 +963,113 @@
                     
                 </div>
             </div>
+
+
+            <!-- close account window-->
+            <div class="modal fade" id="close_account" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #ffa313; color:white;">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Close account</h4>
+                            <div class="update-time">Updated {{ time }}</div>
+                        </div>
+                        <div class="modal-body">
+                            <div>A closed account will stay in the system but cannot be acted on. It can be re-opened by and admin user</div>
+                            <div class="form-group">
+                                <div for="close_reason" class="edit-member-info-label">CLOSURE REASON</div>
+                                <select class="form-control" name="close_reason">
+                                    <option value='-1'>Select...</option>
+                                    <option value='0'>Closed by player request</option>
+                                    <option value='1'>Temporary self-exclusion</option>
+                                    <option value='2'>AML</option>
+                                    <option value='3'>Fraud</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="block_time_option" style="border-bottom: none; display:none">
+                                <div for="data_range" class="edit-member-info-label">DATE RANGE</div>
+                                <select class="form-control" name="block_time">
+                                    <option value="-1">select...</option>
+                                    <option value="0">per day</option>
+                                    <option value="1">per week</option>
+                                    <option value="2">per month</option>
+                                    <option value="3">6 months</option>
+                                    <option value="4">1 year</option>
+                                    <option value="5">3 years</option>
+                                    <option value="6">5 years</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <div class="edit-member-info-label">REASON FOR CHANGES*</div>
+                                <textarea class="form-control" id="reasonTextareaCloseAccount" name="reason_text" rows="3" placeholder="Please provide a brief explanation."></textarea>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <button type="button" id="closeAccountBtn1" class="btn btn-danger"><span class="glyphicon glyphicon-trash" style='color:white'></span>Close Account</button>
+                                <button type="button" id="closeAccountBtn2" class="btn btn-danger" style="display:none;"><span class="glyphicon glyphicon-trash" style='color:white'></span>Click to Close account</button>
+                                <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>  
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
+            <!-- blacklist account -->
+            <div class="modal fade" id="black_list_window" role="dialog">
+                <div class="modal-dialog">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header" style="background-color: #ffa313; color:white;">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Blacklist account</h4>
+                            <div class="update-time">Updated {{ time }}</div>
+                        </div>
+                        <div class="modal-body">
+                            <div style="width:100%; border-radius: 4px; border: solid 2px #d9534f; margin-left: 3px; margin-bottom: 10px; background-color: rgb(249, 225, 225); padding: 15px;">
+                                These access points are associated with the account you are about to blacklist. Select the ones you want to blacklist. Be careful with blocking devices used by normal players.
+                            </div>
+                            <!-- related_user_data -->
+
+                            <table id="transaction-table" class="blacklistRadio" >
+                                <thead>
+                                    <tr>
+                                    <th scope="col">ALL<input type="radio" id="radioAll" value="all"></th>
+                                    <th scope="col">Player's ID</th>
+                                    <th scope="col">Player's username</th>
+                                    <th scope="col">Player's status</th>
+                                    <th scope="col">Player's risk level</th>
+                                    <th scope="col">Player's balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in related_user_data %}
+                                    <tr>
+                                    <td><input type="radio" class="radioBox" value="{{ user.user_id }}" name="radio{{ user.user_id }}"></td>
+                                    <td>{{ user.user_id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.member_status }}</td>
+                                    <td>{{ user.risk_level }}</td>
+                                    <td>{{ user.balance}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <div class="form-group">
+                                <div class="bet-limit-text">REASON FOR BlACKLISTING ACCOUNT*</div>
+                                <textarea class="form-control" id="blacklistReason" name="blacklistReason" rows="3" placeholder="Please provide a brief explanation."></textarea>
+                            </div>
+
+                            <div style="margin-top: 5px;">
+                                <!-- <button type="button" id="closeAccountBtn1" class="btn btn-danger"><span class="glyphicon glyphicon-trash" style='color:white'></span>Close Account</button> -->
+                                <button type="button" id="blacklistAccountBtn" class="btn btn-danger" >Blacklist account</button>
+                                <button type="button" id="cancel" class="btn btn-primary" data-dismiss="modal">Cancel</button>
+                            </div>  
+                        </div>
+                    </div> 
+                </div>
+            </div>
+
 
             <!-- login history window -->
             <div class="modal fade" id="login_history" role="dialog">
@@ -974,7 +1252,7 @@
             <div class="form-group" style="padding:20px 0px 20px 0px; margin-left:25px;">
                 <div><span class="block-title">ACTIVITY TYPE</span></div>
                 <div style="width:165px;"><select class="form-control" id="activity-select">
-                        <option value="all">All activity</option>
+                        <option value="-1">All activity</option>
                         <option value="0">Operation</option>
                         <option value="1">Remark</option>
                         <option value="2">Chat</option>
@@ -982,10 +1260,34 @@
                     </select>
                 </div>
             </div>
-            <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:807px;">
+            <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:898px;">
                 {% for act in activity %}
-                    <div class="note-author">{{ act.admin }}</div>
-                    <div class="note-block">{{ act.message }}</div>
+                    <div class="note-author">
+                        {% if act.activity_type == 0 %}
+                            <i class="fas fa-cog" style="margin-right: 10px;"></i>
+                        {% elif act.activity_type == 1 %}
+                            <i class="far fa-edit" style="margin-right: 10px;"></i>
+                        {% elif act.activity_type == 2 %}
+                            <i class="far fa-envelope" style="margin-right: 10px;"></i>
+                        {% elif act.activity_type == 3 %}
+                            <i class="far fa-comments" style="margin-right: 10px;"></i>
+                        {% endif %}
+                        {{ act.admin }} {{ act.created_time }} 
+                    </div>
+                    <div class="note-block">
+                        <div style="padding: 14px 28px;">
+                            {% if act.system_message and act.system_message|length > 0  %}
+                            <div>
+                                {{ act.system_message }}
+                            </div>
+                            {% endif %}
+                            {% if act.message and act.message|length > 0  %}
+                            <div>
+                                Reason: {{ act.message }}
+                            </div>
+                            {% endif %}
+                        </div> 
+                    </div>
                 {% endfor %}
             </div>
             <div id="note-input-container">
@@ -1198,9 +1500,9 @@
                             <div class='col-md-1'>
                                 <button class="btn btn-primary"><span>Export</span></button>
                             </div>
-                            <div class="transaction-control-group col-md-9"></div>
+                            <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                             <div>
-                                <div class='col-md-1'>
+                                <div class='col-md-1' style="width: 10%">
                                 <!-- <div class='col-md-1'> -->
                                     <input type="hidden" id="hidden_row" value="0"></input>
                                     <select id="pagination_value"  class="form-control">
@@ -1210,7 +1512,7 @@
                                         <option value="250">250</option>
                                     </select>
                                 </div>
-                                <div class='col-md-1'>
+                                <div class='col-md-1' style="width: 10%">
                                     <ul class="pagination" style="margin:0px;">
                                         <li class="page-item disabled" id='previousPage'>
                                         <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1345,9 +1647,9 @@
                             <div class='col-md-1'>
                                 <button class="btn btn-primary"><span>Export</span></button>
                             </div>
-                            <div class="transaction-control-group col-md-9"></div>
+                            <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                             <div>
-                                <div class='col-md-1'>
+                                <div class='col-md-1'  style="width: 10%">
                                 <!-- <div class='col-md-1'> -->
                                     <input type="hidden" id="bet_hidden_row" value="0"></input>
                                     <select id="bet_pagination_value"  class="form-control">
@@ -1357,7 +1659,7 @@
                                         <option value="250">250</option>
                                     </select>
                                 </div>
-                                <div class='col-md-1'>
+                                <div class='col-md-1'  style="width: 10%">
                                     <ul class="pagination" style="margin:0px;">
                                         <li class="page-item disabled" id='previousBetPage'>
                                         <a class="page-link" href="javascript:getBetPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1425,13 +1727,13 @@
                             {% endif %}
                         </tbody>
                     </table>
-                    <div class="row">
+                    <div class="row" style="margin-bottom: 10px;">
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
-                        <div class="transaction-control-group col-md-9"></div>
+                        <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                         <div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%">
                             <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
@@ -1441,7 +1743,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%">
                                 <ul class="pagination" style="margin:0px;">
                                     <li class="page-item disabled" id='previousPage'>
                                     <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1483,9 +1785,9 @@
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
-                        <div class="transaction-control-group col-md-9"></div>
+                        <div class="transaction-control-group col-md-9" style="width: 71%;"></div>
                         <div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%;">
                             <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
@@ -1495,7 +1797,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1'  style="width: 10%;">
                                 <ul class="pagination" style="margin:0px;">
                                     <li class="page-item disabled" id='previousPage'>
                                     <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1575,13 +1877,13 @@
                             {% endif %}
                         </tbody>
                     </table>
-                    <div class="row">
+                    <div class="row"  style="margin-bottom: 5px;">
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
-                        <div class="transaction-control-group col-md-9"></div>
+                        <div class="transaction-control-group col-md-9" style="width: 71%;"></div>
                         <div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1' style="width: 10%;">
                             <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
@@ -1591,7 +1893,7 @@
                                     <option value="250">250</option>
                                 </select>
                             </div>
-                            <div class='col-md-1'>
+                            <div class='col-md-1' style="width: 10%;">
                                 <ul class="pagination" style="margin:0px;">
                                     <li class="page-item disabled" id='previousPage'>
                                     <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
@@ -1889,20 +2191,20 @@
                                     <!-- <div>{{ limitation.loss }}</div> -->
                                     {% for limit in limitation.loss %}
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-5">
                                                 <div class="member-limit-info">Loss limit {{ forloop.counter }}</div>
                                             </div>
-                                            <div class="col-md-8">
+                                            <div class="col-md-7">
                                                 <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                             </div>
                                         </div>
                                     {% endfor %}
                                 {% else %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Loss limit</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$</div>
                                         </div>
                                     </div>
@@ -1910,20 +2212,20 @@
                                 {% if limitation.deposit %}
                                     {% for limit in limitation.deposit %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Deposit limit {{ forloop.counter }}</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                         </div>
                                     </div>
                                     {% endfor %}
                                 {% else %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Deposit limit</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$</div>
                                         </div>
                                     </div>
@@ -1931,20 +2233,20 @@
                                 {% if limitation.withdraw %}
                                     {% for limit in limitation.withdraw %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Withdraw limit {{ forloop.counter }}</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$ {{ limit.amount }} per {{ limit.interval }}</div>
                                         </div>
                                     </div>
                                     {% endfor %}
                                 {% else %}
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-5">
                                             <div class="member-limit-info">Withdraw limit</div>
                                         </div>
-                                        <div class="col-md-8">
+                                        <div class="col-md-7">
                                             <div class="member-limit-text">$</div>
                                         </div>
                                     </div>
@@ -2376,6 +2678,7 @@ $(document).ready(function() {
 
     var user_id = $('#hidden_user_id').val();
     getWalletAmount(user_id);
+    getProductAmount(user_id);
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -2396,6 +2699,7 @@ $(document).ready(function() {
             var output = document.getElementById('user-photo-img');
             output.src = dataURL;
             $('#hidden_user_id_url').attr('value', dataURL);
+            $('input[name="user_id_img_first"]').attr('value', true);
         };
         reader.readAsDataURL(input.files[0]);
         
@@ -2408,8 +2712,21 @@ $(document).ready(function() {
    }
 
    clearImg = function() {
+    //    $('#button-text').text('click to delete')
         $('#user-photo-img').attr('src', 'https://www.imagemet.com/wp-content/uploads/2016/12/placeholder.png');
+        $('#hidden_user_id_url').attr('value', '');
+        $('input[name="user_id_img_first"]').attr('value', false);
    }
+
+   clearImgEvent = function() {
+       $('#removeImgBtn2').css('display', 'block');
+       $('#removeImgBtn1').css('display', 'none');
+   }
+
+    $('#edit_details').on('hidden.bs.modal', function () {
+        $('#removeImgBtn1').css('display', 'block');
+        $('#removeImgBtn2').css('display', 'none');
+    });
 
     $.ajaxSetup({
         beforeSend: function (xhr, settings) {
@@ -2844,11 +3161,145 @@ $(document).ready(function() {
     });
 
     $('#close-account-btn').on('click', function () {
-        $('#close-account-btn').html('Click to Close account');
-        $('#close-account-btn').attr('id', 'close-account');
-        $('#close-account').attr('onclick', 'userBlockAction("block")');
+        $('#edit_details').modal('hide');
+        $('#close_account').modal('show');
     });
 
+    $('#blacklist').on('click', function () {
+        $('#edit_details').modal('hide');
+        $('#black_list_window').modal('show');
+    });
+
+
+    $('.blacklistRadio input[type="radio"]').on('click', function () {
+
+        if ($(this).attr('checked')){
+            $( this ).attr( 'checked', false);
+        } else {
+            $( this ).attr( 'checked', true);
+        }
+        
+        
+    });
+
+
+    $('#radioAll').click(function(){
+        if ($('#radioAll').attr("checked")) {
+            $('.blacklistRadio input[type="radio"]').prop('checked', true);
+            // $('.radio1ALL input').prop('checked', true);
+        } else {
+            $('.blacklistRadio input[type="radio"]').prop('checked', false);
+            // $('.radio1ALL input').prop('checked', false);
+        }
+        
+    });
+
+
+    $("select[name='close_reason']").on('change', function() {
+        if (this.value == '1') {
+            $('#block_time_option').css('display', 'block');
+        } else {
+            $('#block_time_option').css('display', 'none');
+        }
+    });
+
+    
+
+    $("#closeAccountBtn1").on('click', function () {
+        $("#closeAccountBtn1").css('display', 'none');
+        $("#closeAccountBtn2").css('display', 'inline-block');
+        $('#closeAccountBtn2').attr('onclick', 'userBlockAction("block")');
+        
+    });
+
+
+    $('#close_account').on('hidden.bs.modal', function () {
+        $("#closeAccountBtn1").css('display', 'inline-block');
+        $("#closeAccountBtn2").css('display', 'none');
+        $('#closeAccountBtn2').removeAttr('onclick');
+        
+    });
+
+
+    $('#send-sms-submit').click(function() {
+
+        if (!confirm("Are you sure you want to send sms!")) {
+            return;
+        }
+        
+        var message = $('#message_body').val();
+        if (!message) {
+            alert("please provide a message body");
+            return;
+        }
+
+        var url = "{% url 'admin_send_sms' %}";
+        var user_id = $('#hidden_user_id').val();
+        data = {
+            "user_id": user_id,
+            "message": message,
+        }
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(data),
+            success: function(data)
+            {
+                window.location.reload();
+            }
+        });
+
+    });
+
+
+    $('#blacklistAccountBtn').click(function() {
+
+        if (!confirm("Are you sure you want to blacklist those people!")) {
+            return;
+        }
+        
+        var array = [];
+        $('.radioBox:checked').each(function(){
+            array.push($(this).val());
+        }); 
+    
+        var reason = $('#blacklistReason').val();
+        if (array.length == 0) {
+            alert("please select the user");
+            return;
+        }
+
+        if (!reason) {
+            alert("please provide a explanation");
+            return;
+        }
+
+        data = {
+            "user_list": array,
+            "reason": reason
+        }
+        
+        var url = "{% url 'blacklist_user' %}";
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSON.stringify(data),
+            success: function(data)
+            {
+                // console.log(data);
+                window.location.reload();
+            }
+        });
+    
+    });
+
+    var clientHeight = $(".member-detail-rectangle").height();
+    $(".activity-rectangle").css('height', clientHeight+1);
+    $("#select-filter").css('height', clientHeight-200);
+
+    // var clientHeight = document.getElementById('.member-detail-rectangle').clientHeight;
     $('#limitForm').on('submit', function(e) {
         // e.preventDefault();
         // var form = $(this);
@@ -2913,15 +3364,49 @@ $(document).ready(function() {
         $('.input-group-addon').text(text);
     })
 
+    var arrBefore = $("#edit-member-form").serializeArray();
+    // console.log(arrBefore);
+    $("#edit-member-form").submit(function(e) {
 
-    // $('#adjust_amount').on('keydown', function() {
-    //     // var sum = 
-    //     // var text = "* " + adjust_amount + "="
-    //     // $('.input-group-addon').text();
-    //     console.log("....")
-    // });
-
+        e.preventDefault(); // avoid to execute the actual submit of the form.
+        var form = $(this);
+        var reason_input = $("textarea[name='reason_text']").val();
+        if (!reason_input) {
+            alert("please give the reason for changing request");
+            return;
+        }
+        var url = "{% url 'xadmin:user_detail' %}";
+        var arrAfter = form.serializeArray();
+        var update_fields = checkDiff(arrBefore, arrAfter);
+        // console.log(update_fields);
+        var data = form.serialize() + "&update_fields=" + JSON.stringify(update_fields);
+        // // console.log(data);
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: data,
+            success: function(data)
+            {
+                // console.log(data);
+                window.location.reload();
+            }
+        });
+    });
 });
+
+function checkDiff(before, after) {
+    var whatsChanged = [];
+
+    for (i = 0; i < before.length; i++) {
+        if (after[i].name == 'user_id_img' || before[i].name == 'user_id_img') {
+            continue;
+        } else if (after[i].value !== before[i].value) {
+            whatsChanged.push(after[i]);
+        }
+    }
+    return whatsChanged;
+}
+
 
 function limitFormValid(value) {
     var isValid = true;
@@ -2942,31 +3427,58 @@ function removeByIndex(array, index){
 
 function userBlockAction(actionType) {
     var user_id = $('#hidden_user_id').val();
-    var admin = "{{ user.username }}";
-    // console.log(actionType);
-    $.ajax({
-        type:'POST',
-        url:"{% url 'xadmin:user_detail' %}",
-        data:{ 
+    // var admin = "{{ user.username }}";
+
+    if (actionType == 'block') {
+        var reason_option = $("select[name='close_reason']").val();
+        var block_time = $('select[name="block_time"]').val();
+        var reason = $('#reasonTextareaCloseAccount').val();
+        var data = {
             'type': 'block_user',
             'user_id': user_id,
             'action': actionType,
-            'admin_user': admin,
-        },
+            'reason': reason,
+            'reason_option': reason_option,
+        }
+
+        if (block_time) {
+            data['block_time'] = block_time;
+        }
+
+        if ((reason_option == '-1' && !reason) || (reason_option == '1' && !block_time)) {
+            alert("Please fill the correct input");
+            return;
+        }
+    } else {
+
+        var reason = $('#reopen_message').val();
+        var data = {
+            'type': 'block_user',
+            'user_id': user_id,
+            'action': actionType,
+            'reason': reason,
+        }
+
+        if (!reason) {
+            alert("Please fill the correct input");
+            return;
+        }
+
+    }
+    
+    $.ajax({
+        type:'POST',
+        url:"{% url 'xadmin:user_detail' %}",
+        data,
         success:function(data) {
-            if (data.errorCode == "1001") {
-                $('#errorMessage').text(data.message); 
-                $('#errorMessage').css('color', 'red'); 
-            } else {
-                location.reload();
-            }
-            
-            // $('#set_limitations').show();
-            // $("#myModal .modal-body").load(target, function() { 
-            //     $("#set_limitations").modal("show"); 
-            // });
-            // $("#set_limitations").modal("show"); 
-            // $('#set_limitations').modal({'backdrop': 'static'});
+            // console.log(data);
+            location.reload();
+            // if (data.errorCode == "1001") {
+            //     $('#errorMessage').text(data.message); 
+            //     $('#errorMessage').css('color', 'red'); 
+            // } else {
+            //     location.reload();
+            // }
         }
     });
 }
@@ -3015,8 +3527,16 @@ function getActivityData(data) {
     $("#select-filter").empty();
     content = "";
     for(var i = 0; i < data.length; i++) {
-        content += '<div class="note-author">' + data[i].adminUser + '</div>';
-        content += '<div class="note-block">' + data[i].message + '</div>';
+        if (data[i].activity_type == 0) {
+            content += '<div class="note-author"><i class="fas fa-cog" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        } else if (data[i].activity_type == 1) {
+            content += '<div class="note-author"><i class="fas fa-edit" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        } else if (data[i].activity_type == 2) {
+            content += '<div class="note-author"><i class="fas fa-envelope" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        } else if (data[i].activity_type == 3) {
+            content += '<div class="note-author"><i class="fas fa-comments" style="margin-right: 10px;"></i>' + data[i].adminUser + "  " +  data[i].created_time + '</div>';
+        }
+        content += '<div class="note-block"><div style="padding: 14px 28px;"><div>' + data[i].system_message + '</div>' + '<div>' + data[i].message + '</div></div></div>';
     }
     $("#select-filter").append(content);
 }
@@ -3317,6 +3837,11 @@ function renderChart(data) {
 
 
 function submitAdjustment() {
+
+    if (!confirm("Are you sure you want to make a adjustment!")) {
+        return;
+    }
+
     var affiliate = false;
     var reason = -1;
     var debitOrCredit = "";
@@ -3396,14 +3921,20 @@ function postAdjustmentRequest(data) {
 
 
 function submitTransfer() {
-    var user_id = $('#hidden_user_id').val();
+
     var transfer_to = $('#transfer_to').val();
     var transfer_from = $('#transfer_from').val();
+    if (!confirm("Are you sure you want to make a transfer from " + transfer_to + " wallet to " + transfer_from + " wallet")) {
+        return;
+    }
+
+    var user_id = $('#hidden_user_id').val();
+    
     var transfer_amount = $('#transfer_amount').val();
     var message_note = $('#transfer_message_note').val();
     var messageSubject = $("#transfer_message_subject").val();
     var messageToPlayer = $("#transfer_message_to_player").val();
-    var notifyPlayer = false;
+     var notifyPlayer = false;
     if($('input[name="transfer-notify-player"]').is(":checked")){
         notifyPlayer = true;
     } 
@@ -3417,7 +3948,7 @@ function submitTransfer() {
         'message_to_player': messageToPlayer,
         'notify_player': notifyPlayer
     }
-    console.log(transfer_to, transfer_from, transfer_amount);
+    // console.log(transfer_to, transfer_from, transfer_amount);
     postSubmitTransfer(data);
 }
 
@@ -3438,6 +3969,67 @@ function postSubmitTransfer(data) {
         }
     });
 }
+
+
+
+
+
+// product data
+
+function getProductAmount(user_id) {
+
+    // setTimeout(showPage, 6000);
+    
+    $.ajax({
+        type:'GET',
+        url:"{% url 'product_contribution' %}",
+        data: {
+            'user_id': user_id,
+        },
+        success:function(data) {
+            console.log(data);
+            $('.product-loader').css('display', 'none');
+            $('#eachProduct').css('display', 'block');
+            renderProductChart(data);
+        },
+        error: function() {
+            showWrong();
+        }
+    });
+
+}
+
+function showWrong() {
+    $('#chart6').text("There is something wrong");
+    $('#chart6').css('width', '300px');
+    $('.product-loader').css('display', 'none');
+    $('#eachProduct').css('display', 'block');
+}
+
+
+function renderProductChart(data) {
+
+    var data1 = {
+        series: [{value: data['sport_percent'],  className: "sport"}, {value: data['games_percent'],  className: "games"}, {value: data['live_casino_percent'] , className: "liveCasino"}, {value: data['lottery_percent'],  className: "lottery"}]
+        };
+
+        var option1 = {
+          width: 130,
+          height: 130,
+        showLabel: false
+        }
+
+        new Chartist.Pie('#chart6', data1, option1);
+        var content = '';
+        content += '<div class="col-md-2" style="width: 20%; padding-left:0px"><div><span class="dot sport"></span>Sport</div><div><span class="dot games"></span>Games</div></div><div class="col-md-2" style="width: 20%; padding-left:0px">';
+        content += '<div>' + data['sport_value'] + ' (' + data['sport_percent']  + '%)' + '</div><div>'  + data['games'] + ' (' + data['games_percent']  + '%)' + '</div></div>';
+        
+        content += '<div class="col-md-3" style="width: 26%; padding-left:0px"><div><span class="dot liveCasino"></span>Live Casino</div><div><span class="dot lottery"></span>Lottery</div></div><div class="col-md-4" style="width: 33%; padding-left:0px">';
+        content += '<div>' + data['live_casino'] + ' (' + data['live_casino_percent']  + '%)' + '</div><div>'  + data['lottery'] + ' (' + data['lottery_percent']  + '%)' + '</div></div>';
+
+        $("#productData").empty();
+        $("#productData").append(content);
+    }
 
 
 
