@@ -1025,7 +1025,7 @@ class UserListView(CommAdminView):
             userDict['username'] = user.username
             userDict['source'] = str(user.get_user_attribute_display())
             userDict['manager'] = str(user.vip_managed_by.username) if user.vip_managed_by else ""
-            userDict['risk_level'] = ''
+            userDict['risk_level'] = user.get_risk_level_display()
             userDict['balance'] = user.main_wallet + user.other_game_wallet
             userDict['product_attribute'] = ''
             userDict['time_of_registration'] = user.time_of_registration
@@ -1882,3 +1882,69 @@ class SendSMS(View):
         except Exception as e:
             logger.error("Blacklist send sms to user: {}".format(str(e)))
             return HttpResponse(status=400)
+
+
+
+class ExportUserList(View):
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        head = data['head']
+        search = data['search']
+        status = data['status']
+        try:
+            user_filter = Q()
+            if status and status != '-1':
+                user_filter &= Q(member_status=status)
+        
+            if search:
+                user_filter &= (Q(pk__contains=search)|Q(username__icontains=search)|Q(email__icontains=search)|Q(phone__contains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
+
+            customUser = CustomUser.objects.filter(user_filter).order_by('username')
+
+            user_list_data = [head]
+            for user in customUser:
+                ip_address_obj = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+                deposit_amount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+                withdrawal_amount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+                ip_address = ip_address_obj.ip_addr if ip_address_obj else ""
+                vip_manager = str(user.vip_managed_by.username) if user.vip_managed_by else ""
+                balance = user.main_wallet + user.other_game_wallet
+                ftd_time = user.ftd_time if user.ftd_time else ""
+                ftd_time_amount = user.ftd_time_amount if user.ftd_time_amount != 0 else ""
+                user_address = user.get_user_address()
+                id_number = user.id_number if user.id_number else ""
+                contribution = '{:.2f}'.format(calculateContribution(user))
+                betTimes = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
+                activeDays = int(betTimes)
+                user_list_data.append([user.pk,
+                                      user.username,
+                                      user.get_user_attribute_display(),
+                                      vip_manager,
+                                      user.time_of_registration,
+                                      ftd_time,
+                                      ftd_time_amount,
+                                      balance,
+                                      user.phone,
+                                      user_address,
+                                      id_number,
+                                      ip_address,
+                                      "",
+                                      "",
+                                      contribution,
+                                      activeDays,
+                                      user.get_member_status_display(),
+                                      "",
+                                      "",
+                                      ""]
+                                    )
+
+            return streamingExport(user_list_data, 'User List')
+
+            # response = {}
+            # return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Export user list error: {}".format(str(e)))
+            return HttpResponse(status=400)
+
