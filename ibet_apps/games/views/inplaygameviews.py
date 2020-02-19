@@ -24,7 +24,7 @@ from  games.models import *
 import json
 
 from rest_framework.authtoken.models import Token
-from Crypto.Cipher import DES3
+from Crypto.Cipher import AES, DES3
 import xmltodict
 import base64
 import pytz
@@ -34,16 +34,27 @@ from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
 
+# PKCS7
 def pad(m):
-    return m+chr(16-len(m)%16)*(16-len(m)%16)
+    return m + chr(16 - len(m) % 16) * (16 - len(m) % 16)
+
+def unpad(ct):
+    return ct[:-ord(ct[-1])]
+
+# PKCS5
+# BS = 16
+# pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
+# unpad = lambda s : s[0:-ord(s[-1])]
 
 
 def des3Encryption(plain_text):
     try:
-        key = hashlib.md5(IMES_KEY.encode()).digest()
-        cipher = DES3.new(key, DES3.MODE_ECB)
+        # key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
+        key = hashlib.sha256(IMES_KEY.encode("utf-8")).digest()
+        # cipher = DES3.new(key, DES3.MODE_ECB)
+        cipher = AES.new(key, AES.MODE_CBC)
         cipher_text = cipher.encrypt(pad(plain_text))
-
+        
         return str(base64.b64encode(cipher_text), "utf-8")
     except Exception as e:
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
@@ -52,10 +63,13 @@ def des3Encryption(plain_text):
 
 def des3Decryption(cipher_text):
     try:
-        key = hashlib.md5(IMES_KEY.encode()).digest()
+        key = hashlib.sha256(IMES_KEY.encode("utf-8")).digest()
+        # key = hashlib.md5(IMES_KEY.encode()).digest()
         cipher_text = base64.b64decode(cipher_text)
-        cipher = DES3.new(key, DES3.MODE_ECB)
-        plain_text = cipher.decrypt(cipher_text)
+        cipher = AES.new(key, AES.MODE_CBC)
+        # cipher = DES3.new(key, DES3.MODE_ECB)
+        plain_text = cipher.decrypt(unpad(cipher_text))
+        
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
@@ -72,8 +86,8 @@ class InplayLoginAPI(View):
 
             post_data = {}
             sessionToken = Token.objects.get(user_id=user)
-            post_data['Token'] = str(sessionToken)
-            # post_data['Token'] = "e789cd6b4cc84f9ff8de0bee5a0bf8f5485c6d9f"
+            # post_data['Token'] = str(sessionToken)
+            post_data['Token'] = "e789cd6b4cc84f9ff8de0bee5a0bf8f5485c6d9f"
 
             # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
@@ -160,6 +174,7 @@ class InplayGetBalanceAPI(View):
         date_sent = request.GET.get("dateSent")
         try:
             balance_package = balance_package.replace(' ', '+')
+            logger.info("IMES GetBalanceAPI balance package: {}".format(balance_package))
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
@@ -198,6 +213,7 @@ class InplayGetApprovalAPI(View):
         try:
             # balance_package = "ZwgZhGFWmUv5vDi5q2ruVAUij5STfGZ6ctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
             balance_package = balance_package.replace(' ', '+')
+            logger.info("IMES GetApprovalAPI balance package: {}".format(balance_package))
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0], "}"])
             data = json.loads(data)
@@ -246,6 +262,7 @@ class InplayDeductBalanceAPI(View):
 
         try:
             balance_package = balance_package.replace(' ', '+')
+            logger.info("IMES DeductBalanceAPI balance package: {}".format(balance_package))
             data = des3Decryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
             data = json.loads(data)
@@ -311,7 +328,9 @@ class InplayUpdateBalanceAPI(View):
         date_sent = request.GET.get('dateSent')
         try:
             balance_package = balance_package.replace(' ', '+')
+            
             data = des3Decryption(balance_package)
+            logger.info("IMES UpdateBalanceAPI balance package: {}".format(balance_package))
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
             if data["EventTypeId"] == '4002':

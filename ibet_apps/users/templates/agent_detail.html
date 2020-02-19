@@ -108,7 +108,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <strong>Commssion set</strong>
+                            <strong>Commission set</strong>
                         </div>
                         <div class="col-md-6">
                             {{ commission_set }}
@@ -224,28 +224,55 @@
                 </div>
             </div>
 
-            {% for cl in commission_levels%}
-            <div class="row " style="margin-top: 10px; font-size: 12px;">
-                <div class="col-md-1">
-                    {{ cl.commission_level }}
+            {% if affiliate.commission_setting == 'System' %}
+                {% for cl in system_commission_levels %}
+                <div class="row " style="margin-top: 10px; font-size: 12px;">
+                    <div class="col-md-1">
+                        {{ cl.commission_level }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.commission_percentage }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.downline_commission_percentage }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.active_downline_needed }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.monthly_downline_ftd_needed }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.ngr }}
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    {{ cl.commission_percentage }}
+                {% endfor %}
+            {% else %}
+                {% for cl in personal_commission_levels %}
+                <div class="row " style="margin-top: 10px; font-size: 12px;">
+                    <div class="col-md-1">
+                        {{ cl.commission_level }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.commission_percentage }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.downline_commission_percentage }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.active_downline_needed }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.monthly_downline_ftd_needed }}
+                    </div>
+                    <div class="col-md-2">
+                        {{ cl.ngr }}
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    {{ cl.downline_commission_percentage }}
-                </div>
-                <div class="col-md-2">
-                    {{ cl.active_downline_needed }}
-                </div>
-                <div class="col-md-2">
-                    {{ cl.monthly_downline_ftd_needed }}
-                </div>
-                <div class="col-md-2">
-                    {{ cl.ngr }}
-                </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+
         </div>
 
         <div class="line"></div>
@@ -421,7 +448,7 @@
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#view_as_affiliate">View
                 as affiliate
             </button>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit
+            <button id="edit-details-btn" type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit_details">Edit
                 details
             </button>
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#make_adjustment">Make
@@ -451,15 +478,15 @@
 
                             <fieldset>
                                 <!-- Affiliate Manager -->
-                                <div class="row" style="margin-bottom: 20px">
-                                    <div class="col-md-4"><strong>Affiliate Manager</strong></div>
-                                    <div class="col-md-6">
-                                        <input autocomplete="block" disableautocomplete type="text"
-                                               id="affiliate-manager" name="affiliate-manager" value="{{ manager }}"/>
-                                        <input disableautocomplete type="hidden" name="search-result"
-                                               id="search-result"/>
-                                    </div>
-                                </div>
+<!--                                <div class="row" style="margin-bottom: 20px">-->
+<!--                                    <div class="col-md-4"><strong>Affiliate Manager</strong></div>-->
+<!--                                    <div class="col-md-6">-->
+<!--                                        <input autocomplete="block" disableautocomplete type="text"-->
+<!--                                               id="affiliate-manager" name="affiliate-manager" value="{{ manager }}"/>-->
+<!--                                        <input disableautocomplete type="hidden" name="search-result"-->
+<!--                                               id="search-result"/>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                                 <fieldset>
                                     <!-- Affiliate Manager -->
                                     <div class="row" style="margin-bottom: 20px">
@@ -528,7 +555,7 @@
                                     <div class="col-md-4"><strong>Commission Set</strong></div>
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="commission-set"
-                                               id="commission-set-system" value="{{ affiliate.commission_setting }}"
+                                               id="commission-set-system" value="System"
                                                {% if affiliate.commission_setting == 'System' %}checked="checked"
                                         {% endif %}>
                                         <label class="form-check-label">System</label>
@@ -536,7 +563,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <input class="form-check-input" type="radio" name="commission-set"
-                                               id="commission-set-personal" value="{{ affiliate.commission_setting }}"
+                                               id="commission-set-personal" value="Personal"
                                                {% if affiliate.commission_setting == 'Personal' %}checked="checked"
                                         {% endif %}>
                                         <label class="form-check-label">Personal</label>
@@ -570,53 +597,104 @@
                                 <p style="margin-top:20px;"><strong>COMMISSION LEVELS</strong></p>
 
                                 <div class="commission_levels">
-                                    {% for i in commission_levels %}
-                                    <div class="row commission_level_details" style="width: 95%;">
-                                        <input type="hidden" value="{{ i.pk }}" class="commission_id">
-                                        <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">
-                                            <label class="commission_level commission_level_label">{{ i.commission_level }}</label>
+                                    <div id="system_commission_levels" style="display:none">
+                                        {% for i in system_commission_levels %}
+                                        <div class="row" id="system_commission_level_details" style="width: 95%;">
+                                            <input type="hidden" value="{{ i.pk }}" class="commission_id">
+                                            <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">
+                                                <label class="commission_level commission_level_label">{{ i.commission_level }}</label>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label><br>COMMISSION RATE</label>
+                                                <input type="number" class="form-control commission_rate"
+                                                       name="commission_rate" value="{{ i.commission_percentage }}"
+                                                       required="required">
+                                            </div>
+                                            <div class="col-md-2" style="width:20%">
+                                                <label>DOWNLINE COMMISSION RATE</label>
+                                                <input type="number" class="form-control downline_commission_rate"
+                                                       name="downline_commission_rate"
+                                                       value="{{ i.downline_commission_percentage }}" required="required">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label><br>ACTIVE DOWNLINE</label>
+                                                <input type="number" class="form-control active_downline"
+                                                       name="active_downline" value="{{ i.active_downline_needed }}"
+                                                       required="required">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>DOWNLINE MONTHLY FTD</label>
+                                                <input type="number" class="form-control downline_monthly_ftd"
+                                                       name="downline_monthly_ftd"
+                                                       value="{{ i.monthly_downline_ftd_needed }}" required="required">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label><br>NET PROFIT</label>
+                                                <input type="number" class="form-control downline_net_profit"
+                                                       name="downline_net_profit"
+                                                       value="{{ i.monthly_downline_ftd_needed }}" required="required">
+                                            </div>
+                                            {% if forloop.last %}
+                                            <div class="col-md-1" style="width:5%" id="delete_commission_level">
+                                                <label><br><br></label>
+                                                <button type="button" class="btn btn-danger delete"
+                                                        data-toggle="tooltip" id="delete_commission_level_btn">
+                                                    <i class="glyphicon glyphicon-trash"></i>
+                                                </button>
+                                            </div>
+                                            {% endif %}
                                         </div>
-                                        <div class="col-md-2">
-                                            <label><br>COMMISSION RATE</label>
-                                            <input type="number" class="form-control commission_rate"
-                                                   name="commission_rate" value="{{ i.commission_percentage }}"
-                                                   required="required">
-                                        </div>
-                                        <div class="col-md-2" style="width:20%">
-                                            <label>DOWNLINE COMMISSION RATE</label>
-                                            <input type="number" class="form-control downline_commission_rate"
-                                                   name="downline_commission_rate"
-                                                   value="{{ i.downline_commission_percentage }}" required="required">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label><br>ACTIVE DOWNLINE</label>
-                                            <input type="number" class="form-control active_downline"
-                                                   name="active_downline" value="{{ i.active_downline_needed }}"
-                                                   required="required">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label>DOWNLINE MONTHLY FTD</label>
-                                            <input type="number" class="form-control downline_monthly_ftd"
-                                                   name="downline_monthly_ftd"
-                                                   value="{{ i.monthly_downline_ftd_needed }}" required="required">
-                                        </div>
-                                        <div class="col-md-2">
-                                            <label><br>NET PROFIT</label>
-                                            <input type="number" class="form-control downline_net_profit"
-                                                   name="downline_net_profit"
-                                                   value="{{ i.monthly_downline_ftd_needed }}" required="required">
-                                        </div>
-                                        {% if forloop.last %}
-                                        <div class="col-md-1" style="width:5%" id="delete_commission_level">
-                                            <label><br><br></label>
-                                            <button type="button" class="btn btn-danger delete"
-                                                    data-toggle="tooltip" id="delete_commission_level_btn">
-                                                <i class="glyphicon glyphicon-trash"></i>
-                                            </button>
-                                        </div>
-                                        {% endif %}
+                                        {% endfor %}
                                     </div>
-                                    {% endfor %}
+                                    <div id="personal_commission_levels" style="display:none">
+                                        {% for i in personal_commission_levels %}
+                                        <div class="row" id="personal_commission_level_details" style="width: 95%;">
+                                            <input type="hidden" value="{{ i.pk }}" class="commission_id">
+                                            <div class="col-md-1" style="background-color: #d2d2d2; height: 100px;">
+                                                <label class="commission_level commission_level_label">{{ i.commission_level }}</label>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label><br>COMMISSION RATE</label>
+                                                <input type="number" class="form-control commission_rate"
+                                                       name="commission_rate" value="{{ i.commission_percentage }}"
+                                                       required="required">
+                                            </div>
+                                            <div class="col-md-2" style="width:20%">
+                                                <label>DOWNLINE COMMISSION RATE</label>
+                                                <input type="number" class="form-control downline_commission_rate"
+                                                       name="downline_commission_rate"
+                                                       value="{{ i.downline_commission_percentage }}" required="required">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label><br>ACTIVE DOWNLINE</label>
+                                                <input type="number" class="form-control active_downline"
+                                                       name="active_downline" value="{{ i.active_downline_needed }}"
+                                                       required="required">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label>DOWNLINE MONTHLY FTD</label>
+                                                <input type="number" class="form-control downline_monthly_ftd"
+                                                       name="downline_monthly_ftd"
+                                                       value="{{ i.monthly_downline_ftd_needed }}" required="required">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <label><br>NET PROFIT</label>
+                                                <input type="number" class="form-control downline_net_profit"
+                                                       name="downline_net_profit"
+                                                       value="{{ i.monthly_downline_ftd_needed }}" required="required">
+                                            </div>
+                                            {% if forloop.last %}
+                                            <div class="col-md-1" style="width:5%" id="delete_commission_level">
+                                                <label><br><br></label>
+                                                <button type="button" class="btn btn-danger delete"
+                                                        data-toggle="tooltip" id="delete_commission_level_btn">
+                                                    <i class="glyphicon glyphicon-trash"></i>
+                                                </button>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                                 <div class="row" style="margin-left: 0px; margin-bottom: 10px">
                                     <p id='add_level_errorMessage'>&nbsp;</p>

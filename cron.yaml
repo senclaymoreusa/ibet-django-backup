@@ -29,6 +29,6 @@ cron:
    url: "/games/api/pt/get_record"
    schedule: "*/5 * * * *"
    
-#  - name: "game_gpi_get_bet_detail"
-#    url: "/games/api/gpi/get_bet_detail/"
-#    schedule: "*/10 * * * *"
+ - name: "game_gpi_get_bet_detail"
+   url: "/games/api/gpi/get_bet_detail/"
+   schedule: "*/10 * * * *"
