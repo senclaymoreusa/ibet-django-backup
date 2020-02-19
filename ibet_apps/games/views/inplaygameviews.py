@@ -79,6 +79,19 @@ def des3Decryption(cipher_text):
         return ""
 
 
+def AESEncryption(plain_text):
+    try:
+        key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        # cipher = AES.new(key, AES.MODE_CBC)
+        cipher_text = cipher.encrypt(pad(plain_text))
+        
+        return str(base64.b64encode(cipher_text), "utf-8")
+    except Exception as e:
+        logger.error("IMES Encrypt Error: {}".format(repr(e)))
+        return ""
+
+
 def AESDecryption(cipher_text):
     try:
         key = hashlib.md5(IMES_KEY.encode()).digest()
@@ -193,7 +206,7 @@ class InplayGetBalanceAPI(View):
         try:
             balance_package = balance_package.replace(' ', '+')
             logger.info("IMES GetBalanceAPI balance package: {}".format(balance_package))
-            data = des3Decryption(balance_package)
+            data = AESDecryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
 
@@ -210,14 +223,14 @@ class InplayGetBalanceAPI(View):
 
                 response = json.dumps(response)
 
-                ciphertext = des3Encryption(response)
+                ciphertext = AESEncryption(response)
                 return HttpResponse(ciphertext, content_type='text/plain', status=200)
             else:
                 response["StatusCode"] = -100
                 response["StatusMessage"] = "Wrong Event Type"
 
                 response = json.dumps(response)
-                cipher_text = des3Encryption(response)
+                cipher_text = AESEncryption(response)
         except Exception as e:
             logger.error("IMES GET Balance Error: {}".format(repr(e)))
             return HttpResponse(status=400)
@@ -232,7 +245,7 @@ class InplayGetApprovalAPI(View):
             # balance_package = "ZwgZhGFWmUv5vDi5q2ruVAUij5STfGZ6ctAdoxbVdOUeW+RbwyYE91w8OXAeAgw5G8cVCxZC5Lt6MFBoaBxSfdVG6C55NSVcRYyB4Fk76mo="
             balance_package = balance_package.replace(' ', '+')
             logger.info("IMES GetApprovalAPI balance package: {}".format(balance_package))
-            data = des3Decryption(balance_package)
+            data = AESDecryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0], "}"])
             data = json.loads(data)
             response = {}
@@ -251,13 +264,13 @@ class InplayGetApprovalAPI(View):
                     response["StatusCode"] = -100
                     
                 response = json.dumps(response)
-                cipher_text = des3Encryption(response)
+                cipher_text = AESEncryption(response)
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
             else:
                 response["StatusCode"] = -100
                     
                 response = json.dumps(response)
-                cipher_text = des3Encryption(response)
+                cipher_text = AESEncryption(response)
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
         except Exception as e:
             logger.error("FATAL__ERROR: IMES Get Approval Error -- {}".format(repr(e)))
@@ -267,7 +280,7 @@ class InplayGetApprovalAPI(View):
             response["StatusMessage"] = "Internal Error"
 
             response = json.dumps(response)
-            cipher_text = des3Encryption(response)
+            cipher_text = AESEncryption(response)
 
             return HttpResponse(cipher_text, content_type='text/plain', status=200)
 
@@ -322,7 +335,7 @@ class InplayDeductBalanceAPI(View):
                     response["StatusMessage"] = "Not enough balance"
 
                 response = json.dumps(response)
-                cipher_text = des3Encryption(response)
+                cipher_text = AESEncryption(response)
 
                 return HttpResponse(cipher_text, content_type='text/plain', status=200)
             else:
@@ -334,7 +347,7 @@ class InplayDeductBalanceAPI(View):
             response["StatusMessage"] = "Internal Error"
 
             response = json.dumps(response)
-            cipher_text = des3Encryption(response)
+            cipher_text = AESEncryption(response)
 
             return HttpResponse(cipher_text, content_type='text/plain', status=200)
 
