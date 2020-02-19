@@ -460,15 +460,27 @@ def checkCreateGameAccoutOrGetBalance(user,password,method,oddtype,actype,cur):
     
 @api_view(['POST'])
 @permission_classes((AllowAny,))        
-def getBalance(request):  
+def get_Balance(request):  
     username =  request.POST['username']
-    password = request.POST['password']
-    oddtype = request.POST['oddtype']
-    actype = request.POST['actype']
-    cur = request.POST['cur']
     try:
         user = CustomUser.objects.get(username=username)
-        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=" + "gb" + "/\\\\/" + "actype=" + actype + "/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=" + oddtype + "/\\\\/" + "cur=" + cur  
+        password = AG_CAGENT + user.username
+        if user.currency == CURRENCY_CNY:
+            cur = "CNY"
+        elif user.currency == CURRENCY_USD:
+            cur = "USD"
+        elif user.currency == CURRENCY_THB:
+            cur = "THB"
+        elif user.currency == CURRENCY_EUR:
+            cur = "EUR"
+        elif user.currency == CURRENCY_IDR:
+            cur = "IDR"
+        elif user.currency == CURRENCY_VND:
+            cur = "VND"
+        else:
+            cur = "CNY"
+    
+        s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "method=" + "gb" + "/\\\\/" + "actype=1/\\\\/" + "password=" + password + "/\\\\/" + "oddtype=A/\\\\/" + "cur=" + cur  
         
         param = des_encrypt(s,AG_DES).decode("utf-8") 
 
