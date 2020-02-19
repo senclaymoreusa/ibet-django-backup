@@ -454,15 +454,15 @@ def getDownlineList(queryset, start_time, end_time):
     for downline in queryset:
         downline_dict = {
             'player_id': downline.pk,
-            'channel': str(downline.referred_by_channel or ''),
+            'channel': str(downline.referred_by_channel.refer_channel_name) if downline.referred_by_channel else 'default',
             'ftd': str(downline.ftd_time),
             'registration_date': str(utcToLocalDatetime(downline.time_of_registration)),
-            'last_login': str(lastLogin(downline)),
+            'last_login_time': str(utcToLocalDatetime(downline.last_login_time)),
             'total_deposit': getTransactionAmount(downline, start_time, end_time, TRANSACTION_DEPOSIT, None)[1],
             'total_withdrawal': getTransactionAmount(downline, start_time, end_time, TRANSACTION_WITHDRAWAL, None)[1],
             'total_bonus': getTransactionAmount(downline, start_time, end_time, TRANSACTION_BONUS, None)[1],
             'total_adjustment': getTransactionAmount(downline, start_time, end_time, TRANSACTION_ADJUSTMENT, None)[1],
-            'balance': downline.main_wallet,
+            'balance': str(downline.main_wallet),
             'turnover': calculateTurnover(downline, start_time, end_time, None),
         }
 

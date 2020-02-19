@@ -68,7 +68,7 @@
                 {data: 'registration_date', "render": function(data, type, row, meta){
                         return formatDatetime(data);
                 }},
-                {data: 'last_login', "render": function(data, type, row, meta){
+                {data: 'last_login_time', "render": function(data, type, row, meta){
                         return formatDatetime(data);
                 }},
                 {data: 'channel'},

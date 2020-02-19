@@ -89,7 +89,7 @@ $(document).ready(function() {
 
     function GetCellValues(tableId) {
         var table = document.getElementById(tableId);
-        for (var i = 0, m = table.rows[0].cells.length - 1; i < m; i++) {
+        for (var i = 0, m = table.rows[0].cells.length; i < m; i++) {
             bonusTableHead.push(table.rows[0].cells[i].innerHTML);
         }
     }
