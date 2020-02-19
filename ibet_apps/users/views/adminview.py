@@ -1421,7 +1421,7 @@ class GetUserTransaction(View):
             product = request.GET.get('product')
             export_title = request.GET.get('head')
             export_type = request.GET.get('export_type')
-
+            customUser = CustomUser.objects.get(pk=user_id)
             if trans_type == "transaction":
                 # print(user_id, time_from, time_to, pageSize, fromItem, endItem, category, product)
 
@@ -1486,7 +1486,7 @@ class GetUserTransaction(View):
                                           status
                                           ])
 
-                    return streamingExport(data_list, 'User List')
+                    return streamingExport(data_list, 'Transaction history ({})'.format(customUser.username))
 
 
                 response = {}
@@ -1550,7 +1550,8 @@ class GetUserTransaction(View):
                 
                 return HttpResponse(json.dumps(response), content_type='application/json')
             else:
-                response = {}
+                export_title = request.GET.get('head')
+                export_type = request.GET.get('export_type')
 
                 bet_filter = Q(user__pk=user_id)
 
@@ -1579,6 +1580,39 @@ class GetUserTransaction(View):
                     bet_filter &= Q(category__name=product)
 
                 all_bet_objs = GameBet.objects.filter(bet_filter).order_by('-bet_time')
+
+
+                if export_type and export_type == 'bet':
+                    head = request.GET.get('head')
+                    head = json.loads(head)
+                    
+                    data_list = [head]
+
+                    for bet in all_bet_objs:
+                        transaction_category = "Bet"
+                        product = str(bet.category)
+                        # from_wallet = tran.transfer_from if tran.transfer_from else ""
+                        # to_wallet = tran.transfer_to if tran.transfer_to else ""
+                        amount_wagered = bet.amount_wagered if bet.amount_wagered else "0.0000"
+                        amount_won = bet.amount_won if bet.amount_won else "0.0000"
+                        # 'status': 'Open' if not bet.resolved_time else 'Close',
+                        time = bet.bet_time.strftime("%B %d, %Y, %I:%M %p") if bet.bet_time else ""
+                        currency = str(dict(CURRENCY_CHOICES).get(bet.currency))
+                        transaction_id = bet.transaction_id
+                        status = 'Open' if not bet.resolved_time else 'Close'
+                        data_list.append([transaction_category,
+                                          product,
+                                          transaction_id,
+                                          amount_wagered,
+                                          amount_won,
+                                          currency,
+                                          time,
+                                          status
+                                          ])
+
+                    return streamingExport(data_list, 'Bet history ({})'.format(customUser.username))
+
+
                 response = {}
                 if endItem >= all_bet_objs.count():
                     response['isLastPage'] = True
