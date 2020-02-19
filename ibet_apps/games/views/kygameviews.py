@@ -427,7 +427,6 @@ def kyTransfer(user, amount, wallet, method):
             return False
 
     except Exception as e:
-        print(repr(e))
         logger.error("Kaiyuan Game fundTransfer error: {}".format(repr(e)))
         return False
 
