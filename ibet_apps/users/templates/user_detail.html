@@ -477,7 +477,7 @@
                             <span class="member-detail-label">Username</span>
                         </div>
                         <div class="col-md-6" style="margin-left:-20px;">
-                            <span class="detail-info">{{ customuser.username }}</span>
+                            <span class="detail-info" id="user-username">{{ customuser.username }}</span>
                         </div>
                     </div>
                     <div class="row">
@@ -1030,7 +1030,7 @@
                             </div>
                             <!-- related_user_data -->
 
-                            <table id="transaction-table" class="blacklistRadio" >
+                            <table id="black-list-table" class="blacklistRadio" >
                                 <thead>
                                     <tr>
                                     <th scope="col">ALL<input type="radio" id="radioAll" value="all"></th>
@@ -1367,7 +1367,7 @@
                     </div>
                     <!-- <label style="margin:15px">TRNASACTION LAST 7 DAYS</label> -->
                     <div class="row" style="margin:2% 1% 2% 1%;">
-                        <table id="transaction-table">
+                        <table class="transaction-table" id="transaction-table">
                             <thead class="thead-dark">
                                 <tr>
                                     <th style="width:8%;">CATEGORY</th>
@@ -1498,7 +1498,7 @@
                         </table>
                         <div class="row">
                             <div class='col-md-1'>
-                                <button class="btn btn-primary"><span>Export</span></button>
+                                <button class="btn btn-primary" onclick="exportTransaction();">Export</button>
                             </div>
                             <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                             <div>
@@ -1574,7 +1574,7 @@
                     </div>
                     <!-- <label style="margin:15px">TRNASACTION LAST 7 DAYS</label> -->
                     <div class="row" style="margin:2% 1% 2% 1%;">
-                        <table id="transaction-table">
+                        <table id="bet-table" class="transaction-table">
                             <thead class="thead-dark">
                                 <tr>
                                     <th style="width:8%;">CATEGORY</th>
@@ -1645,7 +1645,7 @@
                         </table>
                         <div class="row">
                             <div class='col-md-1'>
-                                <button class="btn btn-primary"><span>Export</span></button>
+                                <button class="btn btn-primary" onclick="exportBetHistory();">Export</button>
                             </div>
                             <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                             <div>
@@ -3578,6 +3578,109 @@ function getBetHistroy(fromItem) {
 
 }
 
+
+function exportTransaction() {
+    
+    var user_id = $('#hidden_user_id').val();
+    var tableId = 'transaction-table';
+    var head = getTableHead(tableId);
+    var product = $('#transaction_product_select').val();
+    var category = $("#transaction_category_select").val();
+    var time_from = $("#transaction_time_from_input").val();
+    var time_to = $("#transaction_time_to_input").val();
+    
+    head = head.slice(1, head.length);
+    // console.log(head);
+
+    var tablehead = JSON.stringify(head);
+
+    $.ajax({
+        type:'GET',
+        url:"{% url 'get_user_transactions' %}",
+        data:{ 
+            'export_type': 'transaction',
+            'type': 'transaction',
+            'user_id': user_id,
+            'from': time_from,
+            'to': time_to,
+            // 'fromItem': fromItem,
+            // 'pageSize': pageSize,
+            'category': category,
+            'product': product,
+            'head': tablehead,
+        },
+        success:function(data) {
+
+            var username = $('#user-username').text();
+            var filename = "Transaction history(" + username + ")";
+            downloadCSV(data, filename);
+        }
+    });
+}
+
+
+function exportBetHistory() {
+    var user_id = $('#hidden_user_id').val();
+    var bet_product = $('#bet_product_select').val();
+    var time_from = $("#bet_time_from_input").val();
+    var time_to = $("#bet_time_to_input").val();
+    var tableId = 'bet-table';
+    var head = getTableHead(tableId);
+
+    head = JSON.stringify(head);
+    // console.log(head);
+    // console.log(bet_product, time_from, time_to);
+
+    $.ajax({
+        type:'GET',
+        url:"{% url 'get_user_transactions' %}",
+        data:{ 
+            'export_type': 'bet',
+            'type': 'bet',
+            'user_id': user_id,
+            'from': time_from,
+            'to': time_to,
+            // 'fromItem': fromItem,
+            // 'pageSize': pageSize,
+            'product': bet_product,
+            'head': head,
+        },
+        success:function(data) {
+
+            var username = $('#user-username').text();
+            var filename = "Bet history(" + username + ")";
+            downloadCSV(data, filename);
+        }
+    });
+
+
+}
+
+
+
+function downloadCSV(csvStr, filename) {
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvStr);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = filename;
+    hiddenElement.click();
+}
+
+
+function getTableHead(tableId) {
+    var head = [];
+    var table = document.getElementById(tableId);
+    for (var i = 0, m = table.rows[0].cells.length; i < m; i++) {
+        if (table.rows[0].cells[i].innerHTML) {
+            head.push(table.rows[0].cells[i].innerHTML);
+        }
+    }
+    return head;
+}
+
+
+
 function getTransactions(fromItem) {
 
     var user_id = $('#hidden_user_id').val();
@@ -3871,9 +3974,9 @@ function submitAdjustment() {
     
     // console.log(amount);
     // console.log(notifyPlayer);
-    console.log(messageSubject);
-    console.log(messageToPlayer);
-    console.log(messageNote);
+    // console.log(messageSubject);
+    // console.log(messageToPlayer);
+    // console.log(messageNote);
     // console.log(wageringAmount);
 
     if (reason == -1 || amount <= 0 || (debitOrCredit == 'credit' && wageringAmount <= 0) || (notifyPlayer && (messageSubject.length == 0 ||  messageToPlayer.length == 0)) || messageNote.length == 0) {
