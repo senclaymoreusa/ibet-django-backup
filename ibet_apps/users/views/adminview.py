@@ -1414,12 +1414,13 @@ class GetUserTransaction(View):
             user_id = request.GET.get('user_id')
             time_from = request.GET.get('from')
             time_to = request.GET.get('to')
-            pageSize = int(request.GET.get('pageSize'))
-            fromItem = int(request.GET.get('fromItem'))
+            pageSize = int(request.GET.get('pageSize')) if request.GET.get('pageSize') else ""
+            fromItem = int(request.GET.get('fromItem')) if request.GET.get('fromItem') else ""
             endItem = fromItem + pageSize
             category = request.GET.get('category')
             product = request.GET.get('product')
-            
+            export_title = request.GET.get('head')
+            export_type = request.GET.get('export_type')
 
             if trans_type == "transaction":
                 # print(user_id, time_from, time_to, pageSize, fromItem, endItem, category, product)
@@ -1455,6 +1456,39 @@ class GetUserTransaction(View):
                 
 
                 all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+
+
+                if export_type and export_type == 'transaction':
+                    head = request.GET.get('head')
+                    head = json.loads(head)
+                    
+                    data_list = [head]
+
+                    for tran in all_transactions:
+                        transaction_category =  str(dict(TRANSACTION_TYPE_CHOICES).get(tran.transaction_type))
+                        product = str(dict(GAME_TYPE_CHOICES).get(tran.product))
+                        from_wallet = tran.transfer_from if tran.transfer_from else ""
+                        to_wallet = tran.transfer_to if tran.transfer_to else ""
+                        currency = str(dict(CURRENCY_CHOICES).get(tran.currency))
+                        transaction_id = tran.transaction_id
+                        balance = tran.current_balance
+                        amount = tran.amount
+                        status = tran.get_status_display()
+                        data_list.append([transaction_category,
+                                          product,
+                                          transaction_id,
+                                          from_wallet,
+                                          to_wallet,
+                                          currency,
+                                          tran.request_time,
+                                          amount,
+                                          balance,
+                                          status
+                                          ])
+
+                    return streamingExport(data_list, 'User List')
+
+
                 response = {}
                 if endItem >= all_transactions.count():
                     response['isLastPage'] = True
@@ -2001,3 +2035,10 @@ class ExportUserList(View):
             logger.error("Export user list error: {}".format(str(e)))
             return HttpResponse(status=400)
 
+
+
+
+
+def getTransaction(user):
+    
+    return data_list
