@@ -24,6 +24,7 @@ from  games.models import *
 import json
 
 from rest_framework.authtoken.models import Token
+from Crypto import Random
 from Crypto.Cipher import AES, DES3
 import xmltodict
 import base64
@@ -33,6 +34,8 @@ import urllib
 from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
+
+iv = Random.new().read(AES.block_size) # Random IV
 
 # PKCS7
 def pad(m):
@@ -49,10 +52,10 @@ def unpad(ct):
 
 def des3Encryption(plain_text):
     try:
-        # key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
-        key = hashlib.sha256(IMES_KEY.encode("utf-8")).digest()
-        # cipher = DES3.new(key, DES3.MODE_ECB)
-        cipher = AES.new(key, AES.MODE_CBC)
+        key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
+        # key = hashlib.sha256(IMES_KEY.encode("utf-8")).digest()
+        cipher = DES3.new(key, DES3.MODE_ECB)
+        # cipher = AES.new(key, AES.MODE_CBC)
         cipher_text = cipher.encrypt(pad(plain_text))
         
         return str(base64.b64encode(cipher_text), "utf-8")
@@ -63,16 +66,31 @@ def des3Encryption(plain_text):
 
 def des3Decryption(cipher_text):
     try:
-        key = hashlib.sha256(IMES_KEY.encode("utf-8")).digest()
+        key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
         # key = hashlib.md5(IMES_KEY.encode()).digest()
         cipher_text = base64.b64decode(cipher_text)
-        cipher = AES.new(key, AES.MODE_CBC)
-        # cipher = DES3.new(key, DES3.MODE_ECB)
+        # cipher = AES.new(key, AES.MODE_CBC)
+        cipher = DES3.new(key, DES3.MODE_ECB)
         plain_text = cipher.decrypt(unpad(cipher_text))
         
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
+        return ""
+
+
+def AESDecryption(cipher_text):
+    try:
+        key = hashlib.md5(IMES_KEY.encode()).digest()
+        cipher_text = base64.b64decode(cipher_text)
+        iv = cipher_text[:AES.block_size]
+        cipher = AES.new(key, AES.MODE_CBC, iv)
+        # cipher = DES3.new(key, DES3.MODE_ECB)
+        plain_text = cipher.decrypt(unpad(cipher_text))
+        
+        return plain_text.decode()
+    except Exception as e:
+        logger.error("IMES AES Decrypt Error: {}".format(repr(e)))
         return ""
 
 
@@ -87,7 +105,7 @@ class InplayLoginAPI(View):
             post_data = {}
             sessionToken = Token.objects.get(user_id=user)
             # post_data['Token'] = str(sessionToken)
-            post_data['Token'] = "e789cd6b4cc84f9ff8de0bee5a0bf8f5485c6d9f"
+            post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
 
             # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
