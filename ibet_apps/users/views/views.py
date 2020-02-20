@@ -247,8 +247,11 @@ class RegisterView(CreateAPIView):
         else:
             return TokenSerializer(user.auth_token).data
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
+        iovation = request.data['iovationData']
         serializer = self.get_serializer(data=request.data)
+        # print(serializer)
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -262,17 +265,35 @@ class RegisterView(CreateAPIView):
         try:
             with transaction.atomic():
                 # add time of registration and register event
-                rr = requests.get("https://ipapi.co/json/")
-                rrdata = rr.json()
-                try :
-                    ip = rrdata["ip"]
-                except:
-                    ip = helpers.get_client_ip(request)
+                result = iovation['result'] if 'result' in iovation else ''
+                if 'details' in iovation and 'device' in iovation['details'] and 'os' in iovation['details']['device']:
+                    device = iovation['details']['device']['os'] 
+                else:
+                    device = ''
+                if 'details' in iovation and 'device' in iovation['details'] and 'browser' in iovation['details']['device']:
+                    browser = iovation['details']['device']['browser'] 
+                else:
+                    browser = ''
+                if 'details' in iovation and 'realIp' in iovation['details'] and 'ipLocation' in iovation['details']['realIp']:
+                    ipLocation = iovation['details']['realIp']['ipLocation'] 
+                else:
+                    ipLocation = None
+                if 'details' in iovation and 'realIp' in iovation['details'] and 'address' in iovation['details']['realIp']:
+                    realIp = iovation['details']['realIp']['address'] 
+                else:
+                    realIp = helpers.get_client_ip(request)
+                otherData = iovation
+                
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=ip,
+                    ip_addr=realIp,
+                    result=result,
+                    device=device,
+                    browser=str(browser),
+                    ip_location=ipLocation,
+                    other_info=otherData,
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
@@ -319,7 +340,6 @@ class RegisterView(CreateAPIView):
     @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
-        # print(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(user)
         else:

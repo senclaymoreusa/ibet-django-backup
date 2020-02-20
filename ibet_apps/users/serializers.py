@@ -66,6 +66,7 @@ class RegisterSerializer(serializers.Serializer):
     language         = serializers.CharField(required=False)
     referral_code    = serializers.CharField(required=False)
     currency         = serializers.ChoiceField(choices=CURRENCY_CHOICES)
+    iovationData = serializers.JSONField(required=False)
 
 
     def validate_username(self, username):
@@ -136,6 +137,7 @@ class RegisterSerializer(serializers.Serializer):
             'language':         self.validated_data.get('language', ''),
             'referral_code':    self.validated_data.get('referral_code', ''),
             'currency':    self.validated_data.get('currency', ''),
+            'iovationData':    self.validated_data.get('iovationData', ''),
         }
 
     def save(self, request):
