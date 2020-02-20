@@ -643,6 +643,7 @@ def queryOrderStatus(actype,cur,billno):
 @permission_classes((AllowAny,))        
 def forwardGame(request):
     username =  request.POST['username']
+    lang = request.POST['lang']
     password = AG_CAGENT + username
     
     actype = request.POST['actype']  #actype=1 代表真钱账号,0 代表试玩账号
@@ -668,24 +669,24 @@ def forwardGame(request):
         else:
             cur = "CNY"
 
-        if user.language == 'English':
-            lang = '3'
-        elif user.language == 'Chinese':
-            lang = '1'
-        elif user.language == 'Thai':
-            lang = '6'
-        elif user.language == 'Vietnamese':
-            lang = '8'
-        elif user.language == 'en':
-            lang = '3'
-        elif user.language == 'zh':
-            lang = '1'
-        elif user.language == 'Th':
-            lang = '6'
-        elif user.language == 'Vi':
-            lang = '8'   
-        else:
-            lang = '1'
+        # if user.language == 'English':
+        #     lang = '3'
+        # elif user.language == 'Chinese':
+        #     lang = '1'
+        # elif user.language == 'Thai':
+        #     lang = '6'
+        # elif user.language == 'Vietnamese':
+        #     lang = '8'
+        # elif user.language == 'en':
+        #     lang = '3'
+        # elif user.language == 'zh':
+        #     lang = '1'
+        # elif user.language == 'Th':
+        #     lang = '6'
+        # elif user.language == 'Vi':
+        #     lang = '8'   
+        # else:
+        #     lang = '1'
             
         if checkCreateGameAccoutOrGetBalance(user, password, lg_method, oddtype, actype, cur) == AG_SUCCESS:
             s = "cagent=" + AG_CAGENT + "/\\\\/" + "loginname=" + username + "/\\\\/" + "dm=" + AG_DM + "/\\\\/" + "sid=" + sid + "/\\\\/" + "lang=" + lang + "/\\\\/" + "gameType=" + gameType +  "/\\\\/" + "oddtype=" + oddtype +  "/\\\\/" +  "actype=" + actype + "/\\\\/"  +  "password=" + password + "/\\\\/" +   "cur=" + cur  
