@@ -36,8 +36,6 @@ from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
 
-iv = Random.new().read(AES.block_size) # Random IV
-
 # PKCS7
 # def pad(m):
 #     return m + chr(16 - len(m) % 16) * (16 - len(m) % 16)
@@ -51,7 +49,8 @@ iv = Random.new().read(AES.block_size) # Random IV
 # PKCS5
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
-unpad = lambda s : s[0:-ord(s[-1])]
+# unpad = lambda s : s[0:-ord(s[-1])]
+unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
 
 def des3Encryption(plain_text):
@@ -86,9 +85,10 @@ def des3Decryption(cipher_text):
 def AESEncryption(plain_text):
     try:
         key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
+        plain_text = pad(plain_text)
+        iv = Random.new().read(AES.block_size) # Random IV
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        # cipher = AES.new(key, AES.MODE_CBC)
-        cipher_text = cipher.encrypt(pad(plain_text))
+        cipher_text = cipher.encrypt(plain_text)
         
         return str(base64.b64encode(iv + cipher_text), "utf-8")
     except Exception as e:
@@ -103,13 +103,10 @@ def AESDecryption(cipher_text):
         iv = cipher_text[:AES.block_size]
         cipher = AES.new(key, AES.MODE_CBC, iv)
         # cipher = AES.new(key, AES.MODE_ECB)
-        print(cipher_text)
-        plain_text = cipher.decrypt(unpad(cipher_text))
-        print(plain_text)
+        plain_text = unpad(cipher.decrypt(cipher_text[16:]))
         
         return plain_text.decode()
     except Exception as e:
-        print("IMES AES Decrypt Error: {}".format(repr(e)))
         logger.error("IMES AES Decrypt Error: {}".format(repr(e)))
         return ""
 
@@ -508,10 +505,8 @@ class TestDecryption(View):
 
             cipher_json = AESEncryption(plain_json)
             # cipher_json = des3Encryption(plain_json)
-
             # txt = request.GET.get("txt")
             # txt = txt.replace(' ', '+')
-            # print(txt)
             # plain_json = des3Decryption(cipher_json)
             plain_json = AESDecryption(cipher_json)
 
