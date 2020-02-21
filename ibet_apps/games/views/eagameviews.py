@@ -560,112 +560,119 @@ class GetEABalance(View):
 # get EA live casnio balance
 def getEAWalletBalance(user):
 
-    user_currency = user.currency
-    if user_currency == CURRENCY_CNY:
-        currency = 156
-        vendor = 3
-    elif user_currency == CURRENCY_THB:
-        currency = 764
-        vendor = 4
-    elif user_currency == CURRENCY_VND:
-        currency = 704
-        vendor = 5
-    elif user_currency == CURRENCY_TTC:
-        currency = 1111
-        vendor = 2
-    else:
-        currency = 1111
-        vendor = 2
-    
-    request_id = "C"
-    request_id = request_id + "%0.12d" % random.randint(0,999999999999)
-
-    url = EA_DOMAIN + "checkclient/wkpibet/server.php"
-    headers = {'Content-Type': 'application/xml'}
-    data = {
-        "request": {
-            "@action": "ccheckclient",
-            "element": {
-                "@id": request_id,
-                    "properties": [
-                    {
-                        "@name": "userid",
-                        "#text": str(user.username)
-                    },
-                    {
-                        "@name": "vendorid",
-                        "#text": str(vendor) # will provide by EA
-                    },
-                    {
-                        "@name": "currencyid",
-                        "#text": str(currency)
-                    }
-                ]
-            }
-        } 
-    }
-
-    requestData = xmltodict.unparse(data, pretty=True)
-    response = requests.post(url, data=requestData, headers=headers)
-    response = response.text.strip()
-    response = xmltodict.parse(response)
-
-    action  = response['request']['@action']
-    # print(action)
-    request_id = response['request']['element']['@id']
-    # print(request_id)
-
-    api_response = {}
-    
-    try: 
-        properties_status = ""
-        propertiesMessage = ""
-        for i in response['request']['element']['properties']:
-            if i['@name'] == 'status' and "#text" in i:
-                properties_status= i['#text']
-            elif i['@name'] == 'errdesc' and "#text" in i:
-                propertiesMessage = i['#text']
-        
-        api_response['status_code'] = properties_status
-        api_response['error_message'] = propertiesMessage
-        api_response['balance'] = propertiesBalance
-        
-        if properties_status == '203':
-            logger.info("The user never play ea game: {}".format(propertiesMessage))
+    try:
+        user_currency = user.currency
+        if user_currency == CURRENCY_CNY:
+            currency = 156
+            vendor = 3
+        elif user_currency == CURRENCY_THB:
+            currency = 764
+            vendor = 4
+        elif user_currency == CURRENCY_VND:
+            currency = 704
+            vendor = 5
+        elif user_currency == CURRENCY_TTC:
+            currency = 1111
+            vendor = 2
         else:
-            logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
-
-    except:
-
-        properties_user_id = str(user.username)
-        propertiesBalance = 0
-        propertiesCurrency = ""
-        for i in response['request']['element']['properties']:
-            if i['@name'] == 'userid':
-                properties_user_id= i['#text']
-            elif i['@name'] == 'balance':
-                propertiesBalance = i['#text']
-            elif i['@name'] == 'currencyid':
-                propertiesCurrency = i['#text']
-            elif i['@name'] == 'location':
-                propertiesLocation = i['#text']
-    
-        api_response['userId'] = properties_user_id
-        api_response['balance'] = propertiesBalance
-        if propertiesCurrency == "156":
-            currency = CURRENCY_CNY
-        elif propertiesCurrency == "764":
-            currency = CURRENCY_THB
-        elif currency == "704":
-            currency = CURRENCY_VND
-        else:
-            currency = CURRENCY_CNY
+            currency = 1111
+            vendor = 2
         
-        api_response['currency'] = currency
-    
-        logger.info("Successfully get the balance from EA and amount is: " + str(propertiesBalance))
+        request_id = "C"
+        request_id = request_id + "%0.12d" % random.randint(0,999999999999)
 
-    return json.dumps(api_response)
+        url = EA_DOMAIN + "checkclient/wkpibet/server.php"
+        headers = {'Content-Type': 'application/xml'}
+        data = {
+            "request": {
+                "@action": "ccheckclient",
+                "element": {
+                    "@id": request_id,
+                        "properties": [
+                        {
+                            "@name": "userid",
+                            "#text": str(user.username)
+                        },
+                        {
+                            "@name": "vendorid",
+                            "#text": str(vendor) # will provide by EA
+                        },
+                        {
+                            "@name": "currencyid",
+                            "#text": str(currency)
+                        }
+                    ]
+                }
+            } 
+        }
+
+        requestData = xmltodict.unparse(data, pretty=True)
+        response = requests.post(url, data=requestData, headers=headers)
+        response = response.text.strip()
+        response = xmltodict.parse(response)
+
+        action  = response['request']['@action']
+        # print(action)
+        request_id = response['request']['element']['@id']
+        # print(request_id)
+
+        api_response = {}
+        
+        try: 
+            properties_status = ""
+            propertiesMessage = ""
+            for i in response['request']['element']['properties']:
+                if i['@name'] == 'status' and "#text" in i:
+                    properties_status= i['#text']
+                elif i['@name'] == 'errdesc' and "#text" in i:
+                    propertiesMessage = i['#text']
+            
+            api_response['status_code'] = properties_status
+            api_response['error_message'] = propertiesMessage
+            api_response['balance'] = propertiesBalance
+            
+            if properties_status == '203':
+                logger.info("The user never play ea game: {}".format(propertiesMessage))
+            else:
+                logger.error("Error occur when get EA balance: {}".format(propertiesMessage))
+
+        except:
+
+            properties_user_id = str(user.username)
+            propertiesBalance = 0
+            propertiesCurrency = ""
+            for i in response['request']['element']['properties']:
+                if i['@name'] == 'userid':
+                    properties_user_id= i['#text']
+                elif i['@name'] == 'balance':
+                    propertiesBalance = i['#text']
+                elif i['@name'] == 'currencyid':
+                    propertiesCurrency = i['#text']
+                elif i['@name'] == 'location':
+                    propertiesLocation = i['#text']
+        
+            api_response['userId'] = properties_user_id
+            api_response['balance'] = propertiesBalance
+            if propertiesCurrency == "156":
+                currency = CURRENCY_CNY
+            elif propertiesCurrency == "764":
+                currency = CURRENCY_THB
+            elif currency == "704":
+                currency = CURRENCY_VND
+            else:
+                currency = CURRENCY_CNY
+            
+            api_response['currency'] = currency
+        
+            logger.info("Successfully get the balance from EA and amount is: " + str(propertiesBalance))
+
+        return json.dumps(api_response)
+    except Exception as e:
+        api_response = {}
+        api_response['balance'] = 0
+        api_response['currency'] = 0
+        return json.dumps(api_response)
+
 
 
 

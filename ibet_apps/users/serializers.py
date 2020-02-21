@@ -36,7 +36,8 @@ class ChoicesSerializerField(serializers.SerializerMethodField):
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     security_question = ChoicesSerializerField()
-    currency = ChoicesSerializerField()
+    # currency = ChoicesSerializerField()
+    currency_value = serializers.CharField(source='get_currency_display')
     # favorite_deposit_method = serializers.SerializerMethodField('favoriteDeposit')
 
     # def favoriteDeposit(self, user):
@@ -46,7 +47,7 @@ class UserDetailsSerializer(serializers.ModelSerializer):
     #     return ""
     class Meta:
         model = CustomUser
-        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'time_of_registration', 'last_login_time', 'security_question', 'security_answer', 'withdraw_password', 'favorite_payment_method', 'email_verified', 'phone_verified', 'id_verified')
+        fields = ('pk', 'username', 'email', 'first_name', 'last_name', 'phone', 'country', 'date_of_birth', 'street_address_1', 'street_address_2', 'city', 'state', 'zipcode', 'block', 'referred_by', 'reward_points', 'main_wallet', 'active', 'gender', 'over_eighteen', 'currency', 'currency_value', 'time_of_registration', 'last_login_time', 'security_question', 'security_answer', 'withdraw_password', 'favorite_payment_method', 'email_verified', 'phone_verified', 'id_verified')
         read_only_fields = ('pk', )
 
 
@@ -66,6 +67,7 @@ class RegisterSerializer(serializers.Serializer):
     language         = serializers.CharField(required=False)
     referral_code    = serializers.CharField(required=False)
     currency         = serializers.ChoiceField(choices=CURRENCY_CHOICES)
+    iovationData = serializers.JSONField(required=False)
 
 
     def validate_username(self, username):
@@ -136,6 +138,7 @@ class RegisterSerializer(serializers.Serializer):
             'language':         self.validated_data.get('language', ''),
             'referral_code':    self.validated_data.get('referral_code', ''),
             'currency':    self.validated_data.get('currency', ''),
+            'iovationData':    self.validated_data.get('iovationData', ''),
         }
 
     def save(self, request):

@@ -339,6 +339,7 @@ ACTIVITY_UPLOAD_IMAGE = 4
 ACTIVITY_REMOVE_IMAGE = 5
 ACTIVITY_CLOSE_ACCOUNT = 6
 ACTIVITY_OPEN_ACCOUNT = 7
+ACTIVITY_STATUS_CHANGED = 8
 
 ACTIVITY_TYPE = (
     (0, 'System'),
@@ -349,6 +350,7 @@ ACTIVITY_TYPE = (
     (5, 'Remove ID image'),
     (6, 'Close Account'),
     (7, 'Open Account'),
+    (8, 'Status Change')
 )
 
 

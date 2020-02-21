@@ -53,6 +53,7 @@ urlpatterns += [
     path('api/checkemailexist/', views.CheckEmailExixted.as_view(), name='email_exist'),
     path('api/generatepasswordcode/', views.GenerateForgetPasswordCode.as_view(), name='generate_code'),
     path('api/retrievepasswordmethod/', views.CheckRetrievePasswordMethod.as_view(), name='retrieve_password_method'),
+    path('api/confirmretrievemethod/', views.ConfirmRetrieveMethodAPI.as_view(), name='confirm_retrieve_method'),
     path('api/sendresetpasswordcode/', views.SendResetPasswordCode.as_view(), name='send_code'),
     path('api/verifyresetpasswordcode/', views.VerifyResetPasswordCode.as_view(), name='verify_resetpassword_code'),
     path('api/changeandresetpassword/', views.ChangeAndResetPassword.as_view(),name='change_reset_password'),
@@ -96,12 +97,11 @@ urlpatterns += [
 
     # admin API
     path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
-    path('api/admin/get-user-transctions', GetUserTransaction.as_view(), name="get_user_transactions"),
+    path('api/admin/get-user-transactions', GetUserTransaction.as_view(), name="get_user_transactions"),
     path('api/admin/get-bet-history-detail', GetBetHistoryDetail.as_view(), name="get_bet_history_info"),
     path('api/admin/user-adjustment', UserAdjustment.as_view(), name="user_adjustment"),
     path('api/admin/user-transfer', UserTransfer.as_view(), name="user_transfer"),
-    path('api/admin/blacklist-user', BlackListUser.as_view(), name="blacklist_user")
-
-
-    
+    path('api/admin/blacklist-user', BlackListUser.as_view(), name="blacklist_user"),
+    path('api/admin/send-sms', SendSMS.as_view(), name="admin_send_sms"),
+    path('api/admin/export-user', ExportUserList.as_view(), name="export_user")
 ]

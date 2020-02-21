@@ -75,7 +75,7 @@
 
     <div class="tab-content wrapper" style="width: 99%">
         <div id="active-account" class="tab-pane fade in active">
-            <table class="custom-user">
+            <table class="custom-user" id="user_list_table">
             <!-- <table style='overflow-x: scroll;'> -->
                 <thead class="thead-dark">
                     <tr>
@@ -335,9 +335,12 @@
     </div>
 </div>
 <div class="row user-list-control-group">
-    <!-- <div class="bottom-align-text"> -->
-    <div class='col-md-9' style="margin-right: 70px"></div>
-    <div class='col-md-1' style="width:10%">
+    <div class='col-md-1'>
+        <div>&nbsp;</div>
+        <button class="btn btn-primary" onclick="exportUserList();">Export</button>
+    </div>
+    <div class='col-md-9' style="margin-right: 70px; width: 62%;"></div>
+    <div class='col-md-1' style="width:125px;">
         <div>SHOW ROWS</div>
         <select id="pagination_value"  class="form-control">
             <option value="20">20</option>
@@ -346,7 +349,7 @@
             <option value="250">250</option>
         </select>
     </div>
-    <div class='col-md-1'>
+    <div class='col-md-1' style="width:10%">
         <div>&nbsp;</div>
         <ul class="pagination" style="margin:0px;">
             {% if isFirstPage is True %}
@@ -774,6 +777,63 @@ function getUserListRedirectUrl(pageSize, offset, status, search) {
     redirectUrl += '&status=' + status;
     // console.log(redirectUrl);
     return redirectUrl;
+}
+
+
+function exportUserList() {
+    var tableId = 'user_list_table';
+    var head = getTableHead(tableId);
+    var search = $('#search').val();
+    var status = $("#status-selection").val();
+    // console.log(head);
+
+    // document.location = document.location.href + '?tableHead=' + head;
+    data = {
+        'head': head,
+        'search': search,
+        'status': status
+    }
+    var url = "{% url 'export_user' %}";
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: JSON.stringify(data),
+        success: function(data)
+        {
+            // console.log(data);
+            downloadCSV(data);
+        },
+        error: function () {
+            // console.log('error');
+        }
+    });
+
+}
+
+
+function downloadCSV(csvStr) {
+
+    var hiddenElement = document.createElement('a');
+    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvStr);
+    hiddenElement.target = '_blank';
+    hiddenElement.download = 'Player List.csv';
+    hiddenElement.click();
+}
+
+
+
+
+function getTableHead(tableId) {
+    var head = [];
+    var table = document.getElementById(tableId);
+    for (var i = 0, m = table.rows[0].cells.length; i < m; i++) {
+        if (table.rows[0].cells[i].innerHTML == '4 CODE ADDRESS') {
+            head.push('PHONE', 'ADDRESS', 'ID NUMBER', 'IP ADDRESS');
+        } else if (table.rows[0].cells[i].innerHTML) {
+            head.push(table.rows[0].cells[i].innerHTML);
+        }
+    }
+    return head;
 }
 
 // function getUsers(fromItem) {

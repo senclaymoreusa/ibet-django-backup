@@ -32,6 +32,7 @@ from operation.views import send_email
 from games.helper import transferRequest
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
+from operation.views import send_sms
 
 
 import requests
@@ -314,7 +315,7 @@ class UserDetailView(CommAdminView):
 
 
         userLastLogin = UserAction.objects.filter(user=customUser, event_type=0).order_by('-created_time').first()
-        login_json_obj = userLastLogin.ip_location
+        login_json_obj = userLastLogin.ip_location if userLastLogin else ""
         # print(login_json_obj)
         context['userLoginObj'] = {
             'time': userLastLogin.created_time if userLastLogin else "None",
@@ -325,7 +326,8 @@ class UserDetailView(CommAdminView):
         context['loginCount'] = UserAction.objects.filter(user=customUser, event_type=0).count()
         context['activeTime'] = GameBet.objects.filter(user=customUser, amount_wagered__gte=0).count()
         create_account_ip =  UserAction.objects.filter(user=customUser, event_type=EVENT_CHOICES_REGISTER)
-        context['create_account_ip'] = create_account_ip.order_by('-created_time').ip_addr if len(create_account_ip) > 0 else ""
+        # print(create_account_ip)
+        context['create_account_ip'] = create_account_ip.order_by('-created_time').first().ip_addr if len(create_account_ip) > 0 else ""
 
         transaction = Transaction.objects.filter(user_id=customUser)
         if transaction.count() <= 20:
@@ -518,8 +520,13 @@ class UserDetailView(CommAdminView):
             context['user_image_log_obj'] = log_obj
 
 
-        # userJson = serializers.serialize('json', [customUser])
-        # userJson = json.loads(userJson)
+        r = RedisClient().connect()
+        redis = RedisHelper()
+        device = redis.get_devices_by_user(customUser.username)
+        device_list = []
+        while device:
+            device_list.append(device.pop().decode('utf-8'))
+        context['device_related'] = device_list
         
         return render(request, 'user_detail.html', context)
 
@@ -545,6 +552,10 @@ class UserDetailView(CommAdminView):
                 update_fields = request.POST.get('update_fields')
                 update_fields = json.loads(update_fields)
 
+                user = CustomUser.objects.get(pk=user_id)
+                before_status = user.member_status
+                after_status = ""
+
                 if len(update_fields) <= 0:
                     response = {
                         "status": True,
@@ -555,6 +566,7 @@ class UserDetailView(CommAdminView):
                 query = {}
                 system_message = ""
                 first_image_upload = False
+                status_change = False
                 for i in update_fields:
                     if i['name'] == 'reason_text':
                         continue
@@ -564,9 +576,14 @@ class UserDetailView(CommAdminView):
                         first_image_upload = True
                         # print(first_image_upload)
                         continue
-
-                    query[i['name']] = i['value']
-                    system_message += i['name'] + " change to " + i['value']
+                    if i['name'] == 'member_status':
+                        status_change = True
+                        after_status = int(i['value'])
+                        query[i['name']] = i['value']
+                        system_message += i['name'] + " change to " + str(dict(MEMBER_STATUS).get(after_status))
+                    else:
+                        query[i['name']] = i['value']
+                        system_message += i['name'] + " change to " + i['value']
 
                     
                 with transaction.atomic():
@@ -574,7 +591,7 @@ class UserDetailView(CommAdminView):
                     if user_id_img and first_image_upload:
                         self.upload_user_photo_id(username, user_id_img)
                         UserActivity.objects.create(
-                            user = CustomUser.objects.get(pk=user_id),
+                            user = user,
                             admin = request.user,
                             system_message = "Upload user ID image",
                             message = reason_text,
@@ -582,7 +599,7 @@ class UserDetailView(CommAdminView):
                         )
                     elif not user_id_img and not first_image_upload:
                         UserActivity.objects.create(
-                            user = CustomUser.objects.get(pk=user_id),
+                            user = user,
                             admin = request.user,
                             system_message = "Delete user ID image",
                             message = reason_text,
@@ -590,9 +607,17 @@ class UserDetailView(CommAdminView):
                         )
                         self.remove_user_photo_id(username)
 
-                 
+                    if status_change:
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = "Status change from " + str(dict(MEMBER_STATUS).get(before_status)) + " to " + str(dict(MEMBER_STATUS).get(after_status)),
+                            message = reason_text,
+                            activity_type = ACTIVITY_STATUS_CHANGED,
+                        )
+
                     UserActivity.objects.create(
-                        user = CustomUser.objects.get(pk=user_id),
+                        user = user,
                         admin = request.user,
                         system_message = system_message.replace("_", " ") if system_message else None,
                         message = reason_text,
@@ -816,7 +841,7 @@ class UserDetailView(CommAdminView):
                                 set_temporary_timeout(user, block_time)
                             else:
                                 set_permanent_timeout(user, block_time)
-
+                            user.member_status = MEMBER_STATUS_CLOSED
                             UserActivity.objects.create(
                                 user = user,
                                 admin = request.user,
@@ -831,12 +856,21 @@ class UserDetailView(CommAdminView):
                     else:
                         with transaction.atomic():
                             user.block = True
+                            user.member_status = MEMBER_STATUS_CLOSED
                             UserActivity.objects.create(
                                 user = user,
                                 admin = request.user,
                                 system_message = sys_message,
                                 message = reason,
                                 activity_type = ACTIVITY_CLOSE_ACCOUNT,
+                            )
+
+                            UserActivity.objects.create(
+                                user = user,
+                                admin = request.user,
+                                system_message = sys_message,
+                                message = reason,
+                                activity_type = ACTIVITY_STATUS_CHANGED,
                             )
 
                             UserActivity.objects.create(
@@ -856,6 +890,7 @@ class UserDetailView(CommAdminView):
                         # user = CustomUser.objects.filter(pk=user_id).update(block=False, temporary_block_time=None)
                         user.temporary_block_time = None
                         user.block = False
+                        user.member_status = MEMBER_STATUS_NORMAL
                         user.save()
 
                         UserActivity.objects.create(
@@ -864,6 +899,14 @@ class UserDetailView(CommAdminView):
                             system_message = "Open account",
                             message = reason,
                             activity_type = ACTIVITY_OPEN_ACCOUNT,
+                        )
+
+                        UserActivity.objects.create(
+                            user = user,
+                            admin = request.user,
+                            system_message = sys_message,
+                            message = reason,
+                            activity_type = ACTIVITY_STATUS_CHANGED,
                         )
 
                         UserActivity.objects.create(
@@ -894,17 +937,22 @@ class UserDetailView(CommAdminView):
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['source'] = user.get_user_attribute_display
-            userDict['channel'] = user.get_user_attribute_display
-            depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
-            depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
-            userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
+            userDict['status'] = user.get_member_status_display
+            # depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
+            # depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            # userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
             userDict['turnover'] = ''
             withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
             if withdrawAmount['amount__sum'] is None:
                 withdrawAmount['amount__sum'] = 0
-            userDict['withdrawal'] = withdrawAmount['amount__sum']
-            userDict['contribution'] = ''
-            userDict['riskLevel'] = 'A'
+            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
+            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            if depositAmount['amount__sum'] is None:
+                depositAmount['amount__sum'] = 0
+            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
+            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
+            userDict['riskLevel'] = user.get_risk_level_display
             accounts.append(userDict)
         return accounts
 
@@ -1024,7 +1072,7 @@ class UserListView(CommAdminView):
             userDict['username'] = user.username
             userDict['source'] = str(user.get_user_attribute_display())
             userDict['manager'] = str(user.vip_managed_by.username) if user.vip_managed_by else ""
-            userDict['risk_level'] = ''
+            userDict['risk_level'] = user.get_risk_level_display()
             userDict['balance'] = user.main_wallet + user.other_game_wallet
             userDict['product_attribute'] = ''
             userDict['time_of_registration'] = user.time_of_registration
@@ -1046,9 +1094,12 @@ class UserListView(CommAdminView):
             activeDays = int(betTims)
             userDict['active_days'] = activeDays
             userDict['member_status'] = user.get_member_status_display() if user.get_member_status_display() else ""
-            userDict['status_changed'] = user.member_changed_time if user.member_changed_time else ""
-            userDict['changed_by'] = ''
-            userDict['closure_reason'] = ''
+            status_change_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_STATUS_CHANGED).order_by('created_time').first()
+            close_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_CLOSE_ACCOUNT).order_by('created_time').first()
+            userDict['status_changed'] = status_change_obj.created_time if status_change_obj else ""
+            # userDict['status_changed'] = user.member_changed_time if user.member_changed_time else ""
+            userDict['changed_by'] = status_change_obj.admin if status_change_obj else ""
+            userDict['closure_reason'] = close_obj.system_message if close_obj and user.member_status == MEMBER_STATUS_CLOSED else ""
 
 
             userDict['last_login_time'] = user.last_login_time
@@ -1373,13 +1424,14 @@ class GetUserTransaction(View):
             user_id = request.GET.get('user_id')
             time_from = request.GET.get('from')
             time_to = request.GET.get('to')
-            pageSize = int(request.GET.get('pageSize'))
-            fromItem = int(request.GET.get('fromItem'))
+            pageSize = int(request.GET.get('pageSize')) if request.GET.get('pageSize') else ""
+            fromItem = int(request.GET.get('fromItem')) if request.GET.get('fromItem') else ""
             endItem = fromItem + pageSize
             category = request.GET.get('category')
             product = request.GET.get('product')
-            
-
+            export_title = request.GET.get('head')
+            export_type = request.GET.get('export_type')
+            customUser = CustomUser.objects.get(pk=user_id)
             if trans_type == "transaction":
                 # print(user_id, time_from, time_to, pageSize, fromItem, endItem, category, product)
 
@@ -1414,6 +1466,39 @@ class GetUserTransaction(View):
                 
 
                 all_transactions = Transaction.objects.filter(transaction_filter).order_by('-request_time')
+
+
+                if export_type and export_type == 'transaction':
+                    head = request.GET.get('head')
+                    head = json.loads(head)
+                    
+                    data_list = [head]
+
+                    for tran in all_transactions:
+                        transaction_category =  str(dict(TRANSACTION_TYPE_CHOICES).get(tran.transaction_type))
+                        product = str(dict(GAME_TYPE_CHOICES).get(tran.product))
+                        from_wallet = tran.transfer_from if tran.transfer_from else ""
+                        to_wallet = tran.transfer_to if tran.transfer_to else ""
+                        currency = str(dict(CURRENCY_CHOICES).get(tran.currency))
+                        transaction_id = tran.transaction_id
+                        balance = tran.current_balance
+                        amount = tran.amount
+                        status = tran.get_status_display()
+                        data_list.append([transaction_category,
+                                          product,
+                                          transaction_id,
+                                          from_wallet,
+                                          to_wallet,
+                                          currency,
+                                          tran.request_time,
+                                          amount,
+                                          balance,
+                                          status
+                                          ])
+
+                    return streamingExport(data_list, 'Transaction history ({})'.format(customUser.username))
+
+
                 response = {}
                 if endItem >= all_transactions.count():
                     response['isLastPage'] = True
@@ -1475,7 +1560,8 @@ class GetUserTransaction(View):
                 
                 return HttpResponse(json.dumps(response), content_type='application/json')
             else:
-                response = {}
+                export_title = request.GET.get('head')
+                export_type = request.GET.get('export_type')
 
                 bet_filter = Q(user__pk=user_id)
 
@@ -1504,6 +1590,39 @@ class GetUserTransaction(View):
                     bet_filter &= Q(category__name=product)
 
                 all_bet_objs = GameBet.objects.filter(bet_filter).order_by('-bet_time')
+
+
+                if export_type and export_type == 'bet':
+                    head = request.GET.get('head')
+                    head = json.loads(head)
+                    
+                    data_list = [head]
+
+                    for bet in all_bet_objs:
+                        transaction_category = "Bet"
+                        product = str(bet.category)
+                        # from_wallet = tran.transfer_from if tran.transfer_from else ""
+                        # to_wallet = tran.transfer_to if tran.transfer_to else ""
+                        amount_wagered = bet.amount_wagered if bet.amount_wagered else "0.0000"
+                        amount_won = bet.amount_won if bet.amount_won else "0.0000"
+                        # 'status': 'Open' if not bet.resolved_time else 'Close',
+                        time = bet.bet_time.strftime("%B %d, %Y, %I:%M %p") if bet.bet_time else ""
+                        currency = str(dict(CURRENCY_CHOICES).get(bet.currency))
+                        transaction_id = bet.transaction_id
+                        status = 'Open' if not bet.resolved_time else 'Close'
+                        data_list.append([transaction_category,
+                                          product,
+                                          transaction_id,
+                                          amount_wagered,
+                                          amount_won,
+                                          currency,
+                                          time,
+                                          status
+                                          ])
+
+                    return streamingExport(data_list, 'Bet history ({})'.format(customUser.username))
+
+
                 response = {}
                 if endItem >= all_bet_objs.count():
                     response['isLastPage'] = True
@@ -1828,7 +1947,7 @@ class BlackListUser(View):
                     UserActivity.objects.create(
                         user = blacklist_user,
                         admin = admin,
-                        system_message = "The user is being blacklist",
+                        system_message = "blacklist user",
                         message = reason,
                         activity_type = ACTIVITY_CLOSE_ACCOUNT,
                     )
@@ -1836,7 +1955,15 @@ class BlackListUser(View):
                     UserActivity.objects.create(
                         user = blacklist_user,
                         admin = admin,
-                        system_message = "The user is being blacklist",
+                        system_message = "blacklist user",
+                        message = reason,
+                        activity_type = ACTIVITY_STATUS_CHANGED,
+                    )
+
+                    UserActivity.objects.create(
+                        user = blacklist_user,
+                        admin = admin,
+                        system_message = "blacklist user",
                         message = reason,
                         activity_type = ACTIVITY_SYSTEM,
                     )
@@ -1845,6 +1972,117 @@ class BlackListUser(View):
                 "message": "finished blacklist user"
             }
             return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
-        except:
+        except Exception as e:
             logger.error("Blacklist user error: {}".format(str(e)))
             return HttpResponse(status=400)
+
+
+
+
+
+class SendSMS(View):
+
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        try:
+            message = data['message']
+            user_id = data['user_id']
+
+            customUser = CustomUser.objects.get(pk=user_id)
+
+            send_sms(message, customUser, customUser.phone)
+
+            UserActivity.objects.create(
+                user = CustomUser.objects.get(pk=user_id),
+                admin = request.user,
+                system_message = "Send SMS message to " + customUser.username,
+                activity_type = ACTIVITY_MESSAGE,
+            )
+
+            response = {
+                "message": "finished send sms to user"
+            }
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Blacklist send sms to user: {}".format(str(e)))
+            return HttpResponse(status=400)
+
+
+
+class ExportUserList(View):
+
+    def post(self, request, *args, **kwargs):
+
+        data = json.loads(request.body)
+        head = data['head']
+        search = data['search']
+        status = data['status']
+        try:
+            user_filter = Q()
+            if status and status != '-1':
+                user_filter &= Q(member_status=status)
+        
+            if search:
+                user_filter &= (Q(pk__contains=search)|Q(username__icontains=search)|Q(email__icontains=search)|Q(phone__contains=search)|Q(first_name__icontains=search)|Q(last_name__icontains=search))
+
+            customUser = CustomUser.objects.filter(user_filter).order_by('username')
+
+            user_list_data = [head]
+            for user in customUser:
+                ip_address_obj = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+                deposit_amount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+                withdrawal_amount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+                ip_address = ip_address_obj.ip_addr if ip_address_obj else ""
+                vip_manager = str(user.vip_managed_by.username) if user.vip_managed_by else ""
+                balance = user.main_wallet + user.other_game_wallet
+                ftd_time = user.ftd_time if user.ftd_time else ""
+                ftd_time_amount = user.ftd_time_amount if user.ftd_time_amount != 0 else ""
+                user_address = user.get_user_address()
+                id_number = user.id_number if user.id_number else ""
+                contribution = '{:.2f}'.format(calculateContribution(user))
+                betTimes = GameBet.objects.filter(user=user, amount_wagered__gte=0).count()
+                activeDays = int(betTimes)
+                status_change_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_STATUS_CHANGED).order_by('created_time').first()
+                close_obj = UserActivity.objects.filter(user=user, activity_type=ACTIVITY_CLOSE_ACCOUNT).order_by('created_time').first()
+                status_changed = status_change_obj.created_time if status_change_obj else ""
+                changed_by = status_change_obj.admin if status_change_obj else ""
+                closure_reason = close_obj.system_message if close_obj and user.member_status == MEMBER_STATUS_CLOSED else ""
+                user_list_data.append([user.pk,
+                                      user.username,
+                                      user.get_user_attribute_display(),
+                                      vip_manager,
+                                      user.time_of_registration,
+                                      ftd_time,
+                                      ftd_time_amount,
+                                      balance,
+                                      user.phone,
+                                      user_address,
+                                      id_number,
+                                      ip_address,
+                                      "",
+                                      "",
+                                      contribution,
+                                      activeDays,
+                                      user.get_member_status_display(),
+                                      status_changed,
+                                      changed_by,
+                                      closure_reason]
+                                    )
+
+            return streamingExport(user_list_data, 'User List')
+
+            # response = {}
+            # return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        except Exception as e:
+            logger.error("Export user list error: {}".format(str(e)))
+            return HttpResponse(status=400)
+
+
+
+
+
+def getTransaction(user):
+    
+    return data_list
