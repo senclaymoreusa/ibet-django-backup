@@ -461,7 +461,7 @@
             <div class="half-title-block" style="background-color: #ffa313;">
                 <span class="detail-title">Member details</span>
             </div>
-            <div class="row" style="margin-top:20px; min-height: 380px;">
+            <div class="row" style="margin-top:20px; min-height: 380px; height: 474px;">
                 <div class='col-md-5' style="margin-left:20px; padding-bottom: 30px;">
                     <input type="hidden" id="hidden_user_id" value="{{ customuser.pk }}"></input>
                     <div class="row">
@@ -1260,7 +1260,7 @@
                     </select>
                 </div>
             </div>
-            <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:898px;">
+            <div id="select-filter" style="border-top: 1px solid; overflow-y: auto; height:899px">
                 {% for act in activity %}
                     <div class="note-author">
                         {% if act.activity_type == 0 %}
@@ -1687,10 +1687,11 @@
         </div>
         <div class="container nav-bar">
             <ul class="nav nav-tabs ">
-                <li class="active"><a data-toggle="tab" href="#related-account">RELATED ACCOUNTS</a></li>
-                <li><a data-toggle="tab" href="#related-device">RELATED DEVICE</a></li>
-                <li><a data-toggle="tab" href="#deposit-withdraw">DEPOSIT / WITHDRAWAL</a></li>
-                <li><a data-toggle="tab" href="#winloss-bonus">WINLOSS / BONUS</a></li>
+                <li class="active"><a data-toggle="tab" href="#related-account">LINKED PLAYERS</a></li>
+                <li><a data-toggle="tab" href="#related-device">PLAYER DEVICES</a></li>
+                <li><a data-toggle="tab" href="#related-address">PLAYER ADDRESS</a></li>
+                <!-- <li><a data-toggle="tab" href="#deposit-withdraw">DEPOSIT / WITHDRAWAL</a></li>
+                <li><a data-toggle="tab" href="#winloss-bonus">WINLOSS / BONUS</a></li> -->
             </ul>
             <div class="tab-content">
                 <div id="related-account" class="tab-pane fade in active">
@@ -1699,25 +1700,25 @@
                             <tr>
                             <th scope="col">#</th>
                             <th scope="col">MEMBER</th>
-                            <th scope="col">CHANNEL</th>
                             <th scope="col">SOURCE</th>
+                            <th scope="col">STATUS</th>
+                            <th scope="col">GGR</th>
                             <th scope="col">DEPOSIT</th>
-                            <th scope="col">BONUS / TURNOVER</th>
                             <th scope="col">WITHDRAWAL</th>
                             <th scope="col">CONTRIBUTION</th>
                             <th scope="col">RISK LEVEL</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% if relativeAccount%}
+                            {% if relativeAccount %}
                                 {% for account in relativeAccount %}
                                 <tr>
                                     <td scope="row">{{ forloop.counter }}</td>
                                     <td><a href="{% url 'xadmin:user_detail' account.id %}">{{ account.username }}</td>
                                     <td>{{ account.source }}</td>
-                                    <td>{{ account.channel }}</td>
+                                    <td>{{ account.status }}</td>
+                                    <td>{{ account.ggr }}</td>
                                     <td>{{ account.deposit }}</td>
-                                    <td>{{ account.turnover }}</td>
                                     <td>{{ account.withdrawal }}</td>
                                     <td>{{ account.contribution }}</td>
                                     <td>{{ account.riskLevel }}</td>
@@ -1732,9 +1733,8 @@
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
                         <div class="transaction-control-group col-md-9" style="width: 71%"></div>
-                        <div>
+                        <!-- <div>
                             <div class='col-md-1'  style="width: 10%">
-                            <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
                                     <option value="20">20</option>
@@ -1755,40 +1755,47 @@
                                     {% endif %}
                                 </ul>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
-                <div id="related-device" class="tab-pane fade">
-                    <table class="table table-striped table-bordered">
+                <div id="related-device" class="tab-pane fade" style="margin-top:20px;">
+                    <table class="transaction-table">
                         <thead>
                             <tr>
                             <th scope="col">#</th>
                             <th scope="col">Device Number</th>
-                            <th scope="col">Location</th>
-                            <th scope="col">Count</th>
-                            <th scope="col">Percentage</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Normal</th>
+                            <th scope="col">Suspicious</th>
+                            <th scope="col">Restricted</th>
+                            <th scope="col">Closed</th>
+                            <th scope="col">Blacklisted</th>
+                            <th scope="col">Total link</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- {% for account in relativeAccount %} -->
-                            <tr>
-                                <td scope="row">{{ forloop.counter }}</td>
-                                <td>test data</td>
-                                <td>test data</td>
-                                <td>test data</td>
-                                <td>test data</td>
-                            </tr>
-                            <!-- {% endfor %} -->
+                            {% for account in device_related %}
+                                <tr>
+                                    <td scope="row">{{ forloop.counter }}</td>
+                                    <td>{{ account }}</td>
+                                    <!-- <td>{{ account }}</td>
+                                    <td>{{ account }}</td>
+                                    <td>{{ account }}</td>
+                                    <td>{{ account }}</td>
+                                    <td>{{ account }}</td>
+                                    <td>{{ account }}</td>
+                                    <td>{{ account }}</td> -->
+                                </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
-                    <div class="row">
+                    <div class="row" style="margin-bottom: 10px;">
                         <div class='col-md-1'>
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
                         <div class="transaction-control-group col-md-9" style="width: 71%;"></div>
-                        <div>
+                        <!-- <div>
                             <div class='col-md-1'  style="width: 10%;">
-                            <!-- <div class='col-md-1'> -->
                                 <input type="hidden" id="hidden_row" value="0"></input>
                                 <select id="pagination_value"  class="form-control">
                                     <option value="20">20</option>
@@ -1809,11 +1816,11 @@
                                     {% endif %}
                                 </ul>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
-                <div id="deposit-withdraw" class="tab-pane fade">
-                    <canvas id="deposit-withdraw-chart"></canvas>
+                <div id="related-address" class="tab-pane fade">
+                    <!-- <canvas id="deposit-withdraw-chart"></canvas> -->
                 </div>
                 <div id="winloss-bonus" class="tab-pane fade">
                     <canvas id="winloss-bonus"></canvas>
@@ -1860,7 +1867,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% if relativeAccount%}
+                            <!-- {% if relativeAccount%}
                                 {% for account in relativeAccount %}
                                 <tr>
                                     <td scope="row">{{ forloop.counter }}</td>
@@ -1874,7 +1881,7 @@
                                 </tr>
                                 {% endfor %}
                             {% else %}
-                            {% endif %}
+                            {% endif %} -->
                         </tbody>
                     </table>
                     <div class="row"  style="margin-bottom: 5px;">
@@ -3296,6 +3303,7 @@ $(document).ready(function() {
     });
 
     var clientHeight = $(".member-detail-rectangle").height();
+    // console.log(clientHeight);
     $(".activity-rectangle").css('height', clientHeight+1);
     $("#select-filter").css('height', clientHeight-200);
 
