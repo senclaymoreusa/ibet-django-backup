@@ -53,11 +53,11 @@ class BetSoftAuthenticate(View):
             if user.currency == CURRENCY_CNY:
                 currency = "CNY"
             elif user.currency == CURRENCY_THB:
-                currency == "THB"
+                currency = "THB"
             elif user.currency == CURRENCY_VND:
-                currency == "VND"
+                currency = "VND"
             else:
-                currency == "CNY"
+                currency = "CNY"
 
             if hash == MD5(str(token) + key):
             
@@ -479,11 +479,11 @@ class BetSoftGetInfo(View):
             if user.currency == CURRENCY_CNY:
                 currency = "CNY"
             elif user.currency == CURRENCY_THB:
-                currency == "THB"
+                currency = "THB"
             elif user.currency == CURRENCY_VND:
-                currency == "VND"
+                currency = "VND"
             else:
-                currency == "CNY"
+                currency = "CNY"
 
 
             if hash == MD5(user_id + key):

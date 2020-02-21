@@ -32,6 +32,7 @@ this_month = today.replace(day=1)
 last_month = this_month - relativedelta(months=1)
 month_before_last = this_month - relativedelta(months=2)
 
+
 # Create System User
 def createSystemUser():
     try:
@@ -469,7 +470,7 @@ def calculateContribution(user):  # Contribution: GGR x 85% - Bonus - Adjustment
     if deposit_withdraw_sum > 0:
         deposit_withdraw_sum * decimal.Decimal(0.015)
         sum -= deposit_withdraw_sum
-    
+
     return sum
 
 

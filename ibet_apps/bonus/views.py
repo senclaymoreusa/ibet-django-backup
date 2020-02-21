@@ -265,12 +265,18 @@ class BonusView(View):
                         is_tiered = True
                         bonus_number += 1
 
+                    end_time = req_data.get('end_time')
+                    if len(end_time) == 0:
+                        end_time = None
+                    else:
+                        end_time = dateToDatetime(end_time)
+
                     for i in range(0, bonus_number):
                         bonus_obj = Bonus(
                             name=req_data.get('name'),
                             description=req_data.get('description'),
                             start_time=dateToDatetime(req_data.get('start_time')),
-                            end_time=dateToDatetime(req_data.get('end_time')),
+                            end_time=end_time,
                             expiration_days=req_data.get('expiration_days'),
                             countries=req_data.get('countries'),
                             coupon_code=req_data.get('coupon_code'),

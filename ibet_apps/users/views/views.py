@@ -247,8 +247,11 @@ class RegisterView(CreateAPIView):
         else:
             return TokenSerializer(user.auth_token).data
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
+        iovation = request.data['iovationData']
         serializer = self.get_serializer(data=request.data)
+        # print(serializer)
         serializer.is_valid(raise_exception=True)
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
@@ -262,17 +265,37 @@ class RegisterView(CreateAPIView):
         try:
             with transaction.atomic():
                 # add time of registration and register event
-                rr = requests.get("https://ipapi.co/json/")
-                rrdata = rr.json()
-                try :
-                    ip = rrdata["ip"]
-                except:
-                    ip = helpers.get_client_ip(request)
+                result = iovation['result'] if 'result' in iovation else ''
+                if 'details' in iovation and 'device' in iovation['details'] and 'os' in iovation['details']['device'] and 'alias' in iovation['details']['device']:
+                    device = iovation['details']['device']['os'] 
+                    alias = iovation['details']['device']['alias'] 
+                else:
+                    device = ''
+                    alias = ''
+                if 'details' in iovation and 'device' in iovation['details'] and 'browser' in iovation['details']['device']:
+                    browser = iovation['details']['device']['browser'] 
+                else:
+                    browser = ''
+                if 'details' in iovation and 'realIp' in iovation['details'] and 'ipLocation' in iovation['details']['realIp']:
+                    ipLocation = iovation['details']['realIp']['ipLocation'] 
+                else:
+                    ipLocation = None
+                if 'details' in iovation and 'realIp' in iovation['details'] and 'address' in iovation['details']['realIp']:
+                    realIp = iovation['details']['realIp']['address'] 
+                else:
+                    realIp = helpers.get_client_ip(request)
+                otherData = iovation
+                
                 customUser.time_of_registration = timezone.now()
                 customUser.save()
                 action = UserAction(
                     user=customUser,
-                    ip_addr=ip,
+                    ip_addr=realIp,
+                    result=result,
+                    device=alias,
+                    browser=str(browser),
+                    ip_location=ipLocation,
+                    other_info=otherData,
                     event_type=EVENT_CHOICES_REGISTER,
                     created_time=timezone.now()
                 )
@@ -319,7 +342,6 @@ class RegisterView(CreateAPIView):
     @transaction.atomic
     def perform_create(self, serializer):
         user = serializer.save(self.request)
-        # print(self.request)
         if getattr(settings, 'REST_USE_JWT', False):
             self.token = jwt_encode(user)
         else:
@@ -411,10 +433,13 @@ class LoginView(GenericAPIView):
         try:
             statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
             result = self.iovationData['result'] if 'result' in self.iovationData else ''
-            if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device']:
+            
+            if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device'] and 'alias' in self.iovationData['details']['device']:
                 device = self.iovationData['details']['device']['os'] 
+                alias = self.iovationData['details']['device']['alias'] 
             else:
                 device = ''
+                alias = ''
             if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'browser' in self.iovationData['details']['device']:
                 browser = self.iovationData['details']['device']['browser'] 
             else:
@@ -433,8 +458,8 @@ class LoginView(GenericAPIView):
             r = RedisClient().connect()
             redis = RedisHelper()
 
-            redis.set_user_by_device(self.user.username, device)
-            redis.set_device_by_user(self.user.username, device)
+            redis.set_user_by_device(self.user.username, alias)
+            redis.set_device_by_user(self.user.username, alias)
 
             
             with transaction.atomic():
@@ -442,7 +467,7 @@ class LoginView(GenericAPIView):
                     user= customUser.first(),
                     ip_addr=realIp,
                     result=result,
-                    device=device,
+                    device=alias,
                     browser=str(browser),
                     ip_location=ipLocation,
                     other_info=otherData,

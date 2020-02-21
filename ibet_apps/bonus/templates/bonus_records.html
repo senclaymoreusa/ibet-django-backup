@@ -93,7 +93,7 @@
                         <input class="bonus-duration-title" value="From" disabled>
                         <input id="bonus-start-time" name="bonus-start-time" type="text" required style="width:100px;">
                         <input class="bonus-duration-title" value="To" disabled>
-                        <input id="bonus-end-time" name="bonus-end-time" type="text" required style="width:100px;">
+                        <input id="bonus-end-time" name="bonus-end-time" type="text" style="width:100px;">
                     </div>
                     <br>
                     <div class="new-bonus-btn-group">
@@ -449,50 +449,73 @@
 
                         <div id="turnover-percentage" class="deposit-amount-type up-arrow" style="display: none">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     MINIMUM TURNOVER*
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-2">
+                                    WAGERING MULTIPLE*
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <input type="number" id="tp-min" style="width: 115px;" required>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <input type="number" id="tp-percentage" style="width:80px;" required>
                                     <input class="disabled-input" disabled value="%">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" id="tp-multiple" style="width:80px;" required>
+                                    <input class="disabled-input" disabled value="X">
                                 </div>
                             </div>
                         </div>
 
                         <div id="turnover-fixed" class="deposit-amount-type up-arrow" style="display: none">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     MINIMUM TURNOVER*
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-2">
+                                    WAGERING MULTIPLE*
+                                </div>
+                                <div class="col-md-2">
+                                    WITHDRAWAL MULTIPLE*
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <input type="number" id="tf-min" style="width: 115px;" required>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <input type="number" id="tf-bonus-amount" style="width:115px;" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" id="tf-multiple" style="width:80px;" required>
+                                    <input class="disabled-input" disabled value="X">
+                                </div>
+                                <div class="col-md-2">
+                                    <input id="tf-withdrawal-limit" class="disabled-input" disabled value="" style="width:135px;">
                                 </div>
                             </div>
                         </div>
 
-                        <div id="turnover-tiered" class="deposit-amount-type up-arrow" style="display: none; width: 500px; padding: 20px 0 20px 30px;">
+                        <div id="turnover-tiered" class="deposit-amount-type up-arrow" style="display: none; width: 500px; padding: 20px 50px 20px 70px;">
                             <div class="row">
                                 <div class="col-md-2" style="width: 110px;">
                                     MINIMUM TURNOVER*
                                 </div>
                                 <div class="col-md-2" style="width: 120px;">
                                     BONUS AMOUNT*
+                                </div>
+                                <div class="col-md-2" style="width: 120px;">
+                                    WAGERING MULTIPLE*
                                 </div>
                             </div>
 
@@ -503,6 +526,10 @@
                                 </div>
                                 <div class="col-md-2" style="width: 120px;">
                                     <input type="number" class="tt-percentage" style="width:77px;" value = "{{ i.1 }}" disabled disabled>
+                                    <input class="disabled-input" disabled value="%" style="width:33px;">
+                                </div>
+                                <div class="col-md-2" style="width: 120px;">
+                                    <input type="number" class="tt-wager" style="width:77px;" value = "{{ i.2 }}" disabled disabled>
                                     <input class="disabled-input" disabled value="%" style="width:33px;">
                                 </div>
                             </div>
