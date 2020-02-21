@@ -26,7 +26,7 @@ import json
 from rest_framework.authtoken.models import Token
 from Crypto import Random
 from Crypto.Cipher import AES, DES3
-from Crypto.Util.Padding import pad
+# from Crypto.Util.Padding import pad
 import xmltodict
 import base64
 import pytz
