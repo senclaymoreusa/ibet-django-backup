@@ -22,7 +22,7 @@ class Bonus(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField(null=True)
     start_time = models.DateTimeField('Start Time', blank=False)
-    end_time = models.DateTimeField('End Time', blank=False)
+    end_time = models.DateTimeField('End Time', blank=False, null=True)
     expiration_days = models.IntegerField(null=True)
     status = models.SmallIntegerField(choices=BONUS_STATUS_CHOICES, default=0, verbose_name=_('Bonus Status'))
     ## A comma-separated list of country IDs where this bonus is applicable
