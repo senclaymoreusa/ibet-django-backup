@@ -583,7 +583,7 @@ class UserDetailView(CommAdminView):
                         system_message += i['name'] + " change to " + str(dict(MEMBER_STATUS).get(after_status))
                     else:
                         query[i['name']] = i['value']
-                        system_message += i['name'] + " change to " + i['value']
+                        system_message += i['name'] + " change to " + i['value'] + " "
 
                     
                 with transaction.atomic():

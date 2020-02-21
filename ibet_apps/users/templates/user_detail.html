@@ -1030,7 +1030,7 @@
                             </div>
                             <!-- related_user_data -->
 
-                            <table id="black-list-table" class="blacklistRadio" >
+                            <table id="black-list-table" class="blacklistRadio transaction-table" >
                                 <thead>
                                     <tr>
                                     <th scope="col">ALL<input type="radio" id="radioAll" value="all"></th>
@@ -2618,7 +2618,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
@@ -3089,26 +3088,6 @@ $(document).ready(function() {
         } 
         return 'N/A';
     }
-
-    var ctx = document.getElementById('deposit-withdraw-chart');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'bar',
-
-        // The data for our dataset
-        data: {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-            datasets: [{
-                label: 'My First dataset',
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: [0, 10, 5, 2, 20, 30, 45]
-            }]
-        },
-        // Configuration options go here
-        options: {}
-    });
-
 
     var data = '[{ "value": 0, "text": "GB SPORTS", "continent": "PRODUCT" }, { "value": 1, "text": "EZ SPORTS", "continent": "PRODUCT" }, { "value": 2, "text": "GAMES", "continent": "PRODUCT" }, { "value": 3, "text": "LOTTO", "continent": "PRODUCT" }, { "value": 4, "text": "LIVE CASINO", "continent": "PRODUCT" }]';
 
@@ -3933,7 +3912,7 @@ function renderChart(data) {
           
         }
 
-        new Chartist.Pie('#chart5', data1, option1);
+        new Chartist.Pie('#chart5', data1, option1); 
         var content = '';
         content += '<div class="col-md-2" style="width: 20%; padding-left:0px"><div><span class="dot mainWallet"></span>Main</div><div><span class="dot onebookWallet"></span>Onebook</div><div><span class="dot PTWallet"></span>PT</div><div><span class="dot AGWallet"></span>AG</div><div><span class="dot KYWallet"></span>KY</div></div><div class="col-md-4" style="width: 30%; padding-left:0px">';
         content += '<div>' + amountMap['mainValue'] + ' (' + walletMap['mainValue']  + '%)' + '</div><div>'  + amountMap['OnebookValue'] + ' (' + walletMap['OnebookValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' +'</div><div>' + amountMap['AGValue'] + ' (' + walletMap['AGValue']  + '%)' + '</div></div>';
