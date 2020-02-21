@@ -520,8 +520,13 @@ class UserDetailView(CommAdminView):
             context['user_image_log_obj'] = log_obj
 
 
-        # userJson = serializers.serialize('json', [customUser])
-        # userJson = json.loads(userJson)
+        r = RedisClient().connect()
+        redis = RedisHelper()
+        device = redis.get_devices_by_user(customUser.username)
+        device_list = []
+        while device:
+            device_list.append(device.pop().decode('utf-8'))
+        context['device_related'] = device_list
         
         return render(request, 'user_detail.html', context)
 
@@ -932,17 +937,22 @@ class UserDetailView(CommAdminView):
             userDict['id'] = user.pk
             userDict['username'] = user.username
             userDict['source'] = user.get_user_attribute_display
-            userDict['channel'] = user.get_user_attribute_display
-            depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
-            depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
-            userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
+            userDict['status'] = user.get_member_status_display
+            # depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
+            # depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            # userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
             userDict['turnover'] = ''
             withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
             if withdrawAmount['amount__sum'] is None:
                 withdrawAmount['amount__sum'] = 0
-            userDict['withdrawal'] = withdrawAmount['amount__sum']
-            userDict['contribution'] = ''
-            userDict['riskLevel'] = 'A'
+            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
+            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            if depositAmount['amount__sum'] is None:
+                depositAmount['amount__sum'] = 0
+            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
+            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
+            userDict['riskLevel'] = user.get_risk_level_display
             accounts.append(userDict)
         return accounts
 

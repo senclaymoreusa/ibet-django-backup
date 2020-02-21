@@ -266,10 +266,12 @@ class RegisterView(CreateAPIView):
             with transaction.atomic():
                 # add time of registration and register event
                 result = iovation['result'] if 'result' in iovation else ''
-                if 'details' in iovation and 'device' in iovation['details'] and 'os' in iovation['details']['device']:
-                    device = iovation['details']['device']['os'] 
+                if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device'] and 'alias' in self.iovationData['details']['device']:
+                    device = self.iovationData['details']['device']['os'] 
+                    alias = self.iovationData['details']['device']['alias'] 
                 else:
                     device = ''
+                    alias = ''
                 if 'details' in iovation and 'device' in iovation['details'] and 'browser' in iovation['details']['device']:
                     browser = iovation['details']['device']['browser'] 
                 else:
@@ -290,7 +292,7 @@ class RegisterView(CreateAPIView):
                     user=customUser,
                     ip_addr=realIp,
                     result=result,
-                    device=device,
+                    device=alias,
                     browser=str(browser),
                     ip_location=ipLocation,
                     other_info=otherData,
@@ -431,10 +433,13 @@ class LoginView(GenericAPIView):
         try:
             statedIp = self.iovationData['statedIp'] if 'statedIp' in self.iovationData else ''
             result = self.iovationData['result'] if 'result' in self.iovationData else ''
-            if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device']:
+            
+            if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device'] and 'alias' in self.iovationData['details']['device']:
                 device = self.iovationData['details']['device']['os'] 
+                alias = self.iovationData['details']['device']['alias'] 
             else:
                 device = ''
+                alias = ''
             if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'browser' in self.iovationData['details']['device']:
                 browser = self.iovationData['details']['device']['browser'] 
             else:
@@ -453,8 +458,8 @@ class LoginView(GenericAPIView):
             r = RedisClient().connect()
             redis = RedisHelper()
 
-            redis.set_user_by_device(self.user.username, device)
-            redis.set_device_by_user(self.user.username, device)
+            redis.set_user_by_device(self.user.username, alias)
+            redis.set_device_by_user(self.user.username, alias)
 
             
             with transaction.atomic():
@@ -462,7 +467,7 @@ class LoginView(GenericAPIView):
                     user= customUser.first(),
                     ip_addr=realIp,
                     result=result,
-                    device=device,
+                    device=alias,
                     browser=str(browser),
                     ip_location=ipLocation,
                     other_info=otherData,
