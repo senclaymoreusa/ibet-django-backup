@@ -236,10 +236,6 @@ $(document).ready(function() {
         var tfMultiple = $('#tf-multiple').val();
         var sum = tfBonusAmount * tfMultiple;
         var str = tfBonusAmount + " X " + tfMultiple + " = " + sum;
-        console.log(tfBonusAmount);
-        console.log(tfMultiple);
-        console.log(sum);
-        console.log(str);
         if (tfBonusAmount !== '' && tfMultiple !== '') {
             $('#tf-withdrawal-limit').prop('value', str);
         } else {
