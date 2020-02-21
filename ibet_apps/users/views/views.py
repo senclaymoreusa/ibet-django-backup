@@ -266,9 +266,9 @@ class RegisterView(CreateAPIView):
             with transaction.atomic():
                 # add time of registration and register event
                 result = iovation['result'] if 'result' in iovation else ''
-                if 'details' in self.iovationData and 'device' in self.iovationData['details'] and 'os' in self.iovationData['details']['device'] and 'alias' in self.iovationData['details']['device']:
-                    device = self.iovationData['details']['device']['os'] 
-                    alias = self.iovationData['details']['device']['alias'] 
+                if 'details' in iovation and 'device' in iovation['details'] and 'os' in iovation['details']['device'] and 'alias' in iovation['details']['device']:
+                    device = iovation['details']['device']['os'] 
+                    alias = iovation['details']['device']['alias'] 
                 else:
                     device = ''
                     alias = ''
