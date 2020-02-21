@@ -84,7 +84,7 @@ $(document).ready(function() {
     $('#export-bonus-records').click(function(){
         GetCellValues("bonus_table");
         bonusTableHead = JSON.stringify(bonusTableHead);
-        document.location = bonus_url + '?export=' + true + '&tableHead=' + bonusTableHead;
+        document.location = document.location + '?export=' + true + '&tableHead=' + bonusTableHead;
     });
 
     function GetCellValues(tableId) {
@@ -231,6 +231,22 @@ $(document).ready(function() {
         });
     });
 
+    $('#tf-bonus-amount, #tf-multiple').on('change', function(){
+        var tfBonusAmount = $('#tf-bonus-amount').val();
+        var tfMultiple = $('#tf-multiple').val();
+        var sum = tfBonusAmount * tfMultiple;
+        var str = tfBonusAmount + " X " + tfMultiple + " = " + sum;
+        console.log(tfBonusAmount);
+        console.log(tfMultiple);
+        console.log(sum);
+        console.log(str);
+        if (tfBonusAmount !== '' && tfMultiple !== '') {
+            $('#tf-withdrawal-limit').prop('value', str);
+        } else {
+            $('#tf-withdrawal-limit').prop('value', '');
+        }
+    });
+
     $('#wager-casino-times').on('change', function(){
         wagerChange(this, "casino");
     });
@@ -348,14 +364,14 @@ $(document).ready(function() {
         $('#turnover-percentage style').detach();
         $('#turnover-tiered style').detach();
         if(amountType === "percentage"){
-            $('#wager-product-reqs').css("display", "");
+//            $('#wager-product-reqs').css("display", "");
             $('#turnover-percentage').css("display", "");
             $('#turnover-percentage').append('<style>.up-arrow:before{left:125px;}</style>');
             $('#turnover-percentage').append('<style>.up-arrow:after{left:126px;}</style>');
             $('#turnover-fixed').css("display", "none");
             $('#turnover-tiered').css("display", "none");
         }else if(amountType === "fixed"){
-            $('#wager-product-reqs').css("display", "");
+//            $('#wager-product-reqs').css("display", "");
             $('#turnover-percentage').css("display", "none");
             $('#turnover-tiered').css("display", "none");
             $('#turnover-fixed').append('<style>.up-arrow:before{left:306px;}</style>');
@@ -665,11 +681,13 @@ $(document).ready(function() {
             }else if(turnoverChoice === "provider"){
                 triggerSubType = providerChosen;
             }
+            $('#wager-req-01').css("display", "none");
+            $('#wager-req-02').css("display", "none");
             $('#bonus-amount-verification').css("display", "none");
             $('#bonus-amount-detail').css("display", "none");
             $('#wager-product-reqs').css("display", "none");
-            $('#bonus-amount-detail-02, .wager-req-02').css("display", "none");
-            $('#bonus-amount-detail-03, .wager-req-01').css("display", "");
+            $('#bonus-amount-detail-02').css("display", "none");
+            $('#bonus-amount-detail-03').css("display", "");
         }
 
         if(typeof triggerType === typeof undefined || typeof triggerSubType === typeof undefined || triggerSubType === null) {
@@ -743,11 +761,11 @@ $(document).ready(function() {
                     }
                 }
             }else if(triggerType == "turnover"){
-                //deposit bonus check
-                if(emptyAmount.length > 0 || emptyWager.length > 0){
-                    showErrorMsg(this);
-                    turnoverEmpty = true;
-                }
+                //turnover bonus check
+//                if(emptyAmount.length > 0 || emptyWager.length > 0){
+//                    showErrorMsg(this);
+//                    turnoverEmpty = true;
+//                }
                 if(turnoverEmpty === false ){
                     removeErrorMsg(this);
                     if(bonusAmountList[0]['amount_type'] === "tiered"){

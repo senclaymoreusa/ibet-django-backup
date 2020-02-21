@@ -26,7 +26,7 @@ class BonusRecordsView(CommAdminView):
         context['must_have'] = BONUS_MUST_HAVE
         context['deposit_tiered_amount'] = DEPOSIT_TIERED_AMOUNTS
         # TODO: needs update
-        context['turnover_tiered_amount'] = [[11, 11], [22, 22], [33, 33], [44, 44]]
+        context['turnover_tiered_amount'] = [[11, 11, 1], [22, 22, 2], [33, 33, 3], [44, 44, 4]]
 
         return render(request, "bonus_records.html", context)
 

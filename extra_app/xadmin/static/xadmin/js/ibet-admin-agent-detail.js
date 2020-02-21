@@ -44,7 +44,7 @@
                 },
                 "lengthMenu": "_MENU_",
             },
-            dom: '<<t>Bpil>',
+            dom: '<<t>pil>',
             "columnDefs": [
                 {
                     "orderable": false,
@@ -399,9 +399,31 @@
             } else {
                 $('#system_commission_levels').css('display', 'none');
                 $('#personal_commission_levels').css('display', '');
-
             }
         });
+
+        // export affiliate performance table
+        var performanceTableHead = [];
+
+        $('#export-downline-list').click(function(){
+            GetCellValues("downline-list-table");
+            performanceTableHead = JSON.stringify(performanceTableHead);
+            document.location = document.location.href
+            + '?exportDownline=' + true
+            + '&downlineTableHead=' + performanceTableHead
+            + '&affiliateId=' + affiliate_id
+            + '&accountType' + function() {var type=$('#account_type_filter :selected').val(); return type;}
+            + '&channel' + function() {var type=$('#channel_filter :selected').val(); return channel;}
+            + '&minDate' + function () { return $('#min_date').val(); },
+            + '&dmaxDate' + function () { return $('#max_date').val(); };
+        });
+
+        function GetCellValues(tableId) {
+            var table = document.getElementById(tableId);
+            for (var i = 0, m = table.rows[0].cells.length; i < m; i++) {
+                performanceTableHead.push(table.rows[0].cells[i].innerHTML);
+            }
+        }
 
     });
 
