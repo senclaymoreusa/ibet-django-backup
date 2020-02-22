@@ -1030,7 +1030,7 @@
                             </div>
                             <!-- related_user_data -->
 
-                            <table id="black-list-table" class="blacklistRadio" >
+                            <table id="black-list-table" class="blacklistRadio transaction-table" >
                                 <thead>
                                     <tr>
                                     <th scope="col">ALL<input type="radio" id="radioAll" value="all"></th>
@@ -1709,7 +1709,7 @@
                             <th scope="col">RISK LEVEL</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="link-table">
                             {% if relativeAccount %}
                                 {% for account in relativeAccount %}
                                 <tr>
@@ -1733,10 +1733,10 @@
                             <button class="btn btn-primary"><span>Export</span></button>
                         </div>
                         <div class="transaction-control-group col-md-9" style="width: 71%"></div>
-                        <!-- <div>
+                        <div>
                             <div class='col-md-1'  style="width: 10%">
-                                <input type="hidden" id="hidden_row" value="0"></input>
-                                <select id="pagination_value"  class="form-control">
+                                <input type="hidden" id="link_hidden_row" value="0"></input>
+                                <select id="link_pagination_value"  class="form-control">
                                     <option value="20">20</option>
                                     <option value="50">50</option>
                                     <option value="100">100</option>
@@ -1745,17 +1745,17 @@
                             </div>
                             <div class='col-md-1'  style="width: 10%">
                                 <ul class="pagination" style="margin:0px;">
-                                    <li class="page-item disabled" id='previousPage'>
-                                    <a class="page-link" href="javascript:getPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
+                                    <li class="page-item disabled" id='linkPreviousPage'>
+                                    <a class="page-link" href="javascript:linkGetPrevious();" tabindex="-1"><i class='fas fa-caret-left'></i></a>
                                     </li>
-                                    {% if isLastPage is True %}
-                                    <li class="page-item disabled" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                    {% if relative_last is True %}
+                                    <li class="page-item disabled" id='linkNextPage'><a class="page-link" href="javascript:linkGetNext();"><i class='fas fa-caret-right'></i></a></li>
                                     {% else %}
-                                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:getNext();"><i class='fas fa-caret-right'></i></a></li>
+                                    <li class="page-item" id='nextPage'><a class="page-link" href="javascript:linkGetNext();"><i class='fas fa-caret-right'></i></a></li>
                                     {% endif %}
                                 </ul>
                             </div>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
                 <div id="related-device" class="tab-pane fade" style="margin-top:20px;">
@@ -2618,7 +2618,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.js"></script>
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/js/bootstrap-datetimepicker.min.js"></script> -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-tagsinput/0.8.0/bootstrap-tagsinput.css" crossorigin="anonymous"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/corejs-typeahead/1.2.1/typeahead.bundle.js"></script>
@@ -3090,26 +3089,6 @@ $(document).ready(function() {
         return 'N/A';
     }
 
-    var ctx = document.getElementById('deposit-withdraw-chart');
-    var chart = new Chart(ctx, {
-        // The type of chart we want to create
-        type: 'bar',
-
-        // The data for our dataset
-        data: {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-            datasets: [{
-                label: 'My First dataset',
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
-                data: [0, 10, 5, 2, 20, 30, 45]
-            }]
-        },
-        // Configuration options go here
-        options: {}
-    });
-
-
     var data = '[{ "value": 0, "text": "GB SPORTS", "continent": "PRODUCT" }, { "value": 1, "text": "EZ SPORTS", "continent": "PRODUCT" }, { "value": 2, "text": "GAMES", "continent": "PRODUCT" }, { "value": 3, "text": "LOTTO", "continent": "PRODUCT" }, { "value": 4, "text": "LIVE CASINO", "continent": "PRODUCT" }]';
 
     //get data pass to json
@@ -3400,7 +3379,81 @@ $(document).ready(function() {
             }
         });
     });
+
+
+    linkGetNext = function() {
+        if ($('#linkNextPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = $("#link_pagination_value").val();
+        var oldFromItem = $('#link_hidden_row').val();
+        var newFromItem = Number(oldFromItem) + Number(pageSize);
+        $('#link_hidden_row').val(newFromItem);
+        getLinked(newFromItem);
+       
+    }
+
+    linkGetPrevious = function () {
+        if ($('#linkPreviousPage').hasClass('disabled')) {
+            return;
+        }
+        var pageSize = $('#link_pagination_value').val();
+        var oldFromItem = $('#link_hidden_row').val();
+        var newFromItem = Number(oldFromItem) - Number(pageSize);
+        $('#link_hidden_row').val(newFromItem);
+        getLinked(newFromItem);
+    }
 });
+
+
+
+function getLinked(fromItem) {
+
+var user_id = $('#hidden_user_id').val();
+var pageSize = $("#pagination_value").val();
+
+$.ajax({
+    type:'GET',
+    url:"{% url 'related_link' %}",
+    data:{ 
+        'user_id': user_id,
+        'offset': fromItem,
+        'pageSize': pageSize,
+    },
+    success:function(data) {
+        
+        if (data['isLast']) {
+            $('#linkNextPage').addClass('disabled');
+        } else {
+            $('#linkNextPage').removeClass('disabled');
+        }
+        if (data['isFirst']) {
+            $('#linkPreviousPage').addClass('disabled');
+        } else {
+            $('#linkPreviousPage').removeClass('disabled');
+        }
+
+        data = data['data'];
+        $("#link-table").empty();
+        for (var i = 0; i < data.length; i++) {
+            var content = '';
+            content += '<tr>';
+            content += '<td>' + i + '</td>';
+            content += '<td><a href="/xadmin/userdetail/' + data[i].pk + '/">' + data[i].username + '</a></td>';
+            content += '<td>' + data[i].source + '</td>';
+            content += '<td>' + data[i].status + '</td>';
+            content += '<td>' + data[i].ggr + '</td>';
+            content += '<td>' + data[i].deposit + '</td>';
+            content += '<td>' + data[i].withdrawal + '</td>';
+            content += '<td>' + data[i].contribution + '</td>';
+            content += '<td>' + data[i].riskLevel + '</td>';
+            content += '</tr>';
+            $("#link-table").append(content);
+        }
+    }
+});
+}
+
 
 function checkDiff(before, after) {
     var whatsChanged = [];
@@ -3933,7 +3986,7 @@ function renderChart(data) {
           
         }
 
-        new Chartist.Pie('#chart5', data1, option1);
+        new Chartist.Pie('#chart5', data1, option1); 
         var content = '';
         content += '<div class="col-md-2" style="width: 20%; padding-left:0px"><div><span class="dot mainWallet"></span>Main</div><div><span class="dot onebookWallet"></span>Onebook</div><div><span class="dot PTWallet"></span>PT</div><div><span class="dot AGWallet"></span>AG</div><div><span class="dot KYWallet"></span>KY</div></div><div class="col-md-4" style="width: 30%; padding-left:0px">';
         content += '<div>' + amountMap['mainValue'] + ' (' + walletMap['mainValue']  + '%)' + '</div><div>'  + amountMap['OnebookValue'] + ' (' + walletMap['OnebookValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' + '</div><div>'+ amountMap['PTValue'] + ' (' + walletMap['PTValue']  + '%)' +'</div><div>' + amountMap['AGValue'] + ' (' + walletMap['AGValue']  + '%)' + '</div></div>';
@@ -4080,9 +4133,6 @@ function postSubmitTransfer(data) {
         }
     });
 }
-
-
-
 
 
 // product data

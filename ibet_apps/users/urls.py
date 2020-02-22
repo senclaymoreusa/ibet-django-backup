@@ -103,5 +103,6 @@ urlpatterns += [
     path('api/admin/user-transfer', UserTransfer.as_view(), name="user_transfer"),
     path('api/admin/blacklist-user', BlackListUser.as_view(), name="blacklist_user"),
     path('api/admin/send-sms', SendSMS.as_view(), name="admin_send_sms"),
-    path('api/admin/export-user', ExportUserList.as_view(), name="export_user")
+    path('api/admin/export-user', ExportUserList.as_view(), name="export_user"),
+    path('api/admin/get-related-link', RelatedAccount.as_view(), name="related_link")
 ]
