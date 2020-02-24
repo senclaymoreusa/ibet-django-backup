@@ -3,7 +3,7 @@ import logging
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.views import View
-from games.models import Game, GameProvider, Category
+from games.models import Game, GameProvider, Category, CMSTag
 from games.serializers import GameSerializer, CategorySerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 # Create your views here.
@@ -260,3 +260,32 @@ class GetHotGame(View):
 
 
 
+class GetBanners(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            category = request.GET.get('category')
+            filter = Q()
+            if category == "home":
+                filter &= Q(category=0)
+            
+            res = CMSTag.objects.filter(filter)
+
+            data_obj = {}
+            for data in res:
+                data_obj[data.position_code] = {
+                    "image_url": data.image_url,
+                }
+
+            return JsonResponse({
+                    'success': True,
+                    'results': data_obj,
+                    # 'full_raw_data': list(res.values())
+                })
+        except Exception as e:
+            logger.error("(Error) Getting hot games error: ", e)
+            return JsonResponse({
+                'success': False,
+                'message': "There is something wrong"
+            })

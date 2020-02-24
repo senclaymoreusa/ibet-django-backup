@@ -1720,3 +1720,11 @@ IMES_PROVIDER = "IMES"
 BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
 BTI_AGENT_USERNAME = keys["BTI"]["USERNAME"]
 BTI_AGENT_PW = keys["BTI"]["PASSWORD"]
+
+
+CMS_CATEGORY = (
+    (0, "Home Banner"),
+    (1, "Live Casino Banner"),
+    (2, "Casino Banner"),
+    (3, "Bonus")
+)
