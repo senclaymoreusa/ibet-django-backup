@@ -354,6 +354,14 @@ ACTIVITY_TYPE = (
 )
 
 
+USER_ATTRIBUTE = (
+    (0, _('Direct User')),
+    (1, _('User from Promo')),
+    (2, _('Advertisements'))
+)
+
+
+
 MEMBER_STATUS_NORMAL = 0
 MEMBER_STATUS_SUSPICIOUS = 1
 MEMBER_STATUS_RESTRICTED = 2

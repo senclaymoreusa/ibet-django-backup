@@ -1695,7 +1695,7 @@
             </ul>
             <div class="tab-content">
                 <div id="related-account" class="tab-pane fade in active">
-                    <table class="table table-striped table-bordered">
+                    <table class="table table-striped table-bordered" id="related-account-table">
                         <thead>
                             <tr>
                             <th scope="col">#</th>
@@ -1730,7 +1730,7 @@
                     </table>
                     <div class="row" style="margin-bottom: 10px;">
                         <div class='col-md-1'>
-                            <button class="btn btn-primary"><span>Export</span></button>
+                            <button class="btn btn-primary" onclick="exportLinkedPlayer();">Export</button>
                         </div>
                         <div class="transaction-control-group col-md-9" style="width: 71%"></div>
                         <div>
@@ -3677,6 +3677,31 @@ function exportTransaction() {
             downloadCSV(data, filename);
         }
     });
+}
+
+
+function exportLinkedPlayer() {
+
+    var tableId = 'related-account-table';
+    var user_id = $('#hidden_user_id').val();
+    var head = getTableHead(tableId);
+    head = head.slice(1, head.length);
+    $.ajax({
+        type:'GET',
+        url:"{% url 'related_link' %}",
+        data:{ 
+            'user_id': user_id,
+            'head': JSON.stringify(head),
+        },
+        success:function(data) {
+
+            var username = $('#user-username').text();
+            var filename = "Linked player(" + username + ")";
+            downloadCSV(data, filename);
+        }
+    });
+
+
 }
 
 

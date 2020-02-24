@@ -82,12 +82,7 @@ class CustomUser(AbstractBaseUser):
     core implementation of the User model and features such as hashed passwords.
     The primary attributes of a user are username, password, email, and first & last name.
     """
-    USER_ATTRIBUTE = (
-        (0, _('Direct User')),
-        (1, _('User from Promo')),
-        (2, _('Advertisements'))
-    )
-
+    
     LANGUAGE = (
         ('English', 'English'),
         ('Chinese', 'Chinese'),
