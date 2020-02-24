@@ -33,7 +33,6 @@ from games.helper import transferRequest
 from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
 from operation.views import send_sms
-from django.core.paginator import Paginator
 
 import requests
 import logging
@@ -2060,75 +2059,112 @@ class ExportUserList(View):
 
 def account_by_ip(userIp, username, start, pageSize):
     relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
-
-    isFirstPage = False
-    isLastPage = False
-    if start == 0:
-        isFirstPage = True
-
-    end = start+pageSize
-    if len(relative_account) <= end:
-        isLastPage = True
-    
-    relative_account = relative_account[start:end]
     accounts = []
-    for item in relative_account:
-        userDict = {}
-        # user = CustomUser.objects.get(username=i.user)
-        user = CustomUser.objects.get(pk=item['user_id'])
-        userDict['id'] = user.pk
-        userDict['username'] = user.username
-        userDict['source'] = user.get_user_attribute_display
-        userDict['status'] = user.get_member_status_display
-        # depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
-        # depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
-        # userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
-        userDict['turnover'] = ''
-        withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
-        if withdrawAmount['amount__sum'] is None:
-            withdrawAmount['amount__sum'] = 0
-        userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
-        depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
-        if depositAmount['amount__sum'] is None:
-            depositAmount['amount__sum'] = 0
-        userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
-        userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
-        userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
-        userDict['riskLevel'] = user.get_risk_level_display
-        accounts.append(userDict)
+    if start == -1:
+        for item in relative_account:
+            userDict = {}
+            # user = CustomUser.objects.get(username=i.user)
+            user = CustomUser.objects.get(pk=item['user_id'])
+            userDict['id'] = str(user.pk)
+            userDict['username'] = str(user.username)
+            userDict['source'] = str(dict(USER_ATTRIBUTE).get(user.user_attribute))
+            userDict['status'] = str(dict(MEMBER_STATUS).get(user.member_status))
+            userDict['turnover'] = ''
+            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+            if withdrawAmount['amount__sum'] is None:
+                withdrawAmount['amount__sum'] = 0
+            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
+            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            if depositAmount['amount__sum'] is None:
+                depositAmount['amount__sum'] = 0
+            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
+            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
+            userDict['riskLevel'] = str(dict(RISK_LEVEL).get(user.risk_level))
+            accounts.append(userDict)
+        return accounts
+    else:
+        isFirstPage = False
+        isLastPage = False
+        if start == 0:
+            isFirstPage = True
 
-    # print(isFirstPage, isLastPage)
-    return accounts, isFirstPage, isLastPage
+        end = start+pageSize
+        if len(relative_account) <= end:
+            isLastPage = True
+        
+        relative_account = relative_account[start:end]
+        accounts = []
+        for item in relative_account:
+            userDict = {}
+            # user = CustomUser.objects.get(username=i.user)
+            user = CustomUser.objects.get(pk=item['user_id'])
+            userDict['id'] = user.pk
+            userDict['username'] = user.username
+            userDict['source'] = user.get_user_attribute_display
+            userDict['status'] = user.get_member_status_display
+            # depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
+            # depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            # userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
+            userDict['turnover'] = ''
+            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+            if withdrawAmount['amount__sum'] is None:
+                withdrawAmount['amount__sum'] = 0
+            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
+            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            if depositAmount['amount__sum'] is None:
+                depositAmount['amount__sum'] = 0
+            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
+            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
+            userDict['riskLevel'] = user.get_risk_level_display
+            accounts.append(userDict)
 
-
-
-
-
+        # print(isFirstPage, isLastPage)
+        return accounts, isFirstPage, isLastPage
 
 
 class RelatedAccount(View):
 
     def get(self, request, *args, **kwargs):
-
-        pageSize = request.GET.get('pageSize')
-        offset = request.GET.get('offset')
+        head = request.GET.get('head')
         user_id = request.GET.get('user_id')
-        user = CustomUser.objects.filter(pk=user_id)
-
-        pageSize = int(pageSize)
-        offset = int(offset)
-        end = offset + pageSize
-
+        user = CustomUser.objects.get(pk=user_id)
         login_first = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+        if head:
+            head = json.loads(head)
+            list_data = [head]
+            data = account_by_ip(login_first.ip_addr, login_first.user, -1, -1)
 
-        data, is_first, is_last = account_by_ip(login_first.ip_addr, login_first.user, offset, end)
+            for i in data:
+                list_data.append([i['username'],
+                                i['source'],
+                                i['status'],
+                                i['ggr'],
+                                i['deposit'],
+                                i['withdrawal'],
+                                i['contribution'],
+                                i['riskLevel']
+                                ])
 
-        response = {
-            'data': data,
-            'isFirst': is_first,
-            'isLast': is_last
-        }
+            return streamingExport(list_data, 'Linked player')
 
-        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+        else:
+
+            pageSize = request.GET.get('pageSize')
+            offset = request.GET.get('offset')
+            pageSize = int(pageSize)
+            offset = int(offset)
+            end = offset + pageSize
+
+            data, is_first, is_last = account_by_ip(login_first.ip_addr, login_first.user, offset, end)
+
+            response = {
+                'data': data,
+                'isFirst': is_first,
+                'isLast': is_last
+            }
+
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
 
     
