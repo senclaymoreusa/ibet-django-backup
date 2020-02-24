@@ -284,7 +284,7 @@ class GetBanners(View):
                     # 'full_raw_data': list(res.values())
                 })
         except Exception as e:
-            logger.error("(Error) Getting hot games error: ", e)
+            logger.error("(Error) Getting banner error: ", e)
             return JsonResponse({
                 'success': False,
                 'message': "There is something wrong"
