@@ -28,6 +28,8 @@ from games.views.views import *
 
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
+    path('api/hotgames/', GetHotGame.as_view(), name="hot_games_search"),
+    path('api/get-banner/', GetBanners.as_view(), name="get_banner"),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),
     path('api/games-category/', GamesCategoryAPI.as_view(), name='games_category'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
