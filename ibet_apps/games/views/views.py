@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.core import serializers
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 import simplejson as json
 from django.db.models import Q, F 
 from utils.constants import *
@@ -219,3 +219,44 @@ class GamesCategoryAPI(View):
             logger.error("Error: getting all the slot category")
 
         return HttpResponse(json.dumps(res), content_type='application/json')
+
+
+class GetHotGame(View):
+
+    def get(self, request, *args, **kwargs):
+
+        try:
+            country = request.GET.get('country')
+            gameFilter = Q()
+            attr = "hot-" + country
+            gameFilter = gameFilter & Q(attribute__icontains=attr)
+            logger.info("get all hot attributes from country: " + str(country))
+
+            res = Game.objects.filter(gameFilter).order_by('name')
+
+            data_obj = []
+            for data in res:
+                obj = {
+                    "image": data.image_url,
+                    "name": data.name,
+                    "description": data.description,
+                    "description_zh": data.description_zh,
+                    "category": data.category_id.name
+                }
+                data_obj.append(obj)
+
+            return JsonResponse({
+                    'success': True,
+                    'results': data_obj,
+                    'full_raw_data': list(res.values())
+                })
+        except Exception as e:
+            logger.error("(Error) Getting hot games error: ", e)
+            return JsonResponse({
+                'success': False,
+                'message': "There is something wrong"
+            })
+
+
+
+
