@@ -26,7 +26,8 @@ import json
 from rest_framework.authtoken.models import Token
 from Crypto import Random
 from Crypto.Cipher import AES, DES3
-# from Crypto.Util.Padding import pad
+import Crypto.Util.Padding as padding
+from pkcs7 import PKCS7Encoder
 import xmltodict
 import base64
 import pytz
@@ -40,6 +41,19 @@ logger = logging.getLogger('django')
 # def pad(m):
 #     return m + chr(16 - len(m) % 16) * (16 - len(m) % 16)
 
+def pad7(text):
+    text_length = len(text)
+    amount_to_pad = AES.block_size - (text_length % AES.block_size)
+    if amount_to_pad == 0:
+        amount_to_pad = AES.block_size
+    pad = chr(amount_to_pad)
+    return text + pad * amount_to_pad
+
+
+# def unpad7(text):
+#     pad = ord(text[-1])
+#     return text[:-pad]
+
 # def unpad(ct):
 #     try:
 #         return ct[:-ord(ct[-1])]
@@ -52,6 +66,7 @@ pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 # unpad = lambda s : s[0:-ord(s[-1])]
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
+enc = PKCS7Encoder()
 
 def des3Encryption(plain_text):
     try:
@@ -84,29 +99,36 @@ def des3Decryption(cipher_text):
 
 def AESEncryption(plain_text):
     try:
+        key = "a05477c951b24cvy" + "nanrenyaoxuexida"
         key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
-        plain_text = pad(plain_text)
-        iv = Random.new().read(AES.block_size) # Random IV
+        plain_text = plain_text.encode("utf-8")
+        # iv = Random.new().read(AES.block_size) # Random IV
+        iv = "a52e615ce78c4793".encode()
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        cipher_text = cipher.encrypt(plain_text)
+        cipher_text = cipher.encrypt(padding.pad(plain_text, AES.block_size))
         
         return str(base64.b64encode(iv + cipher_text), "utf-8")
     except Exception as e:
+        print("IMES Encrypt Error: {}".format(repr(e)))
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
         return ""
 
 
 def AESDecryption(cipher_text):
     try:
+        # key = "a05477c951b24cvy" + "nanrenyaoxuexida"
         key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
+        print(len(key))
         cipher_text = base64.b64decode(cipher_text)
         iv = cipher_text[:AES.block_size]
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        # cipher = AES.new(key, AES.MODE_ECB)
-        plain_text = unpad(cipher.decrypt(cipher_text[16:]))
+        pt = cipher.decrypt(cipher_text[AES.block_size:])
+        print("pt: {}".format(pt))
+        plain_text = padding.unpad(cipher.decrypt(cipher_text[AES.block_size:]), AES.block_size)
         
         return plain_text.decode()
     except Exception as e:
+        print("IMES AES Decrypt Error: {}".format(repr(e)))
         logger.error("IMES AES Decrypt Error: {}".format(repr(e)))
         return ""
 
@@ -479,38 +501,44 @@ class InplayPostBetDetailsAPI(View):
 class TestDecryption(View):
     def get(self, request, *arg, **kwargs):
         try:
-            api_no = request.GET.get('api')
-            event_type_id = request.GET.get('EventTypeId')  # "EventTypeId": 1001,
-            member_code = request.GET.get('MemberCode')  # "MemberCode": "bae02",
-            transaction_amt = request.GET.get('TransactionAmt') # "TransactionAmt": 100.0
-            match_no = request.GET.get('MatchNo') # "MatchNo": 1688512
-            bet_detail_list = request.GET.get('BetDetailList')
+            # api_no = request.GET.get('api')
+            # event_type_id = request.GET.get('EventTypeId')  # "EventTypeId": 1001,
+            # member_code = request.GET.get('MemberCode')  # "MemberCode": "bae02",
+            # transaction_amt = request.GET.get('TransactionAmt') # "TransactionAmt": 100.0
+            # match_no = request.GET.get('MatchNo') # "MatchNo": 1688512
+            # bet_detail_list = request.GET.get('BetDetailList')
 
-            plain_json = {}
-            plain_json["EventTypeId"] = event_type_id
-            plain_json["MemberCode"] = member_code
+            # plain_json = {}
+            # plain_json["EventTypeId"] = event_type_id
+            # plain_json["MemberCode"] = member_code
 
-            if api_no == '1':
-                pass
-                # plain_json = json.dumps(plain_json)
-            elif api_no == '2':
-                plain_json["TransactionAmt"] = transaction_amt
-            elif api_no == '6':
-                plain_json["MatchNo"] = match_no
-                plain_json["BetDetailList"] = bet_detail_list
+            # if api_no == '1':
+            #     pass
+            #     # plain_json = json.dumps(plain_json)
+            # elif api_no == '2':
+            #     plain_json["TransactionAmt"] = transaction_amt
+            # elif api_no == '6':
+            #     plain_json["MatchNo"] = match_no
+            #     plain_json["BetDetailList"] = bet_detail_list
 
-            plain_json = json.dumps(plain_json)
-        
-            key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
+            # plain_json = json.dumps(plain_json)
+            
+            plain_json = "{\"EventTypeId\":1000,\"MemberCode\":\"F8IPESPYX6EIQF\"}"
+            # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
 
             cipher_json = AESEncryption(plain_json)
+            print(cipher_json)
             # cipher_json = des3Encryption(plain_json)
             # txt = request.GET.get("txt")
             # txt = txt.replace(' ', '+')
-            # plain_json = des3Decryption(cipher_json)
-            plain_json = AESDecryption(cipher_json)
+            # print(txt)
+            txt = "LQD58ubbQ8bBGvH/+4r18r74Z5NWa4IVPYZD6NJLrWx5pnPIOA0BAT4MREwU+LLX"
+            # txt = "JJQoYyblF23ze6cVfS9k0oSBdJ7zl8K6D/XNGcuGxrZrbO5a7nM+/yIpAkOzp2lvCd56uF3STTwTn3elfNmsKA=="
+            plain_json = AESDecryption(txt)
+            # plain_json = AESDecryption(cipher_json)
 
             plain_json = "".join([plain_json.rsplit("}" , 1)[0] , "}"]) 
+            print(plain_json)
 
             plain_json = json.loads(plain_json)
 
