@@ -38,7 +38,7 @@ def transfer(user, amount, fund_wallet, direction):
         "currency": user.currency
     }
     for x in range(3):
-        r = requests.post(OPUS_API_URL + key, headers=headers, data=(data))
+        r = requests.post(OPUS_API_URL + key, headers=headers, json=(data))
         rdata = r.text
         # print(rdata)
         # print(r.status_code)
