@@ -38,8 +38,12 @@ def transfer(user, amount, fund_wallet, direction):
         "currency": user.currency
     }
     for x in range(3):
-        r = requests.post(OPUS_API_URL + key, headers=headers, json=(data))
+        r = requests.post(OPUS_API_URL + key, headers=headers, json=data)
         rdata = r.text
+        if "referenceId" in rdata:
+            return CODE_SUCCESS
+        else:
+            return ERROR_CODE_FAIL
         # print(rdata)
         # print(r.status_code)
         # if r.status_code == 200:
@@ -59,13 +63,14 @@ def transfer(user, amount, fund_wallet, direction):
         #     logger.critical("OPUS:: Unable to request fund transfer.")
         #     return ERROR_CODE_FAIL
         # return CODE_SUCCESS
-        return HttpResponse(rdata)
+        #return HttpResponse(rdata)
 
 class Test(View):
     def get(self, request, *args, **kwargs):
         user = CustomUser.objects.get(pk=16)
         
         #response = createMember(user, 13, "2")
-        response = transfer(user, 100, 'main', 'IN')
+        #response = transfer(user, 100, 'main', 'IN')
+        response = transfer(user, 100, 'main', 'OUT')
         return HttpResponse(response)
     
