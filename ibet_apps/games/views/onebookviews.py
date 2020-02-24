@@ -926,6 +926,7 @@ def checkUserBalance(user):
         logger.error("ONEBOOK::Cannot create user for check user balance.")    
         return json.dumps({"balance":balance})
 class test(View):
+    permission_classes = (AllowAny,)
     def get(self, request, *args, **kwargs):
         user = CustomUser.objects.get(username="agtest1")
         

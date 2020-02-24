@@ -20,6 +20,7 @@ import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
 import games.views.ptgameviews as ptgameviews
 import games.views.aggamesviews as aggamesviews
+import games.views.opusgameviews as opusgameviews
 from games.views.views import *
 
 # from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
@@ -176,6 +177,9 @@ urlpatterns = [
     path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
     path('api/ag/test', aggamesviews.test.as_view(), name="test"),
+
+    #OPUS
+    path('api/opus/test', opusgameviews.Test.as_view(), name="test")
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)

@@ -1728,3 +1728,5 @@ CMS_CATEGORY = (
     (2, "Casino Banner"),
     (3, "Bonus")
 )
+#OPUS
+OPUS_API_URL = "http://staging-ecs-alb-2064712967.ap-northeast-1.elb.amazonaws.com/api/opus/"
