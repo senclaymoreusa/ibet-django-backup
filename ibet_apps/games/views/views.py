@@ -237,6 +237,7 @@ class GetHotGame(View):
             data_obj = []
             for data in res:
                 obj = {
+                    "game_id": data.pk,
                     "image": data.image_url,
                     "name": data.name,
                     "description": data.description,
