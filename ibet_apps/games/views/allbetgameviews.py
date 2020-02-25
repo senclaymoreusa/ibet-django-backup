@@ -179,6 +179,17 @@ class GameLaunchView(View):
             return HttpResponse("AllBet GameLaunchView Error: " + str(e))
 
 
+class NoClientBalanceView(View):
+
+    def get(self, request):
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter",
+            }
+            logger.error("AllBet BalanceView Error: attempted to retrieve balance with missing client parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
 class BalanceView(View):
     
     def get(self, request, player_account_name):

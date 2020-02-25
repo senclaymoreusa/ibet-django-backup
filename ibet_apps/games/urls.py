@@ -76,6 +76,7 @@ urlpatterns = [
 
     # AllBet
     path('api/allbet/launch', csrf_exempt(allbetgameviews.GameLaunchView.as_view()), name='allbet_launch'),
+    path('api/allbet/get_balance', csrf_exempt(allbetgameviews.NoClientBalanceView.as_view()), name='allbet_noclientbalance'),
     path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
     path('api/allbet/transfer', csrf_exempt(allbetgameviews.TransferView.as_view()), name='allbet_transfer'),
 
