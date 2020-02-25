@@ -23,7 +23,7 @@ from rest_framework.decorators import api_view, permission_classes
 logger = logging.getLogger('django')
 
 def transfer(user, amount, fund_wallet, direction):
-    trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
+    #trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))  
     headers =  {'Content-Type': 'application/json'}
     delay = 5
     success = False
@@ -44,33 +44,89 @@ def transfer(user, amount, fund_wallet, direction):
             return CODE_SUCCESS
         else:
             return ERROR_CODE_FAIL
-        # print(rdata)
-        # print(r.status_code)
-        # if r.status_code == 200:
-        #     success = True
-        #     break
-        # elif r.status_code == 204:
-        #     success = True
-        #     # Handle error
-        #     logger.info("Failed to complete a request for opus transfer...")
-        #     logger.error(rdata)
-        #     return ERROR_CODE_FAIL
-        # elif r.status_code == 500:
-        #     logger.info("Request failed {} time(s)'.format(x+1)")
-        #     logger.info("Waiting for %s seconds before retrying again")
-        #     sleep(delay)
-        # if not success:
-        #     logger.critical("OPUS:: Unable to request fund transfer.")
-        #     return ERROR_CODE_FAIL
-        # return CODE_SUCCESS
-        #return HttpResponse(rdata)
+        
+
+# class Test(View):
+#     def get(self, request, *args, **kwargs):
+#         user = CustomUser.objects.get(pk=16)
+        
+#         #response = createMember(user, 13, "2")
+#         #response = transfer(user, 100, 'main', 'IN')
+#         response = transfer(user, 100, 'main', 'OUT')
+#         return HttpResponse(response)
+
+class Login(APIView):
+    permission_classes = (AllowAny,)
+    def post(self, request, *args, **kwargs):
+        userid = request.POST["userid"]
+        language = request.POST["language"]
+        try:
+            user = CustomUser.objects.get(pk=userid)
+        except ObjectDoesNotExist:
+            logger.error("user does not exist in opus login api")
+            Response({"error":"The user does not exist in opus login api"},status=status.HTTP_400_BAD_REQUEST) 
+        headers =  {'Content-Type': 'application/json'}
+        delay = 5
+        success = False
+
+        data = {
+            "userId": user.pk,
+            "userName": user.username,
+            "language": language,
+            "currency": user.currency
+        }
+        for x in range(3):
+            r = requests.post(OPUS_API_URL + 'login', headers=headers, json=data)
+            rdata = r.json()
+            #print(rdata)
+            if rdata["result"]["url"]:
+                url = rdata["result"]["url"]
+                #print(url)
+                return Response({"URL": url},status=status.HTTP_200_OK)
+            else:
+                logger.info({"error": "we cannot get the login url for OPUS"})
+                return Response({"error": "we cannot get the login url for OPUS"},status=status.HTTP_400_BAD_REQUEST)
+
+def getBalance(user):
+    userid = user.pk
+    delay = 5
+    success = False
+    for x in range(3):
+        r = requests.get(OPUS_API_URL + 'balance/' + str(userid))
+        rdata = r.json()
+        #print(rdata)
+        if r.status_code == 200:
+            success = True
+            break
+        else:
+            logger.info("Request failed {} time(s)'.format(x+1)")
+            logger.info("Waiting for %s seconds before retrying again")
+            sleep(delay)
+    if not success:
+        logger.error("OPUS::Cannot find the data for OPUS check user balance.")
+        balance = 0.0
+        return json.dumps({"balance":balance})
+    
+    try:
+        balance = rdata['result'] 
+        
+        if balance == None:
+            balance = 0.00
+        else: 
+            balance = float(balance)
+        
+        return json.dumps({"balance":balance})
+    except:
+        balance = 0.00
+        logger.error("OPUS::Cannot find the data for OPUS check user balance.")
+        return json.dumps({"error": "Cannot find the data for OPUS check user balance.", "balance":balance})
 
 class Test(View):
     def get(self, request, *args, **kwargs):
         user = CustomUser.objects.get(pk=16)
         
-        #response = createMember(user, 13, "2")
+        response = getBalance(user)
         #response = transfer(user, 100, 'main', 'IN')
-        response = transfer(user, 100, 'main', 'OUT')
+        #response = transfer(user, 100, 'main', 'OUT')
         return HttpResponse(response)
-    
+
