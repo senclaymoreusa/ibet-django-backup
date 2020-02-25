@@ -79,10 +79,11 @@ class Login(APIView):
             r = requests.post(OPUS_API_URL + 'login', headers=headers, json=data)
             rdata = r.json()
             #print(rdata)
-            if rdata["result"]["url"]:
+            if 'url' in rdata["result"] and rdata["result"]["url"]:
                 url = rdata["result"]["url"]
+                token = rdata["result"]["token"]
                 #print(url)
-                return Response({"URL": url},status=status.HTTP_200_OK)
+                return Response({"url": url, "token": token},status=status.HTTP_200_OK)
             else:
                 logger.info({"error": "we cannot get the login url for OPUS"})
                 return Response({"error": "we cannot get the login url for OPUS"},status=status.HTTP_400_BAD_REQUEST)
