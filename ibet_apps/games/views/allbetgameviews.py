@@ -773,6 +773,25 @@ class TransferView(View):
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         try:
+            client = json.loads(request.body)["client"]
+
+            if not client:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        try:
             json_data = json.loads(request.body)
 
             client = json_data["client"]
