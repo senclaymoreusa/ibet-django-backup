@@ -27,7 +27,6 @@ from rest_framework.authtoken.models import Token
 from Crypto import Random
 from Crypto.Cipher import AES, DES3
 import Crypto.Util.Padding as padding
-from pkcs7 import PKCS7Encoder
 import xmltodict
 import base64
 import pytz
@@ -42,8 +41,6 @@ BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
 # unpad = lambda s : s[0:-ord(s[-1])]
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
-
-enc = PKCS7Encoder()
 
 def des3Encryption(plain_text):
     try:
