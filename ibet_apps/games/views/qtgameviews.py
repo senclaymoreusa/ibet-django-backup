@@ -20,7 +20,6 @@ import math
 import uuid
 import logging
 import requests
-from __builtin__ import True
 
 logger = logging.getLogger("django")
 
