@@ -20,17 +20,10 @@ import math
 import uuid
 import logging
 import requests
+from __builtin__ import True
 
 logger = logging.getLogger("django")
 
-# connect AWS S3
-# bucket = 'ibet-admin-apdev'
-# if 'ENV' in os.environ and os.environ["ENV"] == 'approd':
-#     bucket = 'ibet-admin-approd'
-# third_party_keys = getThirdPartyKeys(bucket, "config/thirdPartyKeys.json")
-# QT_PASS_KEY = third_party_keys["QTGAMES"]["PASS_KEY"]
-
-# qt = third_party_keys["QTGAMES"]
 apiUrl = qt["API"]["url"]
 
 class VerifySession(APIView):
@@ -46,51 +39,87 @@ class VerifySession(APIView):
         username = self.kwargs.get('playerId')
         status_code = 500
         code = QT_STATUS_CODE[QT_STATUS_UNKNOWN_ERROR][1]
-        message = ""
+        message = "Unexpected error"
 
         if pass_key != QT_PASS_KEY:
             status_code = 401
             code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
-            message = "The given pass-key is incorrect."
-            logger.error("Error given pass key from QT wallet!")
-        else:
-            try:
-                user = CustomUser.objects.get(username=username)
-                if user.block:
-                    status_code = 403
-                    code = QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1]
-                    message = "The player account is blocked."
-                    logger.info("Blocked user {} trying to access QT Game".format(username))
-                else:
-                    qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
-                    
-                    status_code = 200
-                    n_float = int(user.main_wallet * 100) / 100.0
-                    bal = Decimal(n_float)
-                    
-                    response = {
-                        'balance': round(bal),
-                        # TODO: needs to handle if user.currency is bitcoin
-                        'currency': CURRENCY_CHOICES[user.currency][1],
-                    }
-                    
-                    if not qt_session.valid:
-                        logger.info("Expired session-key is used for the pending transaction!")
-                    
-                    return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
-                                        content_type='application/json', status=status_code)
-                    
-                        
-            except Exception as e:
-                logger.error("Error getting user or user session " + str(e))
-
+            message = "The given pass-key is incorrect"
+            logger.error("Incorrect pass key")
+            
+            response = {
+                "code": code,
+                "message": message,
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            
+        
+        is_not_varified = False
+        
+        try:
+            user = CustomUser.objects.get(username=username)
+            
+            if user.block:
+                is_not_varified = True
+                status_code = 403
+                code = QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1]
+                message = "The player account is blocked"
+                
+                logger.error("Player {} is blocked".format(username))
+            
+        except Exception as e:
+            is_not_varified = True
+            status_code = 401
+            code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
+            message = "The player, {}, does not exist".format(username)
+            
+            logger.error(message + ": " + str(e))
+        
+        if is_not_varified:
+            response = {
+                "code": code,
+                "message": message,
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
+            qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=session))
+            
+            if not qt_session.valid:
+                is_not_varified = True
+                status_code = 400
+                code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
+                message = "Session-token is invalid!"
+                logger.error("Session-token is invalid!")
+            
+        except Exception as e:
+            is_not_varified = True
+            status_code = 400
+            code = QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1]
+            message = "Session-token is expired or missing"
+            logger.error(message + ": " + str(e))
+        
+        if is_not_varified:
+            response = {
+                "code": code,
+                "message": message,
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        
+        status_code = 200
+        n_float = int(user.main_wallet * 100) / 100.0
+        bal = Decimal(n_float)
+        
         response = {
-            "code": code,
-            "message": message,
+            'balance': round(bal),
+            'currency': CURRENCY_CHOICES[user.currency][1],
         }
-        return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
-
-
+        
+        return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder),
+                            content_type='application/json', status=status_code)
+                
+            
 class GetBalance(APIView):
     permission_classes = (AllowAny,)
 
@@ -104,53 +133,48 @@ class GetBalance(APIView):
         username = self.kwargs.get('playerId')
         status_code = 500
         code = QT_STATUS_CODE[QT_STATUS_UNKNOWN_ERROR][1]
-        message = ""
-
+        message = "Unexpected error"
+        
         if pass_key != QT_PASS_KEY:
             status_code = 401
             code = QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1]
-            message = "The given pass-key is incorrect."
-            logger.info("Error given pass key from QT wallet!")
-        else:
+            message = "The given pass-key is incorrect"
+            logger.error("Incorrect pass key")
+            
+            response = {
+                "code": code,
+                "message": message,
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
+        try:
             prov = GameProvider.objects.get(provider_name="QTech")
             cat = Category.objects.get(name='Games')
+            user = CustomUser.objects.get(username=username)
             
+            status_code = 200
+            n_float = int(user.main_wallet * 100) / 100.0
+            bal = Decimal(n_float)
+            response = {
+                'balance': round(bal),
+                'currency': CURRENCY_CHOICES[user.currency][1],
+            }
             
-            try:
-                user = CustomUser.objects.get(username=username)
-                
-                try: 
-                    qt_session = QTSession.objects.get(Q(user=user) & Q(session_key=http_session))
-                    if not qt_session.valid:
-                        message = 'Expired (wallet) session being used for getting balance!'
-                        logger.info(message) 
-                    
-                except Exception as e:
-                    message = 'Player (wallet) session missing but still used for getting balance!'
-                    logger.info(message) 
-                
-                
-                status_code = 200
-                n_float = int(user.main_wallet * 100) / 100.0
-                bal = Decimal(n_float)
-                response = {
-                    'balance': round(bal),
-                    'currency': CURRENCY_CHOICES[user.currency][1],
-                }
-                return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
-                                    status=status_code)
-
-            except Exception as e:
-                status_code = 400
-                code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
-                message = "General error. Request could not be processed."
-                logger.error("Error getting user " + str(e))
-
-        response = {
-            "code": code,
-            "message": message,
-        }
-        return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json',
+                                status=status_code)
+            
+        except Exception as e:
+            status_code = 400
+            code = QT_STATUS_CODE[QT_STATUS_REQUEST_DECLINED][1]
+            message = "General error. Request could not be processed."
+            logger.error("Error getting game category/provider/user: " + str(e))
+        
+            response = {
+                "code": code,
+                "message": message,
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
+        
 
 class GameLaunch(APIView):
 
@@ -268,7 +292,8 @@ class ProcessTransactions(APIView):
         Transactions: Deposit and Withdraw
         """
         status_code = 500
-        message = ''
+        code = QT_STATUS_CODE[QT_STATUS_UNKNOWN_ERROR][1]
+        message = "Unexpected error"
         
         http_session = request.META.get('HTTP_WALLET_SESSION')
         pass_key = request.META.get('HTTP_PASS_KEY')
@@ -279,7 +304,7 @@ class ProcessTransactions(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][3],
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1],
                 "message": message
             }
             
@@ -303,12 +328,12 @@ class ProcessTransactions(APIView):
             amount = Decimal(amount)
         except:
             status_code = 400
-            message = 'One or more required payload parameters are missing!'
+            message = 'One or more required payload parameters are missing'
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][5],
-                "message": message
+                "code": "REQUEST_DECLINED",
+                "message": "General error: " + message
             }
             
             return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
@@ -321,36 +346,35 @@ class ProcessTransactions(APIView):
             
             if not qt_session.valid:
                 status_code = 400
-                message = 'Missing, invalid or expired player (wallet) session token'
+                message = 'Invalid player (wallet) session-token'
                 logger.error(message) 
                 
                 response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][2],
+                    "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
                     "message": message
                 }
                 
                 return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
-            
+
             elif user.block:
                 status_code = 403
                 message = "The player account is blocked"
                 logger.error("Blocked user {} trying to access QT Game".format(username))
                 
                 response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][4],
+                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1],
                     "message": message
                 }
                 
                 return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
                 
-        except:
+        except Exception as e:
             status_code = 400
-            message = 'PLAYER_NOT_FOUND'
-            logger.error(message) 
-            print(message)
+            message = 'Missing, invalid or expired user/session-token'
+            logger.error(message + ": " + str(e)) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
+                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
                 "message": message
             }
             
@@ -520,7 +544,7 @@ class ProcessRollback(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][2],
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1],
                 "message": message
             }
             
@@ -544,7 +568,7 @@ class ProcessRollback(APIView):
             
         except:
             status_code = 400
-            message = 'One or more required payload parameters are missing!'
+            message = 'One or more required payload parameters are missing'
             logger.error(message) 
             
             response = {
@@ -565,7 +589,7 @@ class ProcessRollback(APIView):
                 logger.error("Blocked user {} trying to access QT Game".format(username))
                 
                 response = {
-                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][4],
+                    "code": QT_STATUS_CODE[QT_STATUS_ACCOUNT_BLOCKED][1],
                     "message": message
                 }
                 
@@ -588,7 +612,7 @@ class ProcessRollback(APIView):
             logger.error(message) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][5],
+                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
                 "message": message
             }
             
