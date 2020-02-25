@@ -26,7 +26,7 @@ import json
 from rest_framework.authtoken.models import Token
 from Crypto import Random
 from Crypto.Cipher import AES, DES3
-# from Crypto.Util.Padding import pad
+import Crypto.Util.Padding as padding
 import xmltodict
 import base64
 import pytz
@@ -36,22 +36,11 @@ from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
 
-# PKCS7
-# def pad(m):
-#     return m + chr(16 - len(m) % 16) * (16 - len(m) % 16)
-
-# def unpad(ct):
-#     try:
-#         return ct[:-ord(ct[-1])]
-#     except Exception as e:
-#         print(repr(e))
-
 # PKCS5
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
 # unpad = lambda s : s[0:-ord(s[-1])]
 unpad = lambda s: s[:-ord(s[len(s) - 1:])]
-
 
 def des3Encryption(plain_text):
     try:
@@ -64,7 +53,7 @@ def des3Encryption(plain_text):
         return str(base64.b64encode(cipher_text), "utf-8")
     except Exception as e:
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return ""
+        return "{\"\"}"
 
 
 def des3Decryption(cipher_text):
@@ -79,36 +68,44 @@ def des3Decryption(cipher_text):
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
-        return ""
+        return "{\"\"}"
 
 
 def AESEncryption(plain_text):
     try:
-        key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
-        plain_text = pad(plain_text)
-        iv = Random.new().read(AES.block_size) # Random IV
+        key = IMES_KEY + "nanrenyaoxuexida"
+        # key = hashlib.md5(key.encode("utf-8")).digest()
+        key = key.encode('utf-8')
+        plain_text = plain_text.encode('utf-8')
+        # iv = Random.new().read(AES.block_size) # Random IV
+        iv = "a52e615ce78c4793".encode('utf-8')
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        cipher_text = cipher.encrypt(plain_text)
+        cipher_text = cipher.encrypt(padding.pad(plain_text, AES.block_size, style='pkcs7'))
         
-        return str(base64.b64encode(iv + cipher_text), "utf-8")
+        return str(base64.b64encode(cipher_text), 'utf-8')
     except Exception as e:
+        print("IMES Encrypt Error: {}".format(repr(e)))
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return ""
+        return "{\"\"}"
 
 
 def AESDecryption(cipher_text):
     try:
-        key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
+        key = IMES_KEY + "nanrenyaoxuexida"
+        # key = hashlib.md5(key.encode("utf-8")).digest()
+        key = key.encode('utf-8')
         cipher_text = base64.b64decode(cipher_text)
-        iv = cipher_text[:AES.block_size]
+        # iv = cipher_text[:AES.block_size]
+        iv = "a52e615ce78c4793".encode('utf-8')
         cipher = AES.new(key, AES.MODE_CBC, iv)
-        # cipher = AES.new(key, AES.MODE_ECB)
-        plain_text = unpad(cipher.decrypt(cipher_text[16:]))
+        # pt = cipher.decrypt(cipher_text[AES.block_size:])
+        plain_text = padding.unpad(cipher.decrypt(cipher_text), AES.block_size)
         
         return plain_text.decode()
     except Exception as e:
+        print("IMES AES Decrypt Error: {}".format(repr(e)))
         logger.error("IMES AES Decrypt Error: {}".format(repr(e)))
-        return ""
+        return "{\"\"}"
 
 
 class InplayLoginAPI(View):
@@ -219,25 +216,33 @@ class InplayGetBalanceAPI(View):
                 member_code = data["MemberCode"]
                 member_code = member_code.strip('\"')
                 user = CustomUser.objects.get(username=member_code)
+                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                 response["StatusCode"] = 100
                 response["StatusMessage"] = "Success"
-                response["PackageId"] = str(uuid.uuid1())
+                response["PackageId"] = trans_id
                 response["Balance"] = float(user.main_wallet)
 
                 response = json.dumps(response)
 
                 ciphertext = AESEncryption(response)
-                return HttpResponse(ciphertext, content_type='text/plain', status=200)
+                
             else:
                 response["StatusCode"] = -100
                 response["StatusMessage"] = "Wrong Event Type"
 
                 response = json.dumps(response)
                 cipher_text = AESEncryption(response)
+
+            return HttpResponse(ciphertext, content_type='text/plain', status=200)
         except Exception as e:
+            response["StatusCode"] = -100
+            response["StatusMessage"] = "Internal Error"
+
+            response = json.dumps(response)
+            cipher_text = AESEncryption(response)
             logger.error("IMES GET Balance Error: {}".format(repr(e)))
-            return HttpResponse(status=400)
+            return HttpResponse(ciphertext, content_type='text/plain', status=200)
 
 
 class InplayGetApprovalAPI(View):
@@ -297,8 +302,9 @@ class InplayDeductBalanceAPI(View):
 
         try:
             balance_package = balance_package.replace(' ', '+')
+            logger.info("IMES DeductBalanceAPI balancePackage ID: {}".format(package_id))
             logger.info("IMES DeductBalanceAPI balance package: {}".format(balance_package))
-            data = des3Decryption(balance_package)
+            data = AESDecryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
             data = json.loads(data)
             response = {}
@@ -363,9 +369,9 @@ class InplayUpdateBalanceAPI(View):
         date_sent = request.GET.get('dateSent')
         try:
             balance_package = balance_package.replace(' ', '+')
-            
-            data = des3Decryption(balance_package)
+            logger.info("IMES UpdateBalanceAPI balancePackage ID: {}".format(package_id))
             logger.info("IMES UpdateBalanceAPI balance package: {}".format(balance_package))
+            data = AESDecryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
             if data["EventTypeId"] == '4002':
@@ -428,7 +434,7 @@ class InplayPostBetDetailsAPI(View):
         
         try:
             bet_package = bet_package.replace(' ', '+')
-            data = des3Decryption(data)
+            data = AESDecryption(data)
             data = "".join([data.rsplit(">" , 1)[0] , ">"])
             data = xmltodict.parse(data)
 
@@ -500,18 +506,21 @@ class TestDecryption(View):
                 plain_json["BetDetailList"] = bet_detail_list
 
             plain_json = json.dumps(plain_json)
-        
-            key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
+            
+            plain_json = "{\"EventTypeId\":1000,\"MemberCode\":\"Bobby\"}"
+            # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
 
             cipher_json = AESEncryption(plain_json)
             # cipher_json = des3Encryption(plain_json)
             # txt = request.GET.get("txt")
             # txt = txt.replace(' ', '+')
-            # plain_json = des3Decryption(cipher_json)
-            plain_json = AESDecryption(cipher_json)
+            # print(txt)
+            txt = "LQD58ubbQ8bBGvH/+4r18r74Z5NWa4IVPYZD6NJLrWx5pnPIOA0BAT4MREwU+LLX"
+            # txt = "JJQoYyblF23ze6cVfS9k0oSBdJ7zl8K6D/XNGcuGxrZrbO5a7nM+/yIpAkOzp2lvCd56uF3STTwTn3elfNmsKA=="
+            plain_json = AESDecryption(txt)
+            # plain_json = AESDecryption(cipher_json)
 
             plain_json = "".join([plain_json.rsplit("}" , 1)[0] , "}"]) 
-
             plain_json = json.loads(plain_json)
 
             return HttpResponse(cipher_json)
