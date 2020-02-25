@@ -44,40 +44,36 @@ unpad = lambda s: s[:-ord(s[len(s) - 1:])]
 
 def des3Encryption(plain_text):
     try:
-        key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
-        # key = hashlib.sha256(IMES_KEY.encode("utf-8")).digest()
+        key = hashlib.md5(IMES_KEY.encode('utf-8')).digest()
+        plain_text = plain_text.encode('utf-8')
         cipher = DES3.new(key, DES3.MODE_ECB)
-        # cipher = AES.new(key, AES.MODE_CBC)
-        cipher_text = cipher.encrypt(pad(plain_text))
+        # cipher_text = cipher.encrypt(pad(plain_text))
+        cipher_text = cipher.encrypt(padding.pad(plain_text, DES3.block_size))
         
-        return str(base64.b64encode(cipher_text), "utf-8")
+        return str(base64.b64encode(cipher_text), 'utf-8')
     except Exception as e:
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return "{\"\"}"
+        return "{}"
 
 
 def des3Decryption(cipher_text):
     try:
         key = hashlib.md5(IMES_KEY.encode("utf-8")).digest()
-        # key = hashlib.md5(IMES_KEY.encode()).digest()
         cipher_text = base64.b64decode(cipher_text)
-        # cipher = AES.new(key, AES.MODE_CBC)
         cipher = DES3.new(key, DES3.MODE_ECB)
         plain_text = cipher.decrypt(unpad(cipher_text))
         
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
-        return "{\"\"}"
+        return "{}"
 
 
 def AESEncryption(plain_text):
     try:
         key = IMES_KEY + "nanrenyaoxuexida"
-        # key = hashlib.md5(key.encode("utf-8")).digest()
         key = key.encode('utf-8')
         plain_text = plain_text.encode('utf-8')
-        # iv = Random.new().read(AES.block_size) # Random IV
         iv = "a52e615ce78c4793".encode('utf-8')
         cipher = AES.new(key, AES.MODE_CBC, iv)
         cipher_text = cipher.encrypt(padding.pad(plain_text, AES.block_size, style='pkcs7'))
@@ -86,7 +82,7 @@ def AESEncryption(plain_text):
     except Exception as e:
         print("IMES Encrypt Error: {}".format(repr(e)))
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return "{\"\"}"
+        return "{}"
 
 
 def AESDecryption(cipher_text):
@@ -103,9 +99,8 @@ def AESDecryption(cipher_text):
         
         return plain_text.decode()
     except Exception as e:
-        print("IMES AES Decrypt Error: {}".format(repr(e)))
         logger.error("IMES AES Decrypt Error: {}".format(repr(e)))
-        return "{\"\"}"
+        return "{}"
 
 
 class InplayLoginAPI(View):
@@ -118,8 +113,7 @@ class InplayLoginAPI(View):
 
             post_data = {}
             sessionToken = Token.objects.get(user_id=user)
-            # post_data['Token'] = str(sessionToken)
-            post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
+            post_data['Token'] = str(sessionToken)
 
             # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
@@ -225,7 +219,7 @@ class InplayGetBalanceAPI(View):
 
                 response = json.dumps(response)
 
-                ciphertext = AESEncryption(response)
+                cipher_text = AESEncryption(response)
                 
             else:
                 response["StatusCode"] = -100
@@ -234,7 +228,7 @@ class InplayGetBalanceAPI(View):
                 response = json.dumps(response)
                 cipher_text = AESEncryption(response)
 
-            return HttpResponse(ciphertext, content_type='text/plain', status=200)
+            return HttpResponse(cipher_text, content_type='text/plain', status=200)
         except Exception as e:
             response["StatusCode"] = -100
             response["StatusMessage"] = "Internal Error"
@@ -242,7 +236,7 @@ class InplayGetBalanceAPI(View):
             response = json.dumps(response)
             cipher_text = AESEncryption(response)
             logger.error("IMES GET Balance Error: {}".format(repr(e)))
-            return HttpResponse(ciphertext, content_type='text/plain', status=200)
+            return HttpResponse(cipher_text, content_type='text/plain', status=200)
 
 
 class InplayGetApprovalAPI(View):
