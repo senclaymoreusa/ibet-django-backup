@@ -83,7 +83,10 @@ class Login(APIView):
                 url = rdata["result"]["url"]
                 token = rdata["result"]["token"]
                 #print(url)
-                return Response({"url": url, "token": token},status=status.HTTP_200_OK)
+                response = Response({"url": url, "token": token},status=status.HTTP_200_OK)
+                response.set_cookie(key='S', value = token)
+                response.set_cookie(key='SelectedLanguage', value = 'en-US')
+                return response
             else:
                 logger.info({"error": "we cannot get the login url for OPUS"})
                 return Response({"error": "we cannot get the login url for OPUS"},status=status.HTTP_400_BAD_REQUEST)
