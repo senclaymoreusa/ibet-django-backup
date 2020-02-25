@@ -12,6 +12,7 @@ from games.views.kygameviews import kyTransfer, kyBalance
 from games.views.aggamesviews import agFundTransfer, getBalance
 from games.views.ptgameviews import ptTransfer
 from games.views.gameplayintviews import getGPIBalance, gpiTransfer
+from games.views.opusgameviews import transfer, getBalance
 import simplejson as json
 import decimal
 
@@ -46,6 +47,9 @@ class TransferDeposit():
     def GPIDeposit(self):
         return gpiTransfer(self.user, self.amount, self.from_wallet, 0)
 
+    def OPUSDeposit(self):
+        return transfer(self.user, self.amount, self.from_wallet, "IN")
+
 
     
 class TransferWithdraw():
@@ -76,6 +80,9 @@ class TransferWithdraw():
 
     def GPIWithdraw(self):
         return gpiTransfer(self.user, self.amount, self.to_wallet, 1)
+
+    def OPUSWithdraw(self):
+        return transfer(self.user, self.amount, self.to_wallet, "OUT")
 
 
 class CheckTransferWallet():
@@ -111,7 +118,12 @@ class CheckTransferWallet():
         return 0
 
     def OPUSCheckAmount(self):
-        return 0
+        obj = getBalance(self.user)
+        obj = json.loads(obj)
+        balance = 0
+        if obj and obj['balance']:
+            balance = decimal.Decimal(obj['balance'])
+        return balance
 
     def GPICheckAmount(self):
         balance = decimal.Decimal(getGPIBalance(self.user))
