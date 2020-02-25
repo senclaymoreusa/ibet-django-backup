@@ -53,7 +53,7 @@ def des3Encryption(plain_text):
         return str(base64.b64encode(cipher_text), 'utf-8')
     except Exception as e:
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return "{}"
+        return ""
 
 
 def des3Decryption(cipher_text):
@@ -66,7 +66,7 @@ def des3Decryption(cipher_text):
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
-        return "{}"
+        return ""
 
 
 def AESEncryption(plain_text):
@@ -82,7 +82,7 @@ def AESEncryption(plain_text):
     except Exception as e:
         print("IMES Encrypt Error: {}".format(repr(e)))
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return "{}"
+        return ""
 
 
 def AESDecryption(cipher_text):
@@ -100,7 +100,7 @@ def AESDecryption(cipher_text):
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES AES Decrypt Error: {}".format(repr(e)))
-        return "{}"
+        return ""
 
 
 class InplayLoginAPI(View):
@@ -114,7 +114,7 @@ class InplayLoginAPI(View):
             post_data = {}
             sessionToken = Token.objects.get(user_id=user)
             post_data['Token'] = str(sessionToken)
-
+            # post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
             # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
@@ -205,8 +205,10 @@ class InplayGetBalanceAPI(View):
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
 
+            print(data)
+
             response = {}
-            if data["EventTypeId"] == '1000':
+            if data["EventTypeId"] == 1000:
                 member_code = data["MemberCode"]
                 member_code = member_code.strip('\"')
                 user = CustomUser.objects.get(username=member_code)
@@ -252,7 +254,7 @@ class InplayGetApprovalAPI(View):
             data = "".join([data.rsplit("}" , 1)[0], "}"])
             data = json.loads(data)
             response = {}
-            if data["EventTypeId"] == '1001':
+            if data["EventTypeId"] == 1001:
                 member_code = data["MemberCode"]
                 amount = float(data["TransactionAmt"])
                 user = CustomUser.objects.get(username=member_code)
@@ -302,7 +304,7 @@ class InplayDeductBalanceAPI(View):
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
             data = json.loads(data)
             response = {}
-            if data["EventTypeId"] == '1003':
+            if data["EventTypeId"] == 1003:
                 user = data["MemberCode"]
                 amount = float(data["TransactionAmt"])
                 user = CustomUser.objects.get(username=user)
@@ -368,7 +370,7 @@ class InplayUpdateBalanceAPI(View):
             data = AESDecryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
-            if data["EventTypeId"] == '4002':
+            if data["EventTypeId"] == 4002:
                 provider = GameProvider.objects.get(provider_name=IMES_PROVIDER)
                 category = Category.objects.get(name='Sports')
 
@@ -509,9 +511,10 @@ class TestDecryption(View):
             # txt = request.GET.get("txt")
             # txt = txt.replace(' ', '+')
             # print(txt)
-            txt = "LQD58ubbQ8bBGvH/+4r18r74Z5NWa4IVPYZD6NJLrWx5pnPIOA0BAT4MREwU+LLX"
+            txt = "u1gSKgxJoAmvHC98CuXeIAozjsvI36jRA8l3VsWajuv9ndq2HzC5SHkEJbUBR4aW9R+unYFd29zShbs5BzGB2kMr7UgR/MrSORE6RE1xuzXll1xnaEAaQ6PMj9jpen7tkuU1JNH5t+GAHdtq0VhdtsRp50qHIpyZLadf212ZPt4="
             # txt = "JJQoYyblF23ze6cVfS9k0oSBdJ7zl8K6D/XNGcuGxrZrbO5a7nM+/yIpAkOzp2lvCd56uF3STTwTn3elfNmsKA=="
             plain_json = AESDecryption(txt)
+            print(plain_json)
             # plain_json = AESDecryption(cipher_json)
 
             plain_json = "".join([plain_json.rsplit("}" , 1)[0] , "}"]) 
