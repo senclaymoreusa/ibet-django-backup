@@ -29,7 +29,7 @@ from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
 
 from Crypto.Cipher import AES
-# from Crypto.Util.Padding import pad
+from Crypto.Util.Padding import pad
 from games.helper import *
 from utils.aws_helper import getThirdPartyKeys
 
@@ -38,14 +38,20 @@ logger = logging.getLogger('django')
 import base64
 import pytz
 
-BS = 16
-pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+# BS = 16
+# pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 
 def aes_encode(key, data):
-    cipher = AES.new(key, AES.MODE_ECB)
-    # cipher_chunks.append()
-    cipher_text = cipher.encrypt(pad(data))
-    return cipher_text
+    try:
+        key = key.encode('utf-8')
+        cipher = AES.new(key, AES.MODE_ECB)
+        # cipher_chunks.append()
+        cipher_text = cipher.encrypt(pad(data.encode('utf-8'), AES.block_size))
+        # cipher_text = cipher.encrypt(pad(data, AES.block_size))
+        return cipher_text
+    except Exception as e:
+        print("aes_encode error: {}".format(repr(e)))
+        return ""
 
 
 def get_timestamp():
