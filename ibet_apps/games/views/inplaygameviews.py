@@ -37,29 +37,6 @@ from utils.aws_helper import getThirdPartyKeys
 
 logger = logging.getLogger('django')
 
-# PKCS7
-# def pad(m):
-#     return m + chr(16 - len(m) % 16) * (16 - len(m) % 16)
-
-def pad7(text):
-    text_length = len(text)
-    amount_to_pad = AES.block_size - (text_length % AES.block_size)
-    if amount_to_pad == 0:
-        amount_to_pad = AES.block_size
-    pad = chr(amount_to_pad)
-    return text + pad * amount_to_pad
-
-
-# def unpad7(text):
-#     pad = ord(text[-1])
-#     return text[:-pad]
-
-# def unpad(ct):
-#     try:
-#         return ct[:-ord(ct[-1])]
-#     except Exception as e:
-#         print(repr(e))
-
 # PKCS5
 BS = 16
 pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS) 
@@ -79,7 +56,7 @@ def des3Encryption(plain_text):
         return str(base64.b64encode(cipher_text), "utf-8")
     except Exception as e:
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
-        return ""
+        return "{\"\"}"
 
 
 def des3Decryption(cipher_text):
@@ -94,7 +71,7 @@ def des3Decryption(cipher_text):
         return plain_text.decode()
     except Exception as e:
         logger.error("IMES Decrypt Error: {}".format(repr(e)))
-        return ""
+        return "{\"\"}"
 
 
 def AESEncryption(plain_text):
@@ -330,7 +307,7 @@ class InplayDeductBalanceAPI(View):
             balance_package = balance_package.replace(' ', '+')
             logger.info("IMES DeductBalanceAPI balancePackage ID: {}".format(package_id))
             logger.info("IMES DeductBalanceAPI balance package: {}".format(balance_package))
-            data = des3Decryption(balance_package)
+            data = AESDecryption(balance_package)
             data = "".join([data.rsplit("}" , 1)[0] , "}"]) 
             data = json.loads(data)
             response = {}
@@ -460,7 +437,7 @@ class InplayPostBetDetailsAPI(View):
         
         try:
             bet_package = bet_package.replace(' ', '+')
-            data = des3Decryption(data)
+            data = AESDecryption(data)
             data = "".join([data.rsplit(">" , 1)[0] , ">"])
             data = xmltodict.parse(data)
 
@@ -532,13 +509,11 @@ class TestDecryption(View):
                 plain_json["BetDetailList"] = bet_detail_list
 
             plain_json = json.dumps(plain_json)
-            print(plain_json)
             
             plain_json = "{\"EventTypeId\":1000,\"MemberCode\":\"Bobby\"}"
             # key = hashlib.md5(b'9d25ee5d1ffa0e01').digest()
 
             cipher_json = AESEncryption(plain_json)
-            print(cipher_json)
             # cipher_json = des3Encryption(plain_json)
             # txt = request.GET.get("txt")
             # txt = txt.replace(' ', '+')
