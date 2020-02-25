@@ -28,38 +28,18 @@ from hashlib import sha1
 
 logger = logging.getLogger('django')
 
-class EncryptionView(View):
+class GameLaunchView(View):
     """
-    This test class is used for DES encryption and MD5 signing, which is necessary for all requests 
-    to test the AllBet API as part of the 'Test Plan on API Integration Test' to be submitted to 
-    AllBet's QA Department for verification.
-
-    Overview
-        (1) Build query string
-        (2) Encrypt query string using 3DES (data paraneter)
-        (3) Hash the encrypted query string using MD5 (sign parameter)
-        (4) Set propertyId, data, and sign parameters of request
-        (5) Send request and verify JSON response
+    This endpoint is used to create a launch URL for a user.
     """
-
-    third_party_keys = getThirdPartyKeys("ibet-admin-eudev", "config/gamesKeys.json")
-    AB_PROPERTY_ID = third_party_keys["ALLBET"]["PROPERTYID"]
-    AB_DES_KEY = third_party_keys["ALLBET"]["DESKEY"]
-    AB_MD5_KEY = third_party_keys["ALLBET"]["MD5KEY"]
-    AB_BASE64_IV = third_party_keys["ALLBET"]["BASE64IV"]
-
-    # These values may change based on the test so they should not be put under utils/constants.
-    agent_name = "ftrwaa"
-    endpoint = AB_URL + "query_agent_handicaps"
-
 
     def threeDES(self, query_string):
         """
         Encrypts key-value pairs using 3DES cipher
         """
         # Convert provided key and IV from base64 to bytes. 
-        byte_key = base64.b64decode(self.AB_DES_KEY)
-        byte_iv = base64.b64decode(self.AB_BASE64_IV)
+        byte_key = base64.b64decode(ALLBET_DES_KEY)
+        byte_iv = base64.b64decode(ALLBET_BASE64_IV)
         
         # Encrypt using CBC mode.
         des_obj = pyDes.triple_des(byte_key, pyDes.CBC, byte_iv, pad=None, padmode=pyDes.PAD_PKCS5)
@@ -77,7 +57,7 @@ class EncryptionView(View):
         """
         Signs encrypted data using MD5 hashing
         """
-        string_to_sign = data_string + self.AB_MD5_KEY
+        string_to_sign = data_string + ALLBET_MD5_KEY
         hashed_result = hashlib.md5(string_to_sign.encode())
         byte_result = hashed_result.digest()
 
@@ -90,35 +70,113 @@ class EncryptionView(View):
 
     def get(self, request, *args, **kwargs):
         """
-        Main method that encrypts the query string, hashes it, sends the request, and displays the
-        JSON response sent by AllBet API.
+        (1) Return launch URL if login is successful (client exists and password is correct)
+        (2) If client does not exist, create client and re-launch
+        (3) If password is incorrect, reset password and re-launch
         """
         try:
+            client_name = request.GET.get("client")
+
             secure_random_number = secrets.randbits(32) # 32-bit random integer
-            query_string = "agent=" + self.agent_name + "&random=" + str(secure_random_number)
+            query_string = "random=" + str(secure_random_number) + "&client=" + client_name + "&password=" + ALLBET_LAUNCHKEY
 
             data_string = self.threeDES(query_string)
             sign_string = self.md5(data_string)
 
             # Create encoded URL parameters.
             req_params = {}
-            req_params["propertyId"] = self.AB_PROPERTY_ID
+            req_params["propertyId"] = ALLBET_PROP_ID
             req_params["data"] = data_string
             req_params["sign"] = sign_string
             encoded_params = urllib.parse.urlencode(req_params)
 
-            url = self.endpoint + '?' + encoded_params
+            url = AB_URL + "forward_game" + '?' + encoded_params
             response = requests.get(url)
 
-            if response.status_code == 200:
-                logger.info("AllBet Encryption Success")
-                return HttpResponse(json.dumps(response.json()), content_type='application/json')
-            else:
-                return HttpResponse(response)
+            # Handle all possible scenarios in order to return a game launch URL.
+            if response.json()['error_code'] == 'OK':
+                logger.info("AllBet game launch attempted with correct username and password combination.")
+                return HttpResponse(response.json()['gameLoginUrl'])
+
+            elif response.json()['error_code'] == 'CLIENT_NOT_EXIST':
+                logger.error("AllBet game launch attempted with client that does not exist.")
+                secure_random_number = secrets.randbits(32) # 32-bit random integer
+                query_string = "random=" + str(secure_random_number) + "&agent=" + ALLBET_AGENTNAME + "&client=" + client_name + "&password=" + ALLBET_LAUNCHKEY + "&orHandicapNames=A" + "&vipHandicapNames=VIP_O" + "&orHallRebate=0"
+
+                data_string = self.threeDES(query_string)
+                sign_string = self.md5(data_string)
+
+                # Create encoded URL parameters.
+                req_params = {}
+                req_params["propertyId"] = ALLBET_PROP_ID
+                req_params["data"] = data_string
+                req_params["sign"] = sign_string
+                encoded_params = urllib.parse.urlencode(req_params)
+
+                url = AB_URL + "create_client" + '?' + encoded_params
+                response = requests.get(url)
+
+                # Client has been created; re-attempt forward game.
+                secure_random_number = secrets.randbits(32) # 32-bit random integer
+                query_string = "random=" + str(secure_random_number) + "&client=" + client_name + "&password=" + ALLBET_LAUNCHKEY
+
+                data_string = self.threeDES(query_string)
+                sign_string = self.md5(data_string)
+
+                # Create encoded URL parameters.
+                req_params = {}
+                req_params["propertyId"] = ALLBET_PROP_ID
+                req_params["data"] = data_string
+                req_params["sign"] = sign_string
+                encoded_params = urllib.parse.urlencode(req_params)
+
+                url = AB_URL + "forward_game" + '?' + encoded_params
+                response = requests.get(url)
+                return HttpResponse(response.json()['gameLoginUrl'])
+
+            elif response.json()['error_code'] == 'CLIENT_PASSWORD_INCORRECT':
+                logger.error("AllBet game launch attempted with incorrect password for client.")
+                secure_random_number = secrets.randbits(32) # 32-bit random integer
+                query_string = "random=" + str(secure_random_number) + "&client=" + client_name + "&newPassword=" + ALLBET_LAUNCHKEY
+
+                data_string = self.threeDES(query_string)
+                sign_string = self.md5(data_string)
+
+                # Create encoded URL parameters.
+                req_params = {}
+                req_params["propertyId"] = ALLBET_PROP_ID
+                req_params["data"] = data_string
+                req_params["sign"] = sign_string
+                encoded_params = urllib.parse.urlencode(req_params)
+
+                url = AB_URL + "setup_client_password" + '?' + encoded_params
+                response = requests.get(url)
+
+                # Password has been reset; re-attempt forward game.
+                secure_random_number = secrets.randbits(32) # 32-bit random integer
+                query_string = "random=" + str(secure_random_number) + "&client=" + client_name + "&password=" + ALLBET_LAUNCHKEY
+
+                data_string = self.threeDES(query_string)
+                sign_string = self.md5(data_string)
+
+                # Create encoded URL parameters.
+                req_params = {}
+                req_params["propertyId"] = ALLBET_PROP_ID
+                req_params["data"] = data_string
+                req_params["sign"] = sign_string
+                encoded_params = urllib.parse.urlencode(req_params)
+
+                url = AB_URL + "forward_game" + '?' + encoded_params
+                response = requests.get(url)
+                return HttpResponse(response.json()['gameLoginUrl'])
+
+            # Case where provider changes API error_code responses.
+            logger.error("AllBet game launch error: forward_game responded with an error_code not specificed in API documentation.")
+            return HttpResponse(json.dumps(response.json()), content_type='application/json')
 
         except Exception as e:
-            logger.error("AllBet EncryptionView Error: " + str(e))
-            return HttpResponse("Error in encryption: " + str(e))
+            logger.error("AllBet GameLaunchView Error: " + str(e))
+            return HttpResponse("AllBet GameLaunchView Error: " + str(e))
 
 
 class BalanceView(View):

@@ -354,6 +354,14 @@ ACTIVITY_TYPE = (
 )
 
 
+USER_ATTRIBUTE = (
+    (0, _('Direct User')),
+    (1, _('User from Promo')),
+    (2, _('Advertisements'))
+)
+
+
+
 MEMBER_STATUS_NORMAL = 0
 MEMBER_STATUS_SUSPICIOUS = 1
 MEMBER_STATUS_RESTRICTED = 2
@@ -1631,7 +1639,13 @@ GPI_LIVE_CASINO_URL = keys["GPI"]["GPI_LIVE_CASINO_URL"]
 
 # AllBet
 ALLBET_PROP_ID = keys["ALLBET"]["PROPERTYID"]
+ALLBET_DES_KEY = keys["ALLBET"]["DESKEY"]
+ALLBET_MD5_KEY = keys["ALLBET"]["MD5KEY"]
+ALLBET_BASE64_IV = keys["ALLBET"]["BASE64IV"]
 ALLBET_SHA1_KEY = keys["ALLBET"]["SHA1KEY"]
+ALLBET_AGENTNAME = keys["ALLBET"]["AGENTNAME"]
+ALLBET_LAUNCHKEY = keys["ALLBET"]["LAUNCHKEY"]
+AB_URL = "https://platform-api.apidemo.net:8443/"
 
 #onebook
 # ONEBOOK_PROVIDER = keys["ONEBOOK"]["PROVIDER"]
@@ -1644,9 +1658,6 @@ ONEBOOK_IFRAME_URL = keys["ONEBOOK"]["IFRAME_URL"]
 ONEBOOK_MOBILE_IFRAME_URL = keys["ONEBOOK"]["MOBILE_IFRAME_URL"]
 ONEBOOK_DIRECTION_withdraw = keys["ONEBOOK"]["DIRECTION_withdraw"]
 ONEBOOK_DIRECTION_deposit = keys["ONEBOOK"]["DIRECTION_deposit"]
-
-# AllBet
-AB_URL = "https://platform-api.apidemo.net:8443/"
 
 # SA
 SA_SECRET_KEY = 'F0E5C6E337F84A13960D57B06C4E361F'
@@ -1709,3 +1720,13 @@ IMES_PROVIDER = "IMES"
 BTI_FREEBET_URL = "https://bonus-api.bti360.io/"
 BTI_AGENT_USERNAME = keys["BTI"]["USERNAME"]
 BTI_AGENT_PW = keys["BTI"]["PASSWORD"]
+
+
+CMS_CATEGORY = (
+    (0, "Home Banner"),
+    (1, "Live Casino Banner"),
+    (2, "Casino Banner"),
+    (3, "Bonus")
+)
+#OPUS
+OPUS_API_URL = "http://staging-ecs-alb-2064712967.ap-northeast-1.elb.amazonaws.com/api/opus/"

@@ -34,7 +34,6 @@ from utils.redisClient import RedisClient
 from utils.redisHelper import RedisHelper
 from operation.views import send_sms
 
-
 import requests
 import logging
 import pytz
@@ -366,8 +365,13 @@ class UserDetailView(CommAdminView):
         
         if userLastLogin is None:
             context['relativeAccount'] = ''
+            context['relative_first'] = True
+            context['relative_last'] = False
         else:
-            context['relativeAccount'] = self.account_by_ip(userLastLogin.ip_addr, userLastLogin.user)
+            relativeAccount, is_first, is_last = account_by_ip(userLastLogin.ip_addr, userLastLogin.user, 0, 20)
+            context['relativeAccount'] = relativeAccount
+            context['relative_first'] = is_first
+            context['relative_last'] = is_last
         # print(str(context['relativeAccount']))
 
         deposits = deposit_trans.order_by('-request_time').first()
@@ -512,8 +516,11 @@ class UserDetailView(CommAdminView):
         context['productAccess'] = json.dumps(productAccessArr)
         context['accessDenyObj'] = productAccessArr
         context['segment_level'] = Segmentation.objects.all()
-        context['related_user_data'] = getRelatedDevice(customUser.username)
+        related_user_data = getRelatedDevice(customUser.username)
+        
+        context['related_user_data'] = related_user_data
 
+        
         log_obj = UserActivity.objects.filter(user=customUser, activity_type=ACTIVITY_UPLOAD_IMAGE).order_by('-created_time')
         if len(log_obj) > 0:
             log_obj = log_obj[0]
@@ -583,7 +590,7 @@ class UserDetailView(CommAdminView):
                         system_message += i['name'] + " change to " + str(dict(MEMBER_STATUS).get(after_status))
                     else:
                         query[i['name']] = i['value']
-                        system_message += i['name'] + " change to " + i['value']
+                        system_message += i['name'] + " change to " + i['value'] + " "
 
                     
                 with transaction.atomic():
@@ -924,38 +931,6 @@ class UserDetailView(CommAdminView):
         except Exception as e:
             logger.error("User Detail View Error -- {}".format(repr(e)))
             return HttpResponseRedirect(reverse('xadmin:user_detail', args=[user.pk]))
-    
-    def account_by_ip(self, userIp, username):
-        relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
-        # print(relative_account)
-
-        accounts = []
-        for item in relative_account:
-            userDict = {}
-            # user = CustomUser.objects.get(username=i.user)
-            user = CustomUser.objects.get(pk=item['user_id'])
-            userDict['id'] = user.pk
-            userDict['username'] = user.username
-            userDict['source'] = user.get_user_attribute_display
-            userDict['status'] = user.get_member_status_display
-            # depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
-            # depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
-            # userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
-            userDict['turnover'] = ''
-            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
-            if withdrawAmount['amount__sum'] is None:
-                withdrawAmount['amount__sum'] = 0
-            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
-            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
-            if depositAmount['amount__sum'] is None:
-                depositAmount['amount__sum'] = 0
-            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
-            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
-            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
-            userDict['riskLevel'] = user.get_risk_level_display
-            accounts.append(userDict)
-        return accounts
-
     
     def remove_user_photo_id(self, username):
         # print(username)
@@ -2082,7 +2057,114 @@ class ExportUserList(View):
 
 
 
+def account_by_ip(userIp, username, start, pageSize):
+    relative_account = UserAction.objects.filter(ip_addr=userIp, event_type=0).exclude(user=username).values('user_id').distinct()
+    accounts = []
+    if start == -1:
+        for item in relative_account:
+            userDict = {}
+            # user = CustomUser.objects.get(username=i.user)
+            user = CustomUser.objects.get(pk=item['user_id'])
+            userDict['id'] = str(user.pk)
+            userDict['username'] = str(user.username)
+            userDict['source'] = str(dict(USER_ATTRIBUTE).get(user.user_attribute))
+            userDict['status'] = str(dict(MEMBER_STATUS).get(user.member_status))
+            userDict['turnover'] = ''
+            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+            if withdrawAmount['amount__sum'] is None:
+                withdrawAmount['amount__sum'] = 0
+            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
+            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            if depositAmount['amount__sum'] is None:
+                depositAmount['amount__sum'] = 0
+            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
+            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
+            userDict['riskLevel'] = str(dict(RISK_LEVEL).get(user.risk_level))
+            accounts.append(userDict)
+        return accounts
+    else:
+        isFirstPage = False
+        isLastPage = False
+        if start == 0:
+            isFirstPage = True
 
-def getTransaction(user):
+        end = start+pageSize
+        if len(relative_account) <= end:
+            isLastPage = True
+        
+        relative_account = relative_account[start:end]
+        accounts = []
+        for item in relative_account:
+            userDict = {}
+            # user = CustomUser.objects.get(username=i.user)
+            user = CustomUser.objects.get(pk=item['user_id'])
+            userDict['id'] = user.pk
+            userDict['username'] = user.username
+            userDict['source'] = user.get_user_attribute_display
+            userDict['status'] = user.get_member_status_display
+            # depositSucc = Transaction.objects.filter(user_id=user, transaction_type=0, status=3).count()
+            # depositCount = Transaction.objects.filter(user_id=user, transaction_type=0).count()
+            # userDict['deposit'] = str(depositSucc) + '/' + str(depositCount)
+            userDict['turnover'] = ''
+            withdrawAmount = Transaction.objects.filter(user_id=user, transaction_type=1).aggregate(Sum('amount'))
+            if withdrawAmount['amount__sum'] is None:
+                withdrawAmount['amount__sum'] = 0
+            userDict['withdrawal'] =  '{:.2f}'.format(withdrawAmount['amount__sum'])
+            depositAmount = Transaction.objects.filter(user_id=user, transaction_type=0).aggregate(Sum('amount'))
+            if depositAmount['amount__sum'] is None:
+                depositAmount['amount__sum'] = 0
+            userDict['deposit'] = '{:.2f}'.format(depositAmount['amount__sum'])
+            userDict['contribution'] = '{:.2f}'.format(calculateContribution(user))
+            userDict['ggr'] = '{:.2f}'.format(calculateGGR(user, None, None, None))
+            userDict['riskLevel'] = user.get_risk_level_display
+            accounts.append(userDict)
+
+        # print(isFirstPage, isLastPage)
+        return accounts, isFirstPage, isLastPage
+
+
+class RelatedAccount(View):
+
+    def get(self, request, *args, **kwargs):
+        head = request.GET.get('head')
+        user_id = request.GET.get('user_id')
+        user = CustomUser.objects.get(pk=user_id)
+        login_first = UserAction.objects.filter(user=user, event_type=0).order_by('-created_time').first()
+        if head:
+            head = json.loads(head)
+            list_data = [head]
+            data = account_by_ip(login_first.ip_addr, login_first.user, -1, -1)
+
+            for i in data:
+                list_data.append([i['username'],
+                                i['source'],
+                                i['status'],
+                                i['ggr'],
+                                i['deposit'],
+                                i['withdrawal'],
+                                i['contribution'],
+                                i['riskLevel']
+                                ])
+
+            return streamingExport(list_data, 'Linked player')
+
+        else:
+
+            pageSize = request.GET.get('pageSize')
+            offset = request.GET.get('offset')
+            pageSize = int(pageSize)
+            offset = int(offset)
+            end = offset + pageSize
+
+            data, is_first, is_last = account_by_ip(login_first.ip_addr, login_first.user, offset, end)
+
+            response = {
+                'data': data,
+                'isFirst': is_first,
+                'isLast': is_last
+            }
+
+            return HttpResponse(json.dumps(response, cls=DjangoJSONEncoder), content_type='application/json')
+
     
-    return data_list

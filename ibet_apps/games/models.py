@@ -211,3 +211,17 @@ class GameThirdPartyAccount(models.Model):
         auto_now_add=True,
         editable=False,
     )
+
+
+class CMSTag(models.Model):
+
+    category = models.SmallIntegerField(choices=CMS_CATEGORY)
+    position_code = models.CharField(max_length=30, null=True)
+    image_url = models.CharField(max_length=200, null=True, blank=True)
+    created_time = models.DateTimeField(
+        auto_now_add=True,
+        editable=False,
+    )
+
+    modified_time = models.DateTimeField(auto_now=True)
+

@@ -20,6 +20,7 @@ import games.views.gbsportsviews as gbsports
 import games.views.qtgameviews as qtgameviews
 import games.views.ptgameviews as ptgameviews
 import games.views.aggamesviews as aggamesviews
+import games.views.opusgameviews as opusgameviews
 from games.views.views import *
 
 # from background.tasks import  kaiyuan_getBets,onebook_getBetDetail
@@ -27,6 +28,8 @@ from games.views.views import *
 
 urlpatterns = [
     path('api/games/', GamesSearchView.as_view(), name = 'games_search'),
+    path('api/hotgames/', GetHotGame.as_view(), name="hot_games_search"),
+    path('api/get-banner/', GetBanners.as_view(), name="get_banner"),
     path('api/games-detail/', GameDetailAPIListView.as_view(), name='games_detail'),
     path('api/games-category/', GamesCategoryAPI.as_view(), name='games_category'),
     # path('api/live-casino/', getLiveCasinoGames, name = 'live_casino_games'),
@@ -72,7 +75,7 @@ urlpatterns = [
     path('api/playngo/get_png_ticket', csrf_exempt(playngogameviews.GetPNGTicket.as_view()), name="png_launch"),
 
     # AllBet
-    path('api/allbet/encryption', csrf_exempt(allbetgameviews.EncryptionView.as_view()), name='allbet_encrypt'),
+    path('api/allbet/launch', csrf_exempt(allbetgameviews.GameLaunchView.as_view()), name='allbet_launch'),
     path('api/allbet/get_balance/<str:player_account_name>', csrf_exempt(allbetgameviews.BalanceView.as_view()), name='allbet_balance'),
     path('api/allbet/transfer', csrf_exempt(allbetgameviews.TransferView.as_view()), name='allbet_transfer'),
 
@@ -174,6 +177,9 @@ urlpatterns = [
     path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
     path('api/ag/test', aggamesviews.test.as_view(), name="test"),
+
+    #OPUS
+    path('api/opus/test', opusgameviews.Test.as_view(), name="test")
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)
