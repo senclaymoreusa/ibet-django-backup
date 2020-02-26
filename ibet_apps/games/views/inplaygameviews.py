@@ -114,7 +114,7 @@ class InplayLoginAPI(View):
             post_data = {}
             sessionToken = Token.objects.get(user_id=user)
             post_data['Token'] = str(sessionToken)
-            # post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
+            post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
             # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
@@ -205,18 +205,16 @@ class InplayGetBalanceAPI(View):
             data = "".join([data.rsplit("}" , 1)[0] , "}"])
             data = json.loads(data)
 
-            print(data)
-
             response = {}
             if data["EventTypeId"] == 1000:
                 member_code = data["MemberCode"]
                 member_code = member_code.strip('\"')
                 user = CustomUser.objects.get(username=member_code)
-                trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                # trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
 
                 response["StatusCode"] = 100
                 response["StatusMessage"] = "Success"
-                response["PackageId"] = trans_id
+                response["PackageId"] = 0
                 response["Balance"] = float(user.main_wallet)
 
                 response = json.dumps(response)
@@ -263,7 +261,7 @@ class InplayGetApprovalAPI(View):
                     # response["DateSent"] = timezone.now()
                     response["StatusCode"] = 100
                     response["StatusMessage"] = "Balance is sufficient, go ahead"
-                    response["PackageId"] = package_id
+                    response["PackageId"] = 0
                     response["Balance"] = float(user.main_wallet)
                 else:
                     response["StatusCode"] = -100
@@ -511,8 +509,8 @@ class TestDecryption(View):
             # txt = request.GET.get("txt")
             # txt = txt.replace(' ', '+')
             # print(txt)
-            txt = "u1gSKgxJoAmvHC98CuXeIAozjsvI36jRA8l3VsWajuv9ndq2HzC5SHkEJbUBR4aW9R+unYFd29zShbs5BzGB2kMr7UgR/MrSORE6RE1xuzXll1xnaEAaQ6PMj9jpen7tkuU1JNH5t+GAHdtq0VhdtsRp50qHIpyZLadf212ZPt4="
-            # txt = "JJQoYyblF23ze6cVfS9k0oSBdJ7zl8K6D/XNGcuGxrZrbO5a7nM+/yIpAkOzp2lvCd56uF3STTwTn3elfNmsKA=="
+            txt = "u1gSKgxJoAmvHC98CuXeIAozjsvI36jRA8l3VsWajuv9ndq2HzC5SHkEJbUBR4aW9R+unYFd29zShbs5BzGB2vAUQjHuvUV64cM6lqKc/tpa0H0b9fLqtVou/Mdnws5yzwjb26QzlHP2frdf4XJGvQd67aWbPq8J9cDNfB/eC85eV0G/YtPcNvRxGxop57II"
+            # txt = "LQD58ubbQ8bBGvH/+4r18r74Z5NWa4IVPYZD6NJLrWzIcSBWiRxcrw/ftONQTYoq"
             plain_json = AESDecryption(txt)
             print(plain_json)
             # plain_json = AESDecryption(cipher_json)
