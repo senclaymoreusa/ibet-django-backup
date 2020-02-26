@@ -80,7 +80,7 @@ def AESEncryption(plain_text):
         
         return str(base64.b64encode(cipher_text), 'utf-8')
     except Exception as e:
-        print("IMES Encrypt Error: {}".format(repr(e)))
+        # print("IMES Encrypt Error: {}".format(repr(e)))
         logger.error("IMES Encrypt Error: {}".format(repr(e)))
         return ""
 
@@ -119,7 +119,7 @@ class InplayLoginAPI(View):
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
             post_data['TimeStamp'] = str(time_stamp)
-            
+
             url = IMES_URL + "api/login"
             headers = {'Content-type': 'application/json'}
             res = requests.post(url, data=json.dumps(post_data), headers=headers)
@@ -325,7 +325,7 @@ class InplayDeductBalanceAPI(View):
                             ref_no=package_id
                         )
 
-                        user.main_wallet = user.main_wallet - decimal.Decimal(amount)
+                        user.main_wallet = user.main_wallet + decimal.Decimal(amount) # transaction amount is negative
                         user.save()
                     
                         # res["DateReceived"] = str(timezone.now())
@@ -472,7 +472,7 @@ class InplayPostBetDetailsAPI(View):
             
             return HttpResponse(status=200)
         except Exception as e:
-            logger.error("Inplay Post Bet Error {}".format(repr(e)))
+            logger.error("Inplay PostBet Error {}".format(repr(e)))
             # return HttpResponse(repr(e), status=400) No return here
 
 
