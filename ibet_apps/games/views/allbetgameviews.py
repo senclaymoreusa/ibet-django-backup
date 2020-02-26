@@ -179,6 +179,17 @@ class GameLaunchView(View):
             return HttpResponse("AllBet GameLaunchView Error: " + str(e))
 
 
+class NoClientBalanceView(View):
+
+    def get(self, request):
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter",
+            }
+            logger.error("AllBet BalanceView Error: attempted to retrieve balance with missing client parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
 class BalanceView(View):
     
     def get(self, request, player_account_name):
@@ -750,6 +761,98 @@ class TransferView(View):
         Partner Public Platform API that handles different wallet transfer types such as bet, cancel, settle,
         and re-settle. JSON is the data format that this endpoint receives and responds with.
         """
+
+        try:
+            transfer_type = json.loads(request.body)["transferType"]
+        except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+        try:
+            client = json.loads(request.body)["client"]
+
+            if not client:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+        try:
+            tran_id = json.loads(request.body)["tranId"]
+
+            if not tran_id:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+        try:
+            amount = json.loads(request.body)["amount"]
+
+            if not amount:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+        try:
+            currency = json.loads(request.body)["currency"]
+
+            if not currency:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
         try:
             json_data = json.loads(request.body)
 
