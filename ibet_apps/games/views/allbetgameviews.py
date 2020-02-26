@@ -779,7 +779,7 @@ class TransferView(View):
         try:
             client = json.loads(request.body)["client"]
 
-            if not client:
+            if client == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -799,7 +799,7 @@ class TransferView(View):
         try:
             tran_id = json.loads(request.body)["tranId"]
 
-            if not tran_id:
+            if tran_id == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -819,7 +819,7 @@ class TransferView(View):
         try:
             amount = json.loads(request.body)["amount"]
 
-            if not amount:
+            if amount == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -839,7 +839,7 @@ class TransferView(View):
         try:
             currency = json.loads(request.body)["currency"]
 
-            if not currency:
+            if currency == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -867,7 +867,7 @@ class TransferView(View):
                     amount = details_entry["amount"]
 
                     # empty betNum or amount
-                    if not (betNum and amount):
+                    if (betNum == "") or (amount == ""):
                         json_to_return = {
                             "error_code": 40000,
                             "message": "invalid request parameter"
