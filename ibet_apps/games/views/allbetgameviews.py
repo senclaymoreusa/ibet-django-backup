@@ -930,6 +930,17 @@ class TransferView(View):
             generated_auth_header = "AB" + " " + ALLBET_PROP_ID + ":" + sign_string
             # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
+
+            if auth_header != generated_header:
+                json_to_return = {
+                                    "error_code": 10001,
+                                    "message": "signature invalid",
+                                    "balance": 0
+                                 }
+                logger.error("AllBet TransferView Error: Invalid sign while attempting to transfer")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
             # Default JSON Response fields
             res_error_code = 50000
             res_message = "server error"
