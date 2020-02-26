@@ -114,7 +114,7 @@ class InplayLoginAPI(View):
             post_data = {}
             sessionToken = Token.objects.get(user_id=user)
             post_data['Token'] = str(sessionToken)
-            post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
+            # post_data['Token'] = "a7d7eadf40d6364c17a7416b766497ff57fb84e2"
             # time_stamp = (datetime.datetime.utcnow() - timedelta(hours=4)).strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = datetime.datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
             time_stamp = des3Encryption(time_stamp)
