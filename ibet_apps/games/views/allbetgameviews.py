@@ -333,8 +333,8 @@ def placeBet(client, transaction_id, amount, bet_details):
                 single_bet_amount = bet_entry["amount"]
 
                 with transaction.atomic():
-                    user_balance = int(user_obj.main_wallet * 100) / 100.0
-                    balance_after_placing = user_balance - single_bet_amount
+                    user_balance = user_obj.main_wallet
+                    balance_after_placing = user_balance - decimal.Decimal(single_bet_amount)
                     user_obj.main_wallet = balance_after_placing
                     user_obj.save()
 
@@ -459,8 +459,8 @@ def settleBet(client, transaction_id, amount, settle_details):
                 existing_transaction = GameBet.objects.get(ref_no=single_settle_id)
                 prev_bet_amount = existing_transaction.amount_wagered
 
-                user_balance = int(user_obj.main_wallet * 100) / 100.0
-                balance_after_settling = user_balance + single_settle_amount + prev_bet_amount
+                user_balance = user_obj.main_wallet
+                balance_after_settling = user_balance + decimal.Decimal(single_settle_amount) + prev_bet_amount
                 user_obj.main_wallet = balance_after_settling
                 user_obj.save()
 
@@ -606,8 +606,8 @@ def cancelBet(client, transaction_id, amount, cancel_details):
             single_cancel_amount = cancel_entry["amount"]
 
             with transaction.atomic():
-                user_balance = int(user_obj.main_wallet * 100) / 100.0
-                balance_after_cancelling = user_balance + single_cancel_amount
+                user_balance = user_obj.main_wallet
+                balance_after_cancelling = user_balance + decimal.Decimal(single_cancel_amount)
                 user_obj.main_wallet = balance_after_cancelling
                 user_obj.save()
 
@@ -709,9 +709,9 @@ def resettleBet(client, transaction_id, amount, resettle_details):
 
         # Cancel existing settle and re-settle according to new details.
         with transaction.atomic():
-            user_balance = int(user_obj.main_wallet * 100) / 100.0
-            balance_after_cancelling = user_balance - float(most_recent_settle.amount_won)
-            balance_after_resettling = balance_after_cancelling + resettle_details[0]["amount"]
+            user_balance = user_obj.main_wallet
+            balance_after_cancelling = user_balance - most_recent_settle.amount_won
+            balance_after_resettling = balance_after_cancelling + decimal.Decimal(resettle_details[0]["amount"])
             user_obj.main_wallet = balance_after_resettling
             user_obj.save()
 
