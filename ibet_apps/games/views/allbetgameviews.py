@@ -333,8 +333,8 @@ def placeBet(client, transaction_id, amount, bet_details):
                 single_bet_amount = bet_entry["amount"]
 
                 with transaction.atomic():
-                    user_balance = int(user_obj.main_wallet * 100) / 100.0
-                    balance_after_placing = user_balance - single_bet_amount
+                    user_balance = user_obj.main_wallet
+                    balance_after_placing = user_balance - decimal.Decimal(single_bet_amount)
                     user_obj.main_wallet = balance_after_placing
                     user_obj.save()
 
@@ -456,8 +456,11 @@ def settleBet(client, transaction_id, amount, settle_details):
             single_settle_amount = settle_entry["amount"]
 
             with transaction.atomic():
-                user_balance = int(user_obj.main_wallet * 100) / 100.0
-                balance_after_settling = user_balance + single_settle_amount
+                existing_transaction = GameBet.objects.get(ref_no=single_settle_id)
+                prev_bet_amount = existing_transaction.amount_wagered
+
+                user_balance = user_obj.main_wallet
+                balance_after_settling = user_balance + decimal.Decimal(single_settle_amount) + prev_bet_amount
                 user_obj.main_wallet = balance_after_settling
                 user_obj.save()
 
@@ -603,8 +606,8 @@ def cancelBet(client, transaction_id, amount, cancel_details):
             single_cancel_amount = cancel_entry["amount"]
 
             with transaction.atomic():
-                user_balance = int(user_obj.main_wallet * 100) / 100.0
-                balance_after_cancelling = user_balance + single_cancel_amount
+                user_balance = user_obj.main_wallet
+                balance_after_cancelling = user_balance + decimal.Decimal(single_cancel_amount)
                 user_obj.main_wallet = balance_after_cancelling
                 user_obj.save()
 
@@ -706,9 +709,9 @@ def resettleBet(client, transaction_id, amount, resettle_details):
 
         # Cancel existing settle and re-settle according to new details.
         with transaction.atomic():
-            user_balance = int(user_obj.main_wallet * 100) / 100.0
-            balance_after_cancelling = user_balance - float(most_recent_settle.amount_won)
-            balance_after_resettling = balance_after_cancelling + resettle_details[0]["amount"]
+            user_balance = user_obj.main_wallet
+            balance_after_cancelling = user_balance - most_recent_settle.amount_won
+            balance_after_resettling = balance_after_cancelling + decimal.Decimal(resettle_details[0]["amount"])
             user_obj.main_wallet = balance_after_resettling
             user_obj.save()
 
@@ -776,7 +779,7 @@ class TransferView(View):
         try:
             client = json.loads(request.body)["client"]
 
-            if not client:
+            if client == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -796,7 +799,7 @@ class TransferView(View):
         try:
             tran_id = json.loads(request.body)["tranId"]
 
-            if not tran_id:
+            if tran_id == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -816,7 +819,7 @@ class TransferView(View):
         try:
             amount = json.loads(request.body)["amount"]
 
-            if not amount:
+            if amount == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -836,7 +839,7 @@ class TransferView(View):
         try:
             currency = json.loads(request.body)["currency"]
 
-            if not currency:
+            if currency == "":
                 json_to_return = {
                     "error_code": 40000,
                     "message": "invalid request parameter"
@@ -845,6 +848,52 @@ class TransferView(View):
                 return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
         except:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
+        # Check details, betNum, & amount
+        try:
+            details = json.loads(request.body)["details"]
+
+            # Loop through details and check amount & betNum for each entry
+            for details_entry in details:
+                try:
+                    betNum = details_entry["betNum"]
+                    amount = details_entry["amount"]
+
+                    # empty betNum or amount
+                    if (betNum == "") or (amount == ""):
+                        json_to_return = {
+                            "error_code": 40000,
+                            "message": "invalid request parameter"
+                        }
+                        logger.error("AllBet TransferView Error: invalid request parameter")
+                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                    if (betNum == "invalid") or (amount == "invalid"):
+                        json_to_return = {
+                            "error_code": 40000,
+                            "message": "invalid request parameter"
+                        }
+                        logger.error("AllBet TransferView Error: invalid request parameter")
+                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                except:
+                    # missing betNum or amount
+                    json_to_return = {
+                        "error_code": 40000,
+                        "message": "invalid request parameter"
+                    }
+                    logger.error("AllBet TransferView Error: invalid request parameter")
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            # missing details parameter
             json_to_return = {
                 "error_code": 40000,
                 "message": "invalid request parameter"
@@ -862,7 +911,17 @@ class TransferView(View):
             currency = json_data["currency"]
             transfer_type = json_data["transferType"]
             bet_details = json_data["details"]
-            
+
+
+            if (transaction_id == "invalid") or (amount == "invalid") or (currency == "invalid"):
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
             auth_header = request.META['HTTP_AUTHORIZATION']
             date_header = request.META['HTTP_DATE']
             content_md5_header = request.META['HTTP_CONTENT_MD5']
@@ -891,6 +950,17 @@ class TransferView(View):
 
             generated_auth_header = "AB" + " " + ALLBET_PROP_ID + ":" + sign_string
             # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
+
+
+            if auth_header != generated_header:
+                json_to_return = {
+                                    "error_code": 10001,
+                                    "message": "signature invalid",
+                                    "balance": 0
+                                 }
+                logger.error("AllBet TransferView Error: Invalid sign while attempting to transfer")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
 
             # Default JSON Response fields
             res_error_code = 50000
