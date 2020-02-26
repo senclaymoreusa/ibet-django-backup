@@ -853,6 +853,44 @@ class TransferView(View):
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
+        # Check details, betNum, & amount
+        try:
+            details = json.loads(request.body)["details"]
+
+            # Loop through details and check amount & betNum for each entry
+            for details_entry in details:
+                try:
+                    betNum = details_entry["betNum"]
+                    amount = details_entry["amount"]
+
+                    # empty betNum or amount
+                    if not (betNum and amount):
+                        json_to_return = {
+                            "error_code": 40000,
+                            "message": "invalid request parameter"
+                        }
+                        logger.error("AllBet TransferView Error: invalid request parameter")
+                        return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                except:
+                    # missing betNum or amount
+                    json_to_return = {
+                        "error_code": 40000,
+                        "message": "invalid request parameter"
+                    }
+                    logger.error("AllBet TransferView Error: invalid request parameter")
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        except:
+            # missing details parameter
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
         try:
             json_data = json.loads(request.body)
 
