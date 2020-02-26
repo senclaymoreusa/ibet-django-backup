@@ -456,8 +456,11 @@ def settleBet(client, transaction_id, amount, settle_details):
             single_settle_amount = settle_entry["amount"]
 
             with transaction.atomic():
+                existing_transaction = GameBet.objects.get(ref_no=single_settle_id)
+                prev_bet_amount = existing_transaction.amount_wagered
+
                 user_balance = int(user_obj.main_wallet * 100) / 100.0
-                balance_after_settling = user_balance + single_settle_amount
+                balance_after_settling = user_balance + single_settle_amount + prev_bet_amount
                 user_obj.main_wallet = balance_after_settling
                 user_obj.save()
 
