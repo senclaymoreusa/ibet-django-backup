@@ -1729,4 +1729,4 @@ CMS_CATEGORY = (
     (3, "Bonus")
 )
 #OPUS
-OPUS_API_URL = "http://staging-ecs-alb-2064712967.ap-northeast-1.elb.amazonaws.com/api/opus/"
+OPUS_API_URL = "https://games.claymoreasia.com/api/opus/"

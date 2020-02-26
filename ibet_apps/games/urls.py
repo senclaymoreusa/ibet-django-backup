@@ -180,7 +180,8 @@ urlpatterns = [
     path('api/ag/test', aggamesviews.test.as_view(), name="test"),
 
     #OPUS
-    path('api/opus/test', opusgameviews.Test.as_view(), name="test")
+    path('api/opus/test', opusgameviews.Test.as_view(), name="test"),
+    path('api/opus/login', csrf_exempt(opusgameviews.Login.as_view()), name="OPUS_Login")
 ]
 
 # onebook_getBetDetail(repeat=30,repeat_until=None)
