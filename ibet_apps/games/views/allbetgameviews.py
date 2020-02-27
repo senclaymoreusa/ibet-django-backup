@@ -952,7 +952,7 @@ class TransferView(View):
             # print("generated_auth_header: " + generated_auth_header) # Keeping this for testing purposes.
 
 
-            if auth_header != generated_header:
+            if auth_header != generated_auth_header:
                 json_to_return = {
                                     "error_code": 10001,
                                     "message": "signature invalid",
