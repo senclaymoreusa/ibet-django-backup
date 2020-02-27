@@ -12,6 +12,7 @@ from utils.constants import *
 import simplejson as json
 
 from system.models import *
+from games.models import *
 from django.db.models import Q, Sum
 from utils.constants import *
 import logging
@@ -64,7 +65,7 @@ class PerformanceReportView(CommAdminView):
                 dateRangeTo= datetime.strptime(dateRangeTo, '%m/%d/%Y')
                 data = getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market)
 
-                return HttpResponse(json.dumps(data), content_type='application/json', status=200)
+                return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json', status=200)
 
             elif timePeriod:
                 dateRangeTo = now
@@ -78,7 +79,7 @@ class PerformanceReportView(CommAdminView):
                     dateRangeFrom = now - relativedelta(days=90)
 
                 data = getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market)
-                return HttpResponse(json.dumps(data), content_type='application/json', status=200)
+                return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder), content_type='application/json', status=200)
 
             else:
                 return HttpResponse("Must be set a time range", content_type='application/json', status=400)
@@ -118,20 +119,21 @@ class PerformanceReportView(CommAdminView):
 def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
     marketCode = []
     marketArr = []
+    # print(dateRangeFrom, dateRangeTo, interval, currency, market)
     if market:
         for i in market:
             if i == "CNY" and CURRENCY_CNY not in marketCode:
                 marketCode.append(CURRENCY_CNY)
                 marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_CNY))
-            elif (i == "DE" or i == "FI" or i == "NL") and CURRENCY_EUR not in marketCode:
-                marketCode.append(CURRENCY_EUR)
-                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_EUR))
-            elif i == "NO" and CURRENCY_NOK not in marketCode:
-                marketCode.append(CURRENCY_NOK)
-                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_NOK))
-            elif i == "UK" and CURRENCY_GBP not in marketCode:
-                marketCode.append(CURRENCY_GBP)
-                marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_GBP))
+            # elif (i == "DE" or i == "FI" or i == "NL") and CURRENCY_EUR not in marketCode:
+            #     marketCode.append(CURRENCY_EUR)
+            #     marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_EUR))
+            # elif i == "NO" and CURRENCY_NOK not in marketCode:
+            #     marketCode.append(CURRENCY_NOK)
+            #     marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_NOK))
+            # elif i == "UK" and CURRENCY_GBP not in marketCode:
+            #     marketCode.append(CURRENCY_GBP)
+            #     marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_GBP))
             elif i == "VN" and CURRENCY_VND not in marketCode:
                 marketCode.append(CURRENCY_VND)
                 marketArr.append(dict(CURRENCY_CHOICES).get(CURRENCY_VND))
@@ -146,12 +148,23 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         "rangeFrom": dateRangeFrom.strftime("%b %e %Y"),
         "rangeTo": dateRangeTo.strftime("%b %e %Y"),
         "currency": currency,
-        "currencyCode": marketArr,
+        "marketCode": marketArr,
         "data": []
     }
 
     min_all_date_time = tz.localize(datetime.combine(dateRangeFrom, time.min)) 
-    max_all_date_time = tz.localize(datetime.combine(dateRangeTo, time.max))  
+    max_all_date_time = tz.localize(datetime.combine(dateRangeTo, time.max))
+    opening_balance = Transaction.objects.filter(request_time=min_all_date_time).distinct('user_id')
+    opening_amount = 0
+    close_amount = 0
+    for i in opening_balance:
+        opening_amount += i.current_balance
+    close_balance = Transaction.objects.filter(request_time=max_all_date_time).distinct('user_id')
+    for i in close_balance:
+        close_amount += i.current_balance
+    # print(opening_amount, close_amount)
+    dataObj["opening_amount"] = opening_amount
+    dataObj["close_amount"] = close_amount
     localCurrencies = Transaction.objects.filter(request_time__gt=min_all_date_time, request_time__lt=max_all_date_time).distinct('currency')
     currencyRateMap = {}
     if currency != "Local":
@@ -173,37 +186,67 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
             currencyRateMap[local] = float(response["rates"][currency])
         
     data = []
+    pre_activity_user = None
     while date < dateRangeTo:
         min_pub_date_time = tz.localize(datetime.combine(date, time.min)) 
         max_pub_date_time = tz.localize(datetime.combine(date, time.max))
         transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
-        deposits = transactions.filter(transaction_type=TRANSACTION_DEPOSIT, status=TRAN_SUCCESS_TYPE)
-        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL, status=TRAN_SUCCESS_TYPE)
-
+        deposits = transactions.filter(transaction_type=TRANSACTION_DEPOSIT) #,status=TRAN_SUCCESS_TYPE
+        withdraws = transactions.filter(transaction_type=TRANSACTION_WITHDRAWAL) #,status=TRAN_SUCCESS_TYPE
+        tranfer_in = transactions.filter(transaction_type=TRANSACTION_TRANSFER, transfer_from='main')
+        tranfer_out = transactions.filter(transaction_type=TRANSACTION_TRANSFER).exclude(transfer_from='main')
         dateStr = date.strftime("%b %e %Y")
         dataPerUnit = {
             "date_time": dateStr,    
         }
+        # print(marketCode)
         for i in marketCode:
             deposit_sum = 0
             withdraw_sum = 0
             register_times = UserAction.objects.filter(user__currency=i, event_type=EVENT_CHOICES_REGISTER, created_time__gt=min_pub_date_time, created_time__lt=max_pub_date_time).count()
-            ftd_times = CustomUser.objects.filter(currency=i, ftd_time__gt=min_pub_date_time, ftd_time__lt=max_pub_date_time).count()
+            ftd_queryset = CustomUser.objects.filter(currency=i, ftd_time__gt=min_pub_date_time, ftd_time__lt=max_pub_date_time)
+            ftd_times = ftd_queryset.count()
+            ftd_time_amount = ftd_queryset.aggregate(Sum('ftd_time_amount'))
+
             ftd_register_ratio = float(0) if int(register_times) == 0 else float(int(ftd_times)/int(register_times))
+            activity_user = GameBet.objects.filter(currency=i, bet_time__gt=min_pub_date_time, bet_time__lt=max_pub_date_time).distinct('user_id').count()
             deposits = deposits.filter(currency=i)
+            turnover = turnoverOverview(min_pub_date_time, max_pub_date_time)
+            bonus_cost = bonusCost(min_pub_date_time, max_pub_date_time)
             if currency != "Local":
                 for deposit in deposits:
                     deposit_sum += currencyRateMap[deposit.currency] * float(deposit.amount)
+                    deposit_sum = decimal.Decimal(deposit_sum)
                 withdraws = withdraws.filter(currency=i)
                 for withdraw in withdraws:
                     withdraw_sum += currencyRateMap[withdraw.currency] * float(withdraw.amount)
+                    withdraw_sum = decimal.Decimal(withdraw_sum)
                 dataPerUnit[dict(CURRENCY_CHOICES).get(i)] = {
                     "register_times": register_times,
                     "ftd_times": ftd_times,
                     "ftd_register_ratio": ftd_register_ratio,
+                    "ftd_time_amount": ftd_time_amount['ftd_time_amount__sum'] if ftd_time_amount['ftd_time_amount__sum'] else 0,
                     "deposit_amount": round(float(deposit_sum), 2),
-                    "withdraw_amount": round(float(withdraw_sum), 2)
+                    "withdraw_amount": round(float(withdraw_sum), 2),
+                    "net_deposit": deposit_sum - withdraw_sum if deposit_sum - withdraw_sum > 0 else 0,
+                    "transfer_in": tranfer_in.aggregate(Sum('amount'))['amount__sum'] if tranfer_in.aggregate(Sum('amount'))['amount__sum'] else 0,
+                    "transfer_out": tranfer_out.aggregate(Sum('amount'))['amount__sum'] if tranfer_out.aggregate(Sum('amount'))['amount__sum'] else 0,
+                    "activity_user": activity_user,
+                    "turnover": turnover,
+                    "ggr": turnover - deposit_sum if turnover > deposit_sum else 0,
+                    "bonus_cost": bonus_cost,
+                    "bonus_cost_ggr_ratio": "%.2f" % (bonus_cost/ (turnover - deposit_sum)) if turnover - deposit_sum > 0 else 0,
+                    "ngr": "%.2f" % (turnover - deposit_sum - bonus_cost),
+                    "ggr_hold": "%.2f" % (turnover - deposit_sum)/turnover if turnover > 0 else 0,
+                    "ngr_hold": "%.2f" % (turnover - deposit_sum - bonus_cost)/turnover if turnover > 0 else 0,
                 }
+
+                if pre_activity_user is None:
+                    dataPerUnit[dict(CURRENCY_CHOICES).get(i)]["player_retention"] = "%.2f" % activity_user
+                else:
+                    value = activity_user/pre_activity_user
+                    dataPerUnit[dict(CURRENCY_CHOICES).get(i)]["player_retention"] = "%.2f" % value if value else 0
+
             else:
                 for deposit in deposits:
                     deposit_sum += float(deposit.amount)
@@ -214,10 +257,26 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
                     "register_times": register_times,
                     "ftd_times": ftd_times,
                     "ftd_register_ratio": ftd_register_ratio,
+                    "ftd_time_amount": ftd_time_amount['ftd_time_amount__sum'] if ftd_time_amount['ftd_time_amount__sum'] else 0,
                     "deposit_amount": round(float(deposit_sum), 2),
-                    "withdraw_amount": round(float(withdraw_sum), 2)
+                    "withdraw_amount": round(float(withdraw_sum), 2),
+                    "net_deposit": deposit_sum - withdraw_sum if deposit_sum - withdraw_sum > 0 else 0,
+                    "transfer_in": tranfer_in.aggregate(Sum('amount'))['amount__sum'] if tranfer_in.aggregate(Sum('amount'))['amount__sum'] else 0,
+                    "transfer_out": tranfer_out.aggregate(Sum('amount'))['amount__sum'] if tranfer_out.aggregate(Sum('amount'))['amount__sum'] else 0,
+                    "activity_user": activity_user,
+                    "turnover": turnover,
+                    "ggr": turnover - deposit_sum if turnover > deposit_sum else 0,
+                    "bonus_cost": bonus_cost,
+                    "bonus_cost_ggr_ratio": "%.2f" % (bonus_cost/ (turnover - deposit_sum)) if turnover - deposit_sum > 0 else 0,
+                    "ngr": "%.2f" % (turnover - deposit_sum - bonus_cost),
+                    "ggr_hold": "%.2f" % (turnover - deposit_sum)/turnover if turnover > 0 else 0,
+                    "ngr_hold": "%.2f" % (turnover - deposit_sum - bonus_cost)/turnover if turnover > 0 else 0,
                 }
-
+                if pre_activity_user is None:
+                    dataPerUnit[dict(CURRENCY_CHOICES).get(i)]["player_retention"] = "%.2f" % activity_user
+                else:
+                    value = activity_user/pre_activity_user
+                    dataPerUnit[dict(CURRENCY_CHOICES).get(i)]["player_retention"] = "%.2f" % value if value else 0
 
         # register_times = UserAction.objects.filter(user__currency__in=marketCode, event_type=EVENT_CHOICES_REGISTER, created_time__gt=min_pub_date_time, created_time__lt=max_pub_date_time).count()
         # transactions = Transaction.objects.filter(request_time__gt=min_pub_date_time, request_time__lt=max_pub_date_time)
@@ -621,3 +680,17 @@ def getBet(username, time_from, time_to, type):
         bet = rows[0] if rows[0] else 0
 
     return won - bet
+
+
+
+
+def turnoverOverview(time_from, time_to):
+    return 0
+    
+
+def ggrOverview(time_from, time_to, withdraw):  #turnoverOverview - withdraw
+    return turnoverOverview(time_from, time_to) - withdraw
+
+
+def bonusCost(time_from, time_to):
+    return 0

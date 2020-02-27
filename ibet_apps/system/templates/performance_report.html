@@ -12,8 +12,8 @@
         <li id="report-builder"><a data-toggle="tab"  class="tab-label" href="#report-builder">REPORT BUILDER</a></li>
     </ul>
     <div class="row" style="margin-top:20px;">
-        <div class="col-md-2">
-            <div style="width: 100%; height: 670px; background-color: #f3f3f3;">
+        <div class="col-md-2" id="reportSide">
+            <div style="width: 100%; background-color: #f3f3f3;">
                 <div class="btn-group interval-select" role="group" aria-label="Basic example" style="margin:10px;">
                     <button type="button" class="btn btn-secondary interval-padding">Day</button>
                     <button type="button" class="btn btn-secondary interval-padding">Week</button>
@@ -92,14 +92,14 @@
                         </div>
                     </div> -->
 
-                    <div style="padding-top:20px">
+                    <div style="padding-top:20px" id="marketOptiion">
                         <label class="role-title" style="margin-right:40px;">MARKET</label>
                         <select id="market-select" multiple="multiple" class="form-control">
-                            <optgroup label="ibet" class="ibetMarkets">   
+                            <!-- <optgroup label="ibet" class="ibetMarkets">   
                                 <option value="ALL" id="ibetALL">ALL</option>
                                 {% for market in markets.ibetMarket_options %}
                                     <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
-                                {% endfor %}
+                                {% endfor %} -->
                                 <!-- <option value="CNY">CNY</option>
                                 <option value="THB">THB</option>
                                 <option value="VN">VN</option>
@@ -108,7 +108,7 @@
                                 <option value="NL">NL</option>
                                 <option value="NO">NO</option>
                                 <option value="UK">UK</option> -->
-                            </optgroup>
+                            <!-- </optgroup> -->
                             <optgroup label="Letou" class="letouMarkets">   
                                 <!-- <option value="all">ALL</option>
                                 <option value="CNY">CNY</option>
@@ -153,7 +153,7 @@
                         </select>
                     </div> -->
 
-                    <div>
+                    <!-- <div>
                         <label class="role-title" style="margin-right:40px;">DEVICE</label>
                         <select id="device-select" multiple="multiple" class="form-control">
                             <option value="desktop">Desktop</option>
@@ -170,13 +170,13 @@
                             <option value="web">Web</option>
                             <option value="app">App</option>
                         </select><br /><br />
-                    </div>
+                    </div> -->
                     <div>
                         <label style="font-size:13px;"><input type="checkbox">Include performance per product</label>
                     </div>
                 </div>
 
-                <div style="margin-left:35px;margin-top:20px;">
+                <div style="padding: 7%">
                     <button type="button" class="btn btn-success" id="submit_btn">Generate report</button>
                 </div>
             </div>
@@ -192,14 +192,14 @@
                         <div class="col-md-1" style="font-weight: 800;">Market</div>
                         <div class="col-md-11" id="market">ibet - TH</div>
                     </div>
-                    <div class="row">
+                    <!-- <div class="row">
                         <div class="col-md-1" style="font-weight: 800;">Device</div>
                         <div class="col-md-11" id="device">Mobile iOS, Mobile Android</div>
                     </div>
                     <div class="row">
                         <div class="col-md-1" style="font-weight: 800;">Channel</div>
                         <div class="col-md-11" id="channel">App</div>
-                    </div>
+                    </div> -->
                     <div class="row">
                         <div class="col-md-1" style="font-weight: 800;">Currency</div>
                         <div class="col-md-11" id="currency">THB</div>
@@ -209,23 +209,29 @@
                     <table class="custom-user" id="report-table">
                         <thead class="thead-dark">
                             <tr>
-                                <th>PEROID</th>
+                                <th>DATE</th>
                                 <th>MARKET</th>
                                 <th>CURRENCY</th>
+                                <th>OPENING BALANCE</th>
+                                <th>CLOSING BALANCE</th>
+                                <th>TRANSFER IN</th>
+                                <th>TRANSFER OUT</th>
                                 <th>REGISTRATIONS</th>
                                 <th>FTD</th>
-                                <th>ACTIVIE PALYERS</th>
+                                <th>FTD CONVERSION</th>
+                                <th>FTD AMOUNT</th>
+                                <th>ACTIVE PLAYERS</th>
+                                <th>PLAYER RETENTION %</th>
+                                <th>TURNOVER</th>
                                 <th>GGR</th>
-                                <th>TURNOBER</th>
+                                <th>BONUS COST</th>
+                                <th>BONUS % GGR</th>
+                                <th>NGR</th>
+                                <th>GGR HOLD %</th>
+                                <th>NGR HOLD %</th>
                                 <th>DEPOSIT</th>
                                 <th>WITHDRAWAL</th>
-                                <th>BONUS COST</th>
-                                <th>NGR</th>
-                                <th>FTD CONVERSION</th>
-                                <th>BONUS/ GGR</th>
-                                <th>GGR HOLD</th>
-                                <th>NGR HOLD</th>
-                                <th>GENERAL BONUS</th>
+                                <th>NET DEPOSITS</th>
                             </tr>
                         </thead>
                         <tbody id='user_list_tbody'>
@@ -348,13 +354,9 @@ $(document).ready(function() {
                 else
                     return $(element).attr('value')
             },
-            buttonWidth:function(){             
-            if($(window).width() <= 1550) 
-                return "150px"; 
-            else if ($(window).width() >= 1800) 
-                return "210px";
-            else 
-                return "180px";
+            buttonWidth:function(){
+                var width = $("#time-period-options").width();
+                return width;
             },
             // onChange: function(option, checked, select) {
             //     // console.log(option, checked, select);
@@ -393,13 +395,9 @@ $(document).ready(function() {
 
         $('#device-select').multiselect({
             includeSelectAllOption: true,
-            buttonWidth:function(){             
-            if($(window).width() <= 1550) 
-                return "150px"; 
-            else if ($(window).width() >= 1800) 
-                return "210px";
-            else 
-                return "180px";
+            buttonWidth:function(){  
+                var width = $("#time-period-options").width();
+                return width;
             },
         });
     })
@@ -409,12 +407,8 @@ $(document).ready(function() {
         $('#channel-select').multiselect({
             includeSelectAllOption: true,
             buttonWidth:function(){             
-            if($(window).width() <= 1550) 
-                return "150px"; 
-            else if ($(window).width() >= 1800) 
-                return "210px";
-            else 
-                return "180px";
+                var width = $("#time-period-options").width();
+                return width;
             },
         });
     })
@@ -523,19 +517,13 @@ $(document).ready(function() {
                 type: "GET",
                 url: "{% url 'xadmin:performance_report' %}",
                 data,
-                // data: {
-                //     csrfmiddlewaretoken: "{{ csrf_token }}",
-                //     type: "generate_report",
-                //     interval: interval,
-                //     currency: currency,
-                //     dateRange: dateRange,
-                //     timePeriod: timePeriod,
-                // },
                 success: function(data) {
-                    // console.log(data);
+                    console.log(data);
                     $('#data-block').removeClass("hide");
-                    var text = data.rangeFrom + ' - ' + data.rangeTo
-                    var currencyArr = data.currencyCode;
+                    var text = data.rangeFrom + ' - ' + data.rangeTo;
+                    var close_amount = data.close_amount;
+                    var opening_amount = data.opening_amount;
+                    var currencyArr = data.marketCode;
                     $('#period').text(text);
                     var marketStr = "";
                     if (marketArray) {
@@ -603,16 +591,26 @@ $(document).ready(function() {
                                     content = content + "<td>" + currency + "</td>";
                                 }
                                 // content = content + "<td>" + currency + "</td>";
+                                content = content + "<td>" + opening_amount + "</td>";
+                                content = content + "<td>" + close_amount + "</td>";
+                                content = content + "<td>" + value["transfer_in"] + "</td>";
+                                content = content + "<td>" + value["transfer_out"] + "</td>";
                                 content = content + "<td>" + registerTimes + "</td>";
                                 content = content + "<td>" + ftdTimes + "</td>";
-                                content = content + "<td>100</td>";
-                                content = content + "<td>799</td>";
-                                content = content + "<td>799</td>";
+                                content = content + "<td>" + value["ftd_register_ratio"] + "</td>";
+                                content = content + "<td>" + value["ftd_time_amount"] + "</td>";
+                                content = content + "<td>" + value["activity_user"] + "</td>";
+                                content = content + "<td>" + value["player_retention"] + "</td>";
+                                content = content + "<td>" + value["turnover"] + "</td>";
+                                content = content + "<td>" + value["ggr"] + "</td>";
+                                content = content + "<td>" + value["bonus_cost"] + "</td>";
+                                content = content + "<td>" + value["bonus_cost_ggr_ratio"] + "</td>";
+                                content = content + "<td>" + value["ngr"] + "</td>";
+                                content = content + "<td>" + value["ggr_hold"] + "</td>";
+                                content = content + "<td>" + value["ngr_hold"] + "</td>";
                                 content = content + "<td>" + depositAmt + "</td>";
                                 content = content + "<td>" + withdrawAmt + "</td>";
-                                content = content + "<td>799</td>";
-                                content = content + "<td>799</td>";
-                                content = content + "<td>" + ftdRatio + "</td>";
+                                content = content + "<td>" + value["net_deposit"] + "</td>";
                                 content += '</tr>';
                                 firstRow = false;
                                 totalRegister = totalRegister + registerTimes;
