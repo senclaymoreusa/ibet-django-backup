@@ -121,6 +121,10 @@ def transaction_copy(request):
 
     for result in results:
         try:
+            # print(result.transaction_id)
+            # print(type(result.transaction_id))
+            if type(result.transaction_id) == int:
+                print(result.transaction_id)
             if result.request_time > max_datetime:
                 max_datetime = result.request_time
             filestr = filestr \
