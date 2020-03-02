@@ -514,7 +514,8 @@ def settleBet(client, transaction_id, amount, settle_details, currency):
                     #bet_time = timezone.now(),
                     resolved_time = timezone.now(),
                     other_data = {
-                        "transaction_id": transaction_id
+                        "transaction_id": transaction_id,
+                        "currency": currency
                     }
                 )
 
@@ -671,7 +672,8 @@ def cancelBet(client, transaction_id, amount, cancel_details, currency):
                     #bet_time = timezone.now(),
                     resolved_time = timezone.now(),
                     other_data = {
-                        "transaction_id": transaction_id
+                        "transaction_id": transaction_id,
+                        "currency": currency
                     }
                 )
 
