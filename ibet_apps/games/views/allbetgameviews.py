@@ -268,7 +268,7 @@ class BalanceView(View):
             return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
 
-def placeBet(client, transaction_id, amount, bet_details):
+def placeBet(client, transaction_id, amount, bet_details, currency):
     """
     Helper method for the place bet transfer type, which handles both single bets as well
     as batch bets.
@@ -360,7 +360,8 @@ def placeBet(client, transaction_id, amount, bet_details):
                         bet_time = timezone.now(),
                         #resolved_time = timezone.now(),
                         other_data = {
-                            "transaction_id": transaction_id
+                            "transaction_id": transaction_id,
+                            "currency": currency
                         }
                     )
 
@@ -393,7 +394,7 @@ def placeBet(client, transaction_id, amount, bet_details):
         return HttpResponse(str(e))
 
 
-def settleBet(client, transaction_id, amount, settle_details):
+def settleBet(client, transaction_id, amount, settle_details, currency):
     """
     Helper method for the settle bet transfer type. 'amount' parameter will be positive for wins and negative for losses.
     This method supports batch settling of bets.
@@ -430,6 +431,25 @@ def settleBet(client, transaction_id, amount, settle_details):
 
         try:
             existing_transaction = GameBet.objects.get(ref_no=single_settle_id)
+
+            # 3-16: Settling with a different client account should not be allowed
+            if existing_transaction.user_name != client:
+                json_to_return = {
+                    "error_code": 10007,
+                    "message": "invalid status: transaction had already been cancelled/settled"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+            # 3-15: Settling with different currencies should not be allowed
+            if existing_transaction.other_data["currency"] != currency:
+                json_to_return = {
+                    "error_code": 40000,
+                    "message": "invalid request parameter"
+                }
+                logger.error("AllBet TransferView Error: invalid request parameter")
+                return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
         except ObjectDoesNotExist:
             json_to_return = {
                 "error_code": 10006,
@@ -518,7 +538,7 @@ def settleBet(client, transaction_id, amount, settle_details):
         return HttpResponse(str(e))
 
 
-def cancelBet(client, transaction_id, amount, cancel_details):
+def cancelBet(client, transaction_id, amount, cancel_details, currency):
     try:
 
         try:
@@ -578,6 +598,24 @@ def cancelBet(client, transaction_id, amount, cancel_details):
                         "message": "Error: Bet amount and cancel amount do not match."
                     }
                     logger.error("AllBet TransferView: Bet amount and cancel amount do not match.")
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                # 2-17: Cancelling with a different client account should not be allowed
+                if existing_bet.user_name != client:
+                    json_to_return = {
+                        "error_code": 10007,
+                        "message": "invalid status: transaction had already been cancelled/settled"
+                    }
+                    logger.error("AllBet TransferView Error: invalid request parameter")
+                    return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+                # 2-16: Cancelling with different currencies should not be allowed
+                if existing_bet.other_data["currency"] != currency:
+                    json_to_return = {
+                        "error_code": 40000,
+                        "message": "invalid request parameter"
+                    }
+                    logger.error("AllBet TransferView Error: invalid request parameter")
                     return HttpResponse(json.dumps(json_to_return), content_type='application/json')
 
             except ObjectDoesNotExist:
@@ -650,7 +688,7 @@ def cancelBet(client, transaction_id, amount, cancel_details):
         return HttpResponse(str(e))
 
 
-def resettleBet(client, transaction_id, amount, resettle_details):
+def resettleBet(client, transaction_id, amount, resettle_details, currency):
 
     try:
         existing_settle = GameBet.objects.filter(ref_no=resettle_details[0]["betNum"])
@@ -969,19 +1007,19 @@ class TransferView(View):
 
             # Place bet
             if transfer_type == 10:
-                return placeBet(client, transaction_id, amount, bet_details)
+                return placeBet(client, transaction_id, amount, bet_details, currency)
 
             # Settle bet
             elif transfer_type == 20:
-                return settleBet(client, transaction_id, amount, bet_details)
+                return settleBet(client, transaction_id, amount, bet_details, currency)
 
             # Cancel bet
             elif transfer_type == 11:
-                return cancelBet(client, transaction_id, amount, bet_details)
+                return cancelBet(client, transaction_id, amount, bet_details, currency)
 
             # Re-settle bet
             elif transfer_type == 21:
-                return resettleBet(client, transaction_id, amount, bet_details)
+                return resettleBet(client, transaction_id, amount, bet_details, currency)
 
             else:
                 res_error_code = 40000
