@@ -177,7 +177,7 @@ urlpatterns = [
     path('api/ag/ftp', csrf_exempt(aggamesviews.agftp), name="ag_ftp"),
     path('api/ag/test', aggamesviews.test.as_view(), name="test_fund_transfer"),
     path('api/ag/ag_service', csrf_exempt(aggamesviews.agService), name="AG_Service"),
-    path('api/ag/test', aggamesviews.test.as_view(), name="test"),
+
 
     #OPUS
     path('api/opus/test', opusgameviews.Test.as_view(), name="test"),

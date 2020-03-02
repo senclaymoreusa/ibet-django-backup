@@ -9,7 +9,7 @@ import logging
 from games.views.eagameviews import requestEADeposit, requestEAWithdraw, getEAWalletBalance
 from games.views.onebookviews import fundTransfer, checkUserBalance
 from games.views.kygameviews import kyTransfer, kyBalance
-from games.views.aggamesviews import agFundTransfer, getBalance
+from games.views.aggamesviews import agFundTransfer, agGetBalance
 from games.views.ptgameviews import ptTransfer
 from games.views.gameplayintviews import getGPIBalance, gpiTransfer
 from games.views.opusgameviews import transfer, getBalance
@@ -107,8 +107,9 @@ class CheckTransferWallet():
         return balance
         
     def AGCheckAmount(self):
-        obj = getBalance(self.user)
+        obj = agGetBalance(self.user)
         obj = json.loads(obj)
+        print(obj)
         balance = 0
         if obj and obj['balance']:
             balance = decimal.Decimal(obj['balance'])
