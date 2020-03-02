@@ -503,7 +503,7 @@ def get_Balance(request):
         logger.error("The user is not existed in AG getBalance api.")
         return Response({"error":"The user is not existed in AG getBalance api."}) 
 
-def getBalance(user):
+def agGetBalance(user):
     password = AG_CAGENT + user.username
 
     if user.currency == CURRENCY_CNY:
@@ -548,8 +548,8 @@ def getBalance(user):
 class test(APIView):
     permission_classes = (AllowAny, )
     def get(self, request, *args, **kwargs):
-        user = CustomUser.objects.get(username="angela02")
-        response = getBalance(user)
+        user = CustomUser.objects.get(username="angela05")
+        response = agGetBalance(user)
         return HttpResponse(response)
 
 def prepareTransferCredit(user, password, actype, cur, agtype, gameCategory, credit, fixcredit, billno):    
