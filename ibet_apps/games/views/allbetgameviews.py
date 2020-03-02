@@ -741,6 +741,17 @@ def resettleBet(client, transaction_id, amount, resettle_details, currency):
     try:
         resettle_id = resettle_details[0]["betNum"]
 
+        # Case 4-17
+        resettle_amount = resettle_details[0]["amount"]
+        if resettle_amount != amount:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "Error: total win/loss not equal to win/loss in details parameter"
+            }
+            logger.warning("AllBet TransferView: total win/loss not equal to win/loss in details parameter.")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+
         try:
             most_recent_settle = GameBet.objects.filter(ref_no=resettle_id, outcome__in=[0, 1, 2, 3]).latest('resolved_time')
         except ObjectDoesNotExist:
@@ -777,7 +788,8 @@ def resettleBet(client, transaction_id, amount, resettle_details, currency):
                 #bet_time = timezone.now(),
                 resolved_time = timezone.now(),
                 other_data = {
-                    "transaction_id": transaction_id
+                    "transaction_id": transaction_id,
+                    "currency": currency
                 }
             )
 
