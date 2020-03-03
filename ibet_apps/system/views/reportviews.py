@@ -19,6 +19,7 @@ import logging
 from datetime import datetime, time
 from django.core.serializers.json import DjangoJSONEncoder
 from dateutil.relativedelta import *
+import decimal
 import pytz
 import requests
 
@@ -165,11 +166,12 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
     # print(opening_amount, close_amount)
     dataObj["opening_amount"] = opening_amount
     dataObj["close_amount"] = close_amount
-    localCurrencies = Transaction.objects.filter(request_time__gt=min_all_date_time, request_time__lt=max_all_date_time).distinct('currency')
+    # localCurrencies = Transaction.objects.filter(request_time__gt=min_all_date_time, request_time__lt=max_all_date_time).distinct('currency')
+    localCurrencies = dict(CURRENCY_CHOICES).keys()
     currencyRateMap = {}
     if currency != "Local":
         for i in localCurrencies:
-            local = i.currency
+            local = i
             if local == CURRENCY_THB:
                 base = "THB"
             elif local == CURRENCY_USD:
@@ -183,8 +185,9 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
                             "base": base,
                         })
             response = response.json()
-            currencyRateMap[local] = float(response["rates"][currency])
-        
+            currencyRateMap[local] = decimal.Decimal(response["rates"][currency])
+    
+    # print(currencyRateMap)
     data = []
     pre_activity_user = None
     while date < dateRangeTo:
@@ -199,7 +202,6 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         dataPerUnit = {
             "date_time": dateStr,    
         }
-        # print(marketCode)
         for i in marketCode:
             deposit_sum = 0
             withdraw_sum = 0
@@ -221,20 +223,27 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
                 for withdraw in withdraws:
                     withdraw_sum += currencyRateMap[withdraw.currency] * float(withdraw.amount)
                     withdraw_sum = decimal.Decimal(withdraw_sum)
+                ftd_time_amount = decimal.Decimal(ftd_time_amount['ftd_time_amount__sum']) * currencyRateMap[i] if ftd_time_amount['ftd_time_amount__sum'] else 0
+                transfer_in_amount = decimal.Decimal(tranfer_in.aggregate(Sum('amount'))['amount__sum']) * currencyRateMap[i] if tranfer_in.aggregate(Sum('amount'))['amount__sum'] else 0
+                tranfer_out_amount = decimal.Decimal(tranfer_out.aggregate(Sum('amount'))['amount__sum']) * currencyRateMap[i] if tranfer_out.aggregate(Sum('amount'))['amount__sum'] else 0
+                # print(currencyRateMap[i])
+                # print(ftd_time_amount)
+                bonus_cost = decimal.Decimal(bonus_cost) * currencyRateMap[i]
+                turnover = decimal.Decimal(turnover) * currencyRateMap[i]
                 dataPerUnit[dict(CURRENCY_CHOICES).get(i)] = {
                     "register_times": register_times,
                     "ftd_times": ftd_times,
                     "ftd_register_ratio": ftd_register_ratio,
-                    "ftd_time_amount": ftd_time_amount['ftd_time_amount__sum'] if ftd_time_amount['ftd_time_amount__sum'] else 0,
+                    "ftd_time_amount":  "%.2f" % (ftd_time_amount),
                     "deposit_amount": round(float(deposit_sum), 2),
                     "withdraw_amount": round(float(withdraw_sum), 2),
                     "net_deposit": deposit_sum - withdraw_sum if deposit_sum - withdraw_sum > 0 else 0,
-                    "transfer_in": tranfer_in.aggregate(Sum('amount'))['amount__sum'] if tranfer_in.aggregate(Sum('amount'))['amount__sum'] else 0,
-                    "transfer_out": tranfer_out.aggregate(Sum('amount'))['amount__sum'] if tranfer_out.aggregate(Sum('amount'))['amount__sum'] else 0,
+                    "transfer_in":  "%.2f" % (transfer_in_amount),
+                    "transfer_out":  "%.2f" % (tranfer_out_amount),
                     "activity_user": activity_user,
                     "turnover": turnover,
                     "ggr": turnover - deposit_sum if turnover > deposit_sum else 0,
-                    "bonus_cost": bonus_cost,
+                    "bonus_cost":  "%.2f" % (bonus_cost),
                     "bonus_cost_ggr_ratio": "%.2f" % (bonus_cost/ (turnover - deposit_sum)) if turnover - deposit_sum > 0 else 0,
                     "ngr": "%.2f" % (turnover - deposit_sum - bonus_cost),
                     "ggr_hold": "%.2f" % (turnover - deposit_sum)/turnover if turnover > 0 else 0,
