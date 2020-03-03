@@ -499,7 +499,7 @@ class WalletSettleAPIURL(APIView):
             try:
                 Method        = data['GB']['Result']['Method']
                 Success       = data['GB']['Result']['Success']
-
+                
                 TransType     = data['GB']['Result']['ReturnSet']['TransType']
                 BetTotalCnt   = data['GB']['Result']['ReturnSet']['BetTotalCnt']
                 BetTotalAmt   = data['GB']['Result']['ReturnSet']['BetTotalAmt']
@@ -510,6 +510,7 @@ class WalletSettleAPIURL(APIView):
                     
                     for x in range(len(data['GB']['Result']['ReturnSet']['SettleList'])):
                         trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
+                        
                         SettleID      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleID']
                         BetID         = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetID']
                         BetGrpNO      = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetGrpNO']
@@ -521,6 +522,7 @@ class WalletSettleAPIURL(APIView):
                         BetTypeParam1 = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetTypeParam1']
                         BetTypeParam2 = data['GB']['Result']['ReturnSet']['SettleList'][x]['BetTypeParam2']
                         Wintype       = data['GB']['Result']['ReturnSet']['SettleList'][x]['Wintype']
+                        
                         HxMGUID       = data['GB']['Result']['ReturnSet']['SettleList'][x]['HxMGUID']
                         InitBetAmt    = data['GB']['Result']['ReturnSet']['SettleList'][x]['InitBetAmt']
                         RealBetAmt    = data['GB']['Result']['ReturnSet']['SettleList'][x]['RealBetAmt']
@@ -532,12 +534,13 @@ class WalletSettleAPIURL(APIView):
                         WLAmt         = data['GB']['Result']['ReturnSet']['SettleList'][x]['WLAmt']
                 
                         RefundBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][x]['RefundAmt'] 
-                
-                        TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketBetAmt']
-                        TicketResult  = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketResult']
-                        TicketWLAmt   = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketWLAmt']
-                        SettleDT      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleDT']
                         
+                        TicketBetAmt  = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketBetAmt']
+                        
+                        TicketResult  = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketResult']
+                        
+                        TicketAmt   = data['GB']['Result']['ReturnSet']['SettleList'][x]['TicketAmt']
+                        SettleDT      = data['GB']['Result']['ReturnSet']['SettleList'][x]['SettleDT']
                         
                         if BetType == '1':
                             bet_type = SINGLE
@@ -556,9 +559,11 @@ class WalletSettleAPIURL(APIView):
                             TicketResult = 3 #兑现
                         elif TicketResult == 'R':
                             TicketResult = 3 #rollback 體育專屬,表示先前說的都不算,回沖輸贏,等待下次結算
-
+                        
                         if data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList'] != []:
+                            
                             category = 'Sports'
+                            
                             try:
                                 cate = Category.objects.get(name=category)
                             except:
@@ -566,10 +571,11 @@ class WalletSettleAPIURL(APIView):
                             SportList = data['GB']['Result']['ReturnSet']['SettleList'][x]['SportList']
                             SportList_size = len(SportList)
                             for y in range(SportList_size):
-                                Team = SportList[y][Team]
+                                Team = SportList[y]['Team']
+                                
                                 teamcode1 = Team[0]['TeamCode']
                                 teamcode2 = Team[1]['TeamCode']
-
+                                
                                 GameBet.objects.create(
                                     provider=PROVIDER,
                                     category=cate,
