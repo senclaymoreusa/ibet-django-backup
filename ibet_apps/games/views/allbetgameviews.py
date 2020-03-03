@@ -695,6 +695,24 @@ def resettleBet(client, transaction_id, amount, resettle_details, currency):
     try:
         existing_settle = GameBet.objects.filter(ref_no=resettle_details[0]["betNum"])
 
+        # 4-21: Re-settle with different currencies
+        if existing_settle.other_data["currency"] != currency:
+            json_to_return = {
+                "error_code": 40000,
+                "message": "invalid request parameter"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
+        # 4-22: Re-settle with another client account
+        if existing_settle.user_name != client:
+            json_to_return = {
+                "error_code": 10007,
+                "message": "invalid status: transaction had already been cancelled/settled"
+            }
+            logger.error("AllBet TransferView Error: invalid request parameter")
+            return HttpResponse(json.dumps(json_to_return), content_type='application/json')
+
     except ObjectDoesNotExist:
         json_to_return = {
             "error_code": 10006,
