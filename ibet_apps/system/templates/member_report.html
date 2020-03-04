@@ -34,20 +34,12 @@
                 <div style="padding:0px 10px; margin-bottom:10px;" >
                     <label class="role-title" style="margin-right:40px;">MARKET</label>
                     <select id="market-select" multiple="multiple" class="form-control">
-                        <optgroup label="ibet" class="ibetMarkets">   
+                        <!-- <optgroup label="ibet" class="ibetMarkets">   
                             <option value="ALL" id="ibetALL">ALL</option>
                             {% for market in markets.ibetMarket_options %}
                                 <option value="{{ market.code }}" id="{{  market.name }}">{{ market.code }}</option>
                             {% endfor %}
-                            <!-- <option value="CNY">CNY</option>
-                            <option value="THB">THB</option>
-                            <option value="VN">VN</option>
-                            <option value="DE">DE</option>
-                            <option value="FI">FI</option>
-                            <option value="NL">NL</option>
-                            <option value="NO">NO</option>
-                            <option value="UK">UK</option> -->
-                        </optgroup>
+                        </optgroup> -->
                         <optgroup label="Letou" class="letouMarkets">   
                             <!-- <option value="all">ALL</option>
                             <option value="CNY">CNY</option>
@@ -118,7 +110,7 @@
                 <div style="margin-left:10px; margin-top:10px;">
                     <input type="checkbox" id="dataPerProduct"><label style="font-size:13px; margin-left:7px;">Include data per product</label>
                 </div>
-                <div style="margin-left:35px;margin-top:20px;">
+                <div style="padding: 7%">
                     <button type="button" class="btn btn-success" id="submit_btn">Generate report</button>
                 </div>
             </div>
@@ -298,12 +290,8 @@ $(document).ready(function() {
                     return $(element).attr('value')
             },
             buttonWidth:function(){             
-            if($(window).width() <= 1550) 
-                return "150px"; 
-            else if ($(window).width() >= 1800) 
-                return "210px";
-            else 
-                return "180px";
+                var width = $("#status-select").width();
+                return width;
             },
             // onChange: function(option, checked, select) {
             //     // console.log(option, checked, select);
@@ -374,7 +362,7 @@ $(document).ready(function() {
             alert("There is no match user");
             return;
         }
-
+        
 
         if (!error) {
             data["type"] = "generate_member_report";
@@ -383,7 +371,7 @@ $(document).ready(function() {
                 url: "{% url 'xadmin:members_report' %}",
                 data,
                 success: function(res) {
-                    // console.log(res);
+                    console.log(res);
 
                     $("#user_list_tbody").empty();
                     $('#data-block').removeClass("hide");
@@ -434,37 +422,53 @@ $(document).ready(function() {
                         content = content + "<div style='color: red; margin-top:10px;'>There is no result</div>"
                         
                     } else {
-
+                        var user_url = "{% url 'xadmin:user_detail' 123%}";
+                        var affiliate_rul = "{% url 'xadmin:agent_detail' 123 %}"
                         var data = res.data;
                         var content = "";
                         for (var i = 0; i < data.length; i++) {
+                            var url = user_url.replace("123", data[i].userId);
+                            var aff_url = affiliate_rul.replace("123", data[i].userId);
                             content = content + "<tr>";
-                            content = content + "<td>" + data[i].userId + "</td>";
-                            content = content + "<td>" + data[i].username + "</td>";
+                            content = content + "<td><a href='" + url + "'>" + data[i].userId +"</a></td>";
+                            content = content + "<td><a href='" + url + "'>" + data[i].username +"</a></td>";
                             content = content + "<td>" + data[i].status + "</td>";
-                            content = content + "<td>Normal</td>";
-                            content = content + "<td>" + data[i].channel + "</td>";
-                            content = content + "<td>" + data[i].product + "</td>";
+                            content = content + "<td>" + data[i].vipLevel + "</td>";
+                            content = content + "<td>" + data[i].vipLevel + "</td>";
+                            content = content + "<td>" + data[i].number_of_linked_account + "</td>";
+                            content = content + "<td>" + data[i].define_by + "</td>";
+                            content = content + "<td>" + data[i].vip_manager + "</td>";
+                            content = content + "<td>" + data[i].prefer_channel + "</td>";
+                            content = content + "<td>" + data[i].prefer_product + "</td>";
                             content = content + "<td>" + data[i].country + "</td>";
                             content = content + "<td>" + data[i].address + "</td>";
-                            content = content + "<td>" + data[i].phone + "</td>";
-                            content = content + "<td>" + data[i].verified + "</td>";
-                            content = content + "<td>" + data[i].affiiateId + "</td>";
+                            content = content + "<td>" + data[i].id_verified + "</td>";
+                            content = content + "<td>" + data[i].phone_verified + "</td>";
+                            content = content + "<td>" + data[i].email_verified + "</td>";
+                            content = content + "<td>" + data[i].ftd_date + "</td>";
+                            content = content + "<td>" + data[i].ftd_amount + "</td>";
+                            content = content + "<td>" + data[i].player_resource + "</td>";
+                            content = content + "<td><a href='" + aff_url + "'>" + data[i].affiiateId +"</a></td>";
+                            content = content + "<td>referrer id</td>";
                             content = content + "<td>" + data[i].lastActiveDate + "</td>";
                             content = content + "<td>" + data[i].lastDepositDate + "</td>";
-                            content = content + "<td>" + data[i].lastDepositDate + "</td>";
-                            content = content + "<td>" + data[i].balance + "</td>";
-                            content = content + "<td>" + data[i].GGR + "</td>";
+                            content = content + "<td>" + data[i].activity_days + "</td>";
+                            content = content + "<td>" + data[i].main_wallet_balance + "</td>";
+                            content = content + "<td>" + data[i].total_balance + "</td>";
+                            content = content + "<td>" + data[i].login_times + "</td>";
                             content = content + "<td>" + data[i].turnover + "</td>";
+                            content = content + "<td>" + data[i].ggr + "</td>";
+                            content = content + "<td>" + data[i].bonus_cost + "</td>";
+                            content = content + "<td>" + data[i].bonus_ggr + "</td>";
+                            content = content + "<td>" + data[i].ngr + "</td>";
+                            content = content + "<td>" + data[i].ggr_hold + "</td>";
+                            content = content + "<td>" + data[i].ngr_hold + "</td>";
                             content = content + "<td>" + data[i].deposit + "</td>";
                             content = content + "<td>" + data[i].depositCount + "</td>";
-                            content = content + "<td>" + data[i].averageDeposit + "</td>";
                             content = content + "<td>" + data[i].withdrawal + "</td>";
                             content = content + "<td>" + data[i].withdrawalCount + "</td>";
-                            content = content + "<td>" + data[i].bonusCost + "</td>";
-                            content = content + "<td>" + data[i].NGR + "</td>";
-                            content = content + "<td>" + data[i].ftdConver + "</td>";
-                            content = content + "<td>" + data[i].bonus + "</td>";
+                            // content = content + "<td>" + data[i].ftdConver + "</td>";
+                            // content = content + "<td>" + data[i].bonus + "</td>";
                             content = content + "</tr>";
                         } 
                     }
