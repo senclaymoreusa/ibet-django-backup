@@ -67,7 +67,7 @@ class EALiveCasinoClientLoginView(View):
 
         status_code = 0
         currency = 156
-        vendor = 2
+        vendor = 1
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
@@ -81,19 +81,19 @@ class EALiveCasinoClientLoginView(View):
 
             if user.currency == CURRENCY_CNY:
                 currency = 156
-                vendor = 3
+                vendor = 1
             elif user.currency == CURRENCY_THB:
                 currency = 764
-                vendor = 4
+                vendor = 1
             elif user.currency == CURRENCY_VND:
-                currency = 704
-                vendor = 5
+                currency = 7041
+                vendor = 1
             elif user.currency == CURRENCY_TTC:
                 currency = 1111
-                vendor = 2
+                vendor = 1
             else:
                 currency = 1111
-                vendor = 2
+                vendor = 1
 
         except:
             status_code = 101
@@ -115,7 +115,7 @@ class EALiveCasinoClientLoginView(View):
                         },
                         {
                             "@name": "acode",
-                            "#text": "null"
+                            "#text": ""
                         },
                         {
                             "@name": "vendorid",
@@ -168,6 +168,7 @@ class DepositEAView(View):
 
 def requestEADeposit(user, amount, from_wallet):
 
+    logger.info("EA deposit request amount:" + str(amount))
     trans_id = user.username + "-" + timezone.datetime.today().isoformat() + "-" + str(random.randint(0, 10000000))
     # print(trans_id)
     # print(user.currency)
@@ -191,25 +192,25 @@ def requestEADeposit(user, amount, from_wallet):
         
         if user_currency == CURRENCY_CNY:
             currency = 156
-            vendor = 3
+            vendor = 1
         elif user_currency == CURRENCY_THB:
             currency = 764
-            vendor = 4
+            vendor = 1
         elif user_currency == CURRENCY_VND:
-            currency = 704
-            vendor = 5
+            currency = 7041
+            vendor = 1
         elif user_currency == CURRENCY_TTC:
             currency = 1111
-            vendor = 2
+            vendor = 1
         else:
             currency = 1111
-            vendor = 2
+            vendor = 1
 
 
         request_id = "D"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
         # print(request_id)
-        url = EA_DOMAIN + "deposit/wkpibet/server.php"
+        url = EA_DOMAIN + "deposit/wkpibet"
 
         headers = {'Content-Type': 'application/xml'}
         data = {
@@ -224,7 +225,7 @@ def requestEADeposit(user, amount, from_wallet):
                         },
                         {
                             "@name": "acode",
-                            "#text": "null"
+                            "#text": ""
                         },
                         {
                             "@name": "vendorid",
@@ -247,13 +248,16 @@ def requestEADeposit(user, amount, from_wallet):
                 }
             } 
         }
+        logger.info("EA deposit request data:" + json.dumps(data))
         requestData = xmltodict.unparse(data, pretty=True)
         # print(requestData)
+        
         response = requests.post(url, data=requestData, headers=headers)
         response = response.text.strip()
-        
+        logger.info("EA deposit response data:" + response)
         response = xmltodict.parse(response)
-        action  = response['request']['@action']
+        
+        action = response['request']['@action']
         request_id = response['request']['element']['@id']
 
         properties_payment_id = ""
@@ -330,7 +334,7 @@ def comfirmEADeposit(request_id, properties_payment_id, status_code):
         elif status_code == "201":
             error_message = "ERR_INVALID_REQ"
 
-        url = EA_DOMAIN + "deposit/wkpibet/server.php"
+        url = EA_DOMAIN + "deposit/wkpibet"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -344,7 +348,7 @@ def comfirmEADeposit(request_id, properties_payment_id, status_code):
                         },
                         {
                             "@name": "acode",
-                            "#text": "null"
+                            "#text": ""
                         },
                         {
                             "@name": "status",
@@ -362,8 +366,10 @@ def comfirmEADeposit(request_id, properties_payment_id, status_code):
                 }
             } 
         }
+        logger.info("EA deposit confirm request data:" + json.dumps(data))
         request_data = xmltodict.unparse(data, pretty=True)
         # print(request_data)
+        
         response = requests.post(url, data=request_data, headers=headers)
         if response.status_code == 200:
             # print(response.status_code)
@@ -389,8 +395,8 @@ class WithdrawEAView(View):
             username = data["username"]
             amount = data["amount"]
             user = CustomUser.objects.get(username=username)
-            if float(user.ea_wallet) < float(amount): # please change this
-                return HttpResponse("Balance not enough")
+            # if float(user.ea_wallet) < float(amount): # please change this
+            #     return HttpResponse("Balance not enough")
 
             if requestEAWithdraw(user, amount, "main") == CODE_SUCCESS:
                 return HttpResponse("Successfully withdraw money from EA")
@@ -427,24 +433,24 @@ def requestEAWithdraw(user, amount, to_wallet):
 
         if user_currency == CURRENCY_CNY:
             currency = 156
-            vendor = 3
+            vendor = 1
         elif user_currency == CURRENCY_THB:
             currency = 764
-            vendor = 4
+            vendor = 1
         elif user_currency == CURRENCY_VND:
-            currency = 704
-            vendor = 5
+            currency = 7041
+            vendor = 1
         elif user_currency == CURRENCY_TTC:
             currency = 1111
-            vendor = 2
+            vendor = 1
         else:
             currency = 1111
-            vendor = 2
+            vendor = 1
 
         request_id = "W"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
         
-        url = EA_DOMAIN + "withdrawal/wkpibet/server.php"
+        url = EA_DOMAIN + "withdrawal/wkpibet"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -477,13 +483,16 @@ def requestEAWithdraw(user, amount, to_wallet):
                 }
             } 
         }
-
+        logger.info("EA withdrawal request data:" + json.dumps(data))
         requestData = xmltodict.unparse(data, pretty=True)
         # print(requestData)
+        
         response = requests.post(url, data=requestData, headers=headers)
         response = response.text.strip()
         # print(response)
+        
         response = xmltodict.parse(response)
+        logger.info("EA withdrawal request data:" + json.dumps(response))
         action  = response['request']['@action']
         # print(action)
         request_id = response['request']['element']['@id']
@@ -564,24 +573,24 @@ def getEAWalletBalance(user):
         user_currency = user.currency
         if user_currency == CURRENCY_CNY:
             currency = 156
-            vendor = 3
+            vendor = 1
         elif user_currency == CURRENCY_THB:
             currency = 764
-            vendor = 4
+            vendor = 1
         elif user_currency == CURRENCY_VND:
-            currency = 704
-            vendor = 5
+            currency = 7041
+            vendor = 1
         elif user_currency == CURRENCY_TTC:
             currency = 1111
-            vendor = 2
+            vendor = 1
         else:
             currency = 1111
-            vendor = 2
+            vendor = 1
         
         request_id = "C"
         request_id = request_id + "%0.12d" % random.randint(0,999999999999)
 
-        url = EA_DOMAIN + "checkclient/wkpibet/server.php"
+        url = EA_DOMAIN + "checkclient/wkpibet"
         headers = {'Content-Type': 'application/xml'}
         data = {
             "request": {
@@ -703,7 +712,7 @@ class EASingleLoginValidation(View):
 
         status_code = 0
         currency = 156 # change the default
-        vendor = 2
+        vendor = 1
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
@@ -714,19 +723,19 @@ class EASingleLoginValidation(View):
 
             if user_currency == CURRENCY_CNY:
                 currency = 156
-                vendor = 3
+                vendor = 1
             elif user_currency == CURRENCY_THB:
                 currency = 764
-                vendor = 4
+                vendor = 1
             elif user_currency == CURRENCY_VND:
-                currency = 704
-                vendor = 5
+                currency = 7041
+                vendor = 1
             elif user_currency == CURRENCY_TTC:
                 currency = 1111
-                vendor = 2
+                vendor = 1
             else:
                 currency = 1111
-                vendor = 2
+                vendor = 1
 
 
         except:
@@ -766,7 +775,7 @@ class EASingleLoginValidation(View):
                             }, 
                             {
                                 "@name": "acode",
-                                "#text": "null"
+                                "#text": ""
                             }, 
                             {
                                 "@name": "errdesc",
