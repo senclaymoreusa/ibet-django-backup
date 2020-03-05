@@ -67,7 +67,7 @@ class EALiveCasinoClientLoginView(View):
 
         status_code = 0
         currency = 156
-        vendor = 2
+        vendor = 1
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
@@ -81,19 +81,19 @@ class EALiveCasinoClientLoginView(View):
 
             if user.currency == CURRENCY_CNY:
                 currency = 156
-                vendor = 3
+                vendor = 1
             elif user.currency == CURRENCY_THB:
                 currency = 764
-                vendor = 4
+                vendor = 1
             elif user.currency == CURRENCY_VND:
                 currency = 704
-                vendor = 5
+                vendor = 1
             elif user.currency == CURRENCY_TTC:
                 currency = 1111
-                vendor = 2
+                vendor = 1
             else:
                 currency = 1111
-                vendor = 2
+                vendor = 1
 
         except:
             status_code = 101
@@ -703,7 +703,7 @@ class EASingleLoginValidation(View):
 
         status_code = 0
         currency = 156 # change the default
-        vendor = 2
+        vendor = 1
         error_message = "Successfully login"
         try: 
             user = CustomUser.objects.get(username=properties_user_id)
@@ -714,19 +714,19 @@ class EASingleLoginValidation(View):
 
             if user_currency == CURRENCY_CNY:
                 currency = 156
-                vendor = 3
+                vendor = 1
             elif user_currency == CURRENCY_THB:
                 currency = 764
-                vendor = 4
+                vendor = 1
             elif user_currency == CURRENCY_VND:
                 currency = 704
-                vendor = 5
+                vendor = 1
             elif user_currency == CURRENCY_TTC:
                 currency = 1111
-                vendor = 2
+                vendor = 1
             else:
                 currency = 1111
-                vendor = 2
+                vendor = 1
 
 
         except:
