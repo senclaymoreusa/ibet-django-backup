@@ -2320,3 +2320,39 @@ class ResetWithdrawPassword(View):
         except Exception as e:
             logger.error("Error resetting withdraw password: {}".format(str(e)))
             return HttpResponse(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class SetUserName(View):
+
+    def post(self, request, *args, **kwargs):
+
+        try:
+            data = json.loads(request.body)
+            user_id = data['user_id']
+            first_name = ""
+            last_name = ""
+            if 'first_name' in data:
+                first_name = data['first_name']
+            if 'last_name' in data:
+                last_name = data['last_name']
+
+            user = CustomUser.objects.get(pk=user_id)
+            user.first_name = first_name
+            user.last_name = last_name
+
+            user.save()
+            response = {
+                'success': True,
+                'message': "Finished update real name"
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+        except Exception as e:
+            logger.error("Set user real name error: {}".format(str(e)))
+            response = {
+                'success': False,
+                'message': "There is something wrong"
+            }
+            return HttpResponse(json.dumps(response), content_type='application/json')
