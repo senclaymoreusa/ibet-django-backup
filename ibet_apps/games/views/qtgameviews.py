@@ -343,7 +343,7 @@ class ProcessTransactions(APIView):
             prov = GameProvider.objects.get(provider_name="QTech")
             cat = Category.objects.get(name='Games')
             
-            if not qt_session.valid:
+            if transType == "DEBIT" and not qt_session.valid:
                 status_code = 400
                 message = 'Invalid player (wallet) session-token'
                 logger.error(message) 
@@ -368,12 +368,12 @@ class ProcessTransactions(APIView):
                 return HttpResponse(json.dumps(response), content_type='application/json', status=status_code)
                 
         except Exception as e:
-            status_code = 400
-            message = 'Missing, invalid or expired user/session-token'
+            status_code = 401
+            message = 'Missing user or session-token'
             logger.error(message + ": " + str(e)) 
             
             response = {
-                "code": QT_STATUS_CODE[QT_STATUS_INVALID_TOKEN][1],
+                "code": QT_STATUS_CODE[QT_STATUS_LOGIN_FAILED][1],
                 "message": message
             }
             
