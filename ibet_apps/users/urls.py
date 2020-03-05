@@ -94,6 +94,7 @@ urlpatterns += [
 
     path('api/get-each-wallet-amount/', transferview.EachWalletAmount.as_view(), name="get_each_wallet_amount"),
     path('api/get-product-contribution/', ProductContribution.as_view(), name="product_contribution"),
+    path('api/set-real-name/', csrf_exempt(views.SetUserName.as_view()), name="set_name"),
 
     # admin API
     path('api/admin/get-user-info', GetUserInfo.as_view(), name='get_user_info'),
