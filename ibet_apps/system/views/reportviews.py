@@ -6,10 +6,12 @@ from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.conf import settings
 from django.views import View
 
-from users.models import CustomUser, UserAction
+from users.models import CustomUser, UserAction, UserWallet
+from games.models import GameBet
 from accounting.models import Transaction
 from utils.constants import *
 import simplejson as json
+from utils.admin_helper import *
 
 from system.models import *
 from games.models import *
@@ -19,6 +21,7 @@ import logging
 from datetime import datetime, time
 from django.core.serializers.json import DjangoJSONEncoder
 from dateutil.relativedelta import *
+import decimal
 import pytz
 import requests
 
@@ -165,11 +168,12 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
     # print(opening_amount, close_amount)
     dataObj["opening_amount"] = opening_amount
     dataObj["close_amount"] = close_amount
-    localCurrencies = Transaction.objects.filter(request_time__gt=min_all_date_time, request_time__lt=max_all_date_time).distinct('currency')
+    # localCurrencies = Transaction.objects.filter(request_time__gt=min_all_date_time, request_time__lt=max_all_date_time).distinct('currency')
+    localCurrencies = dict(CURRENCY_CHOICES).keys()
     currencyRateMap = {}
     if currency != "Local":
         for i in localCurrencies:
-            local = i.currency
+            local = i
             if local == CURRENCY_THB:
                 base = "THB"
             elif local == CURRENCY_USD:
@@ -183,8 +187,9 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
                             "base": base,
                         })
             response = response.json()
-            currencyRateMap[local] = float(response["rates"][currency])
-        
+            currencyRateMap[local] = decimal.Decimal(response["rates"][currency])
+    
+    # print(currencyRateMap)
     data = []
     pre_activity_user = None
     while date < dateRangeTo:
@@ -199,7 +204,6 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
         dataPerUnit = {
             "date_time": dateStr,    
         }
-        # print(marketCode)
         for i in marketCode:
             deposit_sum = 0
             withdraw_sum = 0
@@ -221,20 +225,27 @@ def getDateInTimeRange(dateRangeFrom, dateRangeTo, interval, currency, market):
                 for withdraw in withdraws:
                     withdraw_sum += currencyRateMap[withdraw.currency] * float(withdraw.amount)
                     withdraw_sum = decimal.Decimal(withdraw_sum)
+                ftd_time_amount = decimal.Decimal(ftd_time_amount['ftd_time_amount__sum']) * currencyRateMap[i] if ftd_time_amount['ftd_time_amount__sum'] else 0
+                transfer_in_amount = decimal.Decimal(tranfer_in.aggregate(Sum('amount'))['amount__sum']) * currencyRateMap[i] if tranfer_in.aggregate(Sum('amount'))['amount__sum'] else 0
+                tranfer_out_amount = decimal.Decimal(tranfer_out.aggregate(Sum('amount'))['amount__sum']) * currencyRateMap[i] if tranfer_out.aggregate(Sum('amount'))['amount__sum'] else 0
+                # print(currencyRateMap[i])
+                # print(ftd_time_amount)
+                bonus_cost = decimal.Decimal(bonus_cost) * currencyRateMap[i]
+                turnover = decimal.Decimal(turnover) * currencyRateMap[i]
                 dataPerUnit[dict(CURRENCY_CHOICES).get(i)] = {
                     "register_times": register_times,
                     "ftd_times": ftd_times,
                     "ftd_register_ratio": ftd_register_ratio,
-                    "ftd_time_amount": ftd_time_amount['ftd_time_amount__sum'] if ftd_time_amount['ftd_time_amount__sum'] else 0,
+                    "ftd_time_amount":  "%.2f" % (ftd_time_amount),
                     "deposit_amount": round(float(deposit_sum), 2),
                     "withdraw_amount": round(float(withdraw_sum), 2),
                     "net_deposit": deposit_sum - withdraw_sum if deposit_sum - withdraw_sum > 0 else 0,
-                    "transfer_in": tranfer_in.aggregate(Sum('amount'))['amount__sum'] if tranfer_in.aggregate(Sum('amount'))['amount__sum'] else 0,
-                    "transfer_out": tranfer_out.aggregate(Sum('amount'))['amount__sum'] if tranfer_out.aggregate(Sum('amount'))['amount__sum'] else 0,
+                    "transfer_in":  "%.2f" % (transfer_in_amount),
+                    "transfer_out":  "%.2f" % (tranfer_out_amount),
                     "activity_user": activity_user,
                     "turnover": turnover,
                     "ggr": turnover - deposit_sum if turnover > deposit_sum else 0,
-                    "bonus_cost": bonus_cost,
+                    "bonus_cost":  "%.2f" % (bonus_cost),
                     "bonus_cost_ggr_ratio": "%.2f" % (bonus_cost/ (turnover - deposit_sum)) if turnover - deposit_sum > 0 else 0,
                     "ngr": "%.2f" % (turnover - deposit_sum - bonus_cost),
                     "ggr_hold": "%.2f" % (turnover - deposit_sum)/turnover if turnover > 0 else 0,
@@ -382,6 +393,7 @@ class MembersReportView(CommAdminView):
                 # print("members length greater than 0")
                 for member in members:
                     userActionFilter &= Q(user__username__iexact=member)
+                    # userActionFilter &= Q(user__username__iexact=member)
 
             if lastDateRangeFrom and lastDateRangeTo:
                 lastDateRangeFrom = datetime.strptime(lastDateRangeFrom, '%m/%d/%Y')
@@ -389,14 +401,15 @@ class MembersReportView(CommAdminView):
                 lastDateRangeFromTime = tz.localize(datetime.combine(lastDateRangeFrom, time.min)) 
                 lastDateRangeToTime = tz.localize(datetime.combine(lastDateRangeTo, time.min))
                 # UserAction.objects.filter(user__username__in=memberArr)
-                userActionFilter &= (Q(created_time__gt=lastDateRangeFromTime) & Q(created_time__lt=lastDateRangeToTime) & Q(event_type=EVENT_CHOICES_LOGIN))
+                userActionFilter &= (Q(bet_time__gt=lastDateRangeFromTime) & Q(bet_time__lt=lastDateRangeToTime))
                 dataObj["lastActiveDateFrom"] = lastDateRangeFrom.strftime("%b %e %Y")
                 dataObj["lastActiveDateTo"] = lastDateRangeTo.strftime("%b %e %Y")
 
             
             userArr = []
-            users = UserAction.objects.filter(userActionFilter).distinct('user')
-            for i in users:
+            users_activity_obj = GameBet.objects.filter(userActionFilter).distinct('user')
+            # print(users_activity_obj)
+            for i in users_activity_obj:
                 userArr.append(i.user.username)
 
             # print(userArr)
@@ -412,35 +425,83 @@ class MembersReportView(CommAdminView):
                 dataObj["registrationFrom"] = registrationFrom.strftime("%b %e %Y")
                 dataObj["registrationTo"] = registrationTo.strftime("%b %e %Y")
 
-            users = CustomUser.objects.filter(userfilter)
+            users_register = CustomUser.objects.filter(userfilter)
+            # print(users_register)
             
             data = []
-            for i in users:
+            for i in users_register:
                 user = CustomUser.objects.get(username=i.username)
                 lastDeposit = Transaction.objects.filter(user_id=user, transaction_type=TRANSACTION_DEPOSIT).order_by('request_time').first()
                 requestTime = ""
-                lastActive = ""
+                lastActive = GameBet.objects.filter(user=user).order_by('bet_time').first()
                 current_tz = timezone.get_current_timezone()
                 if lastDeposit:
                     requestTime = lastDeposit.request_time.astimezone(current_tz)
-                    lastActive = i.last_login_time.astimezone(current_tz)
                     requestTime = requestTime.strftime("%b %e %Y")
-                    lastActive = lastActive.strftime("%b %e %Y")
+                if lastActive:
+                    lastActiveTime = i.last_login_time.astimezone(current_tz)
+                    lastActiveTime = lastActiveTime.strftime("%b %e %Y")
+                
+                if lastDateRangeFrom and lastDateRangeTo:
+                    # lastDateRangeFrom = datetime.strptime(lastDateRangeFrom, '%m/%d/%Y')
+                    # lastDateRangeTo= datetime.strptime(lastDateRangeTo, '%m/%d/%Y')
+                    # lastDateRangeFromTime = tz.localize(datetime.combine(lastDateRangeFrom, time.min)) 
+                    # lastDateRangeToTime = tz.localize(datetime.combine(lastDateRangeTo, time.min))
+                    activity_days = GameBet.objects.filter(user=user, bet_time__gt=lastDateRangeFromTime, bet_time__lt=lastDateRangeToTime).count()
+                else:
+                    activity_days = GameBet.objects.filter(user=user).count()
+                
+
+                each_wallet_sum = UserWallet.objects.filter(user=user).aggregate(Sum('wallet_amount'))['wallet_amount__sum']
+                if each_wallet_sum:
+                    each_wallet_sum = decimal.Decimal(each_wallet_sum)
+                else:
+                    each_wallet_sum = 0
+                total_balance = each_wallet_sum + i.main_wallet + i.bonus_wallet
+
+                login_times = UserAction.objects.filter(user=user, event_type=EVENT_CHOICES_LOGIN).count()
+
+                bonus_cost = getTransactionAmount(user, None, None, TRANSACTION_BONUS, None)[1]
+                ggr = calculateGGR(i, None, None, None)
+                turnover = calculateTurnover(i, None, None, None)
                 dataPerUser = {
                     'userId': i.pk,
                     'username': i.username,
                     'status': i.get_member_status_display(),
-                    'vipLevel': 'Normal',
-                    'channel': 'Desktop',
-                    'product': 'Sports',
+                    'vipLevel': i.vip_level.level if i.vip_level else "",
+                    'number_of_linked_account': 12,
+                    'define_by': 'admin',
+                    'vip_manager': str(i.vip_managed_by.username) if i.vip_managed_by else "",
+                    'prefer_channel': 'Desktop',
+                    'prefer_product': 'Sports',
                     'country': i.country,
-                    'address': i.street_address_1 + " " + i.street_address_2 + " " + i.city,
+                    'address': i.get_user_address(),
                     'phone': i.phone,
+                    'id_verified': "No",
+                    'phone_verified': "No",
+                    'email_verified': "No",
                     'verified': "No",
                     'ftd_date': i.ftd_time,
-                    'affiiateId': i.pk,
+                    'ftd_amount': i.ftd_time_amount,
+                    'player_resource': i.get_user_attribute_display(),
+                    'affiliateId': i.pk,
                     'lastActiveDate': str(lastActive),
-                    'lastDepositDate': str(requestTime)
+                    'lastDepositDate': str(requestTime),
+                    'activity_days': activity_days,
+                    'main_wallet_balance': i.main_wallet,
+                    'total_balance': i.main_wallet + total_balance,
+                    'login_times': login_times,
+                    'turnover': turnover,
+                    'ggr': ggr,
+                    'bonus_cost': bonus_cost,
+                    'bonus_ggr': bonus_cost/ggr if ggr > 0 else 0,
+                    'ngr': ggr - bonus_cost,
+                    'ggr_hold': ggr/turnover if turnover > 0 else 0,
+                    'ngr_hold': (ggr - bonus_cost)/turnover if turnover > 0 else 0,
+                    'deposit': getTransactionAmount(i, None, None, TRANSACTION_DEPOSIT, None)[1],
+                    'deposit_count': getTransactionAmount(i, None, None, TRANSACTION_DEPOSIT, None)[0],
+                    'withdraw': getTransactionAmount(i, None, None, TRANSACTION_WITHDRAWAL, None)[1],
+                    'withdraw_count': getTransactionAmount(i, None, None, TRANSACTION_WITHDRAWAL, None)[0]
                 }
                 data.append(dataPerUser)
             # print(data)

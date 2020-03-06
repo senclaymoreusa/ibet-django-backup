@@ -413,7 +413,6 @@ $(document).ready(function() {
         });
     })
     
-
     $('#submit_btn').click(function() {
         // var time = "123";
         var interval = $('.interval-select  > .btn.active').html();
@@ -518,7 +517,7 @@ $(document).ready(function() {
                 url: "{% url 'xadmin:performance_report' %}",
                 data,
                 success: function(data) {
-                    console.log(data);
+                    // console.log(data);
                     $('#data-block').removeClass("hide");
                     var text = data.rangeFrom + ' - ' + data.rangeTo;
                     var close_amount = data.close_amount;
@@ -584,7 +583,7 @@ $(document).ready(function() {
                                 var withdrawAmt = value["withdraw_amount"];
                                 var depositAmt = value["deposit_amount"];
                                 
-                                content = content + "<td>market</td>";
+                                content = content + "<td>" + key + "</td>";
                                 if (currencyOverall !== "Local") {
                                     content = content + "<td>" + currencyOverall + "</td>";
                                 } else {
